@@ -1,0 +1,3058 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Historial Clinico Backend",
+        "description": "Aplicación backend del sistema web Historial Clnico",
+        "contact": {
+            "email": "dav.almeyda@gmail.com"
+        },
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/historial-clinico-backend/public/api/admin/getEspecialidades": {
+            "post": {
+                "tags": [
+                    "Administrador"
+                ],
+                "summary": "Obtener las Especialidades",
+                "operationId": "getEspecialidades",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codLocal": {
+                                        "type": "string"
+                                    },
+                                    "codMedico": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codLocal": "001",
+                                    "codMedico": "0000026144"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/admin/getListaAtenciones": {
+            "post": {
+                "tags": [
+                    "Administrador"
+                ],
+                "summary": "Obtener lista de Atenciones",
+                "operationId": "getListaAtenciones",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codMedico": {
+                                        "type": "string"
+                                    },
+                                    "fechaInicio": {
+                                        "type": "string"
+                                    },
+                                    "fechaFin": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codMedico": "0000026144",
+                                    "fechaInicio": "01/11/2021",
+                                    "fechaFin": "01/12/2021"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/admin/getListaLiberados": {
+            "post": {
+                "tags": [
+                    "Administrador"
+                ],
+                "summary": "Obtener lista de Liberados",
+                "operationId": "getListaLiberados",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "fechaInicio": {
+                                        "type": "string"
+                                    },
+                                    "fechaFin": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "fechaInicio": "01/11/2021",
+                                    "fechaFin": "01/12/2021"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/grabarAnexos/GrabarAnexos": {
+            "post": {
+                "tags": [
+                    "Anexos"
+                ],
+                "summary": "Grabar los Anexos",
+                "operationId": "grabarAnexos",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codCia",
+                                    "codLocal",
+                                    "obsAnexo",
+                                    "codMedico",
+                                    "numAtendMed"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codCia": {
+                                        "type": "string"
+                                    },
+                                    "codLocal": {
+                                        "type": "string"
+                                    },
+                                    "obsAnexo": {
+                                        "type": "string"
+                                    },
+                                    "codMedico": {
+                                        "type": "string"
+                                    },
+                                    "numAtendMed": {
+                                        "type": "string"
+                                    },
+                                    "imagen": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/anexos/getAnexos": {
+            "post": {
+                "tags": [
+                    "Anexos"
+                ],
+                "summary": "Obtener los Anexos",
+                "operationId": "getAnexos",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "numAtendMed"
+                                ],
+                                "properties": {
+                                    "numAtendMed": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "numAtendMed": "0000384457"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/anexos/getAnexosFecha": {
+            "post": {
+                "tags": [
+                    "Anexos"
+                ],
+                "summary": "Obtener los Anexos por rango de fechas",
+                "operationId": "getAnexosFecha",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "numAtendMed"
+                                ],
+                                "properties": {
+                                    "numAtendMed": {
+                                        "type": "string"
+                                    },
+                                    "fechaInicio": {
+                                        "type": "string"
+                                    },
+                                    "fechaFin": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "numAtendMed": "0000384457",
+                                    "fechaInicio": "2021-12-01",
+                                    "fechaFin": "2021-12-15"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/anexos/deleteAnexos": {
+            "post": {
+                "tags": [
+                    "Anexos"
+                ],
+                "summary": "Borrar Anexo",
+                "operationId": "deleteAnexos",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codAnexo"
+                                ],
+                                "properties": {
+                                    "codAnexo": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codAnexo": "0000000001"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/tipoAnexos": {
+            "post": {
+                "tags": [
+                    "Anexos"
+                ],
+                "summary": "Obtener los tipos de anexos",
+                "operationId": "tipoAnexos",
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/antecedentes/hc": {
+            "post": {
+                "tags": [
+                    "Antecedentes"
+                ],
+                "summary": "Obtener la historia clinica",
+                "operationId": "hc",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal",
+                                    "codPaciente",
+                                    "codSecuencia"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codLocal": {
+                                        "type": "string"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string"
+                                    },
+                                    "codSecuencia": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codLocal": "001",
+                                    "codPaciente": "0010228664",
+                                    "codSecuencia": "4"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/antecedentes/generales": {
+            "post": {
+                "tags": [
+                    "Antecedentes"
+                ],
+                "summary": "Obtener los antecedentes generales",
+                "operationId": "generales",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codMaestro"
+                                ],
+                                "properties": {
+                                    "codMaestro": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codMaestro": "34"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/antecedentes/diagnosticos": {
+            "get": {
+                "tags": [
+                    "Antecedentes"
+                ],
+                "summary": "Obtener los diagnosticos en antecedentes (trae mas de 20 mil registros)",
+                "operationId": "diagnosticos",
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/antecedentes/funcionesvitales": {
+            "post": {
+                "tags": [
+                    "Antecedentes"
+                ],
+                "summary": "Obtener las funciones vitales de antecedentes",
+                "operationId": "funcionesVitales",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codCia",
+                                    "codLocal",
+                                    "nroAtencion"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codCia": {
+                                        "type": "string"
+                                    },
+                                    "codLocal": {
+                                        "type": "string"
+                                    },
+                                    "nroAtencion": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codCia": "001",
+                                    "codLocal": "001",
+                                    "nroAtencion": "0000347913"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/antecedentes/getPatologico": {
+            "post": {
+                "tags": [
+                    "Antecedentes"
+                ],
+                "summary": "Obtener los síntomas patológicos de antecedentes",
+                "operationId": "getPatologico",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string"
+                                    },
+                                    "codLocal": {
+                                        "type": "string"
+                                    },
+                                    "codSecuencia": {
+                                        "type": "string"
+                                    },
+                                    "tipo": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codLocal": "001",
+                                    "codPaciente": "0010185756",
+                                    "codSecuencia": "1",
+                                    "tipo": "PA"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/antecedentes/paneles": {
+            "post": {
+                "tags": [
+                    "Antecedentes"
+                ],
+                "summary": "Obtener los paneles de antecedentes",
+                "operationId": "paneles",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "codLocal",
+                                    "codSecuencia"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string"
+                                    },
+                                    "codLocal": {
+                                        "type": "string"
+                                    },
+                                    "codSecuencia": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codLocal": "001",
+                                    "codPaciente": "0010185756",
+                                    "codSecuencia": "1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/antecedentes/setAntecedentes": {
+            "post": {
+                "tags": [
+                    "Antecedentes"
+                ],
+                "summary": "Guardar los antecedentes (esta funcion graba un registro en una consulta - usar con cuidado)",
+                "operationId": "setAntecedentes",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal",
+                                    "codMedico",
+                                    "codPaciente",
+                                    "secuenciaHC"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string"
+                                    },
+                                    "codLocal": {
+                                        "type": "string"
+                                    },
+                                    "codMedico": {
+                                        "type": "string"
+                                    },
+                                    "secuenciaHC": {
+                                        "type": "string"
+                                    },
+                                    "generales": {
+                                        "properties": {
+                                            "medicamentos": {
+                                                "type": "string"
+                                            },
+                                            "ram": {
+                                                "type": "string"
+                                            },
+                                            "ocupacionales": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "antecedentes": {
+                                        "properties": {
+                                            "fecha": {
+                                                "type": "string"
+                                            },
+                                            "diabetes": {
+                                                "type": "string"
+                                            },
+                                            "fiebre_reumatica": {
+                                                "type": "string"
+                                            },
+                                            "enfermedad_hepaticas": {
+                                                "type": "string"
+                                            },
+                                            "hemorragias": {
+                                                "type": "string"
+                                            },
+                                            "tuberculosis": {
+                                                "type": "string"
+                                            },
+                                            "enfermedad_cardiovascular": {
+                                                "type": "string"
+                                            },
+                                            "reaccion_anormal_local": {
+                                                "type": "string"
+                                            },
+                                            "alergia_penecilina": {
+                                                "type": "string"
+                                            },
+                                            "anemia": {
+                                                "type": "string"
+                                            },
+                                            "enfermedad_renal": {
+                                                "type": "string"
+                                            },
+                                            "reaccion_anormal_drogas": {
+                                                "type": "string"
+                                            },
+                                            "otras": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "fisiologicos": {
+                                        "type": "string"
+                                    },
+                                    "ginecologicos": {
+                                        "properties": {
+                                            "edadMenarquia": {
+                                                "type": "string"
+                                            },
+                                            "rcMenstruacion": {
+                                                "type": "string"
+                                            },
+                                            "cicloMenstruacion": {
+                                                "type": "string"
+                                            },
+                                            "fechaFur": {
+                                                "type": "string"
+                                            },
+                                            "fechaFpp": {
+                                                "type": "string"
+                                            },
+                                            "rs": {
+                                                "type": "string"
+                                            },
+                                            "disminorrea": {
+                                                "type": "string"
+                                            },
+                                            "nroGestaciones": {
+                                                "type": "string"
+                                            },
+                                            "paridad": {
+                                                "type": "string"
+                                            },
+                                            "fechaFup": {
+                                                "type": "string"
+                                            },
+                                            "nroCesareas": {
+                                                "type": "string"
+                                            },
+                                            "pap": {
+                                                "type": "string"
+                                            },
+                                            "mamografia": {
+                                                "type": "string"
+                                            },
+                                            "mac": {
+                                                "type": "string"
+                                            },
+                                            "otros": {
+                                                "type": "string"
+                                            },
+                                            "indReglaRegular": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "patologicos": {
+                                        "type": "string"
+                                    },
+                                    "patologicosFamiliares": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codLocal": "001",
+                                    "codMedico": "0010185756",
+                                    "codPaciente": "0010185756",
+                                    "secuenciaHC": "1",
+                                    "generales": {
+                                        "medicamentos": "",
+                                        "ram": "",
+                                        "ocupacionales": ""
+                                    },
+                                    "antecedentes": {
+                                        "fecha": "",
+                                        "diabetes": "",
+                                        "fiebre_reumatica": "",
+                                        "enfermedad_hepaticas": "",
+                                        "hemorragias": "",
+                                        "tuberculosis": "",
+                                        "enfermedad_cardiovascular": "",
+                                        "reaccion_anormal_local": "",
+                                        "alergia_penecilina": "",
+                                        "anemia": "",
+                                        "enfermedad_renal": "",
+                                        "reaccion_anormal_drogas": "",
+                                        "otras": ""
+                                    },
+                                    "fisiologicos": "",
+                                    "ginecologicos": {
+                                        "edadMenarquia": "",
+                                        "rcMenstruacion": "",
+                                        "cicloMenstruacion": "",
+                                        "fechaFur": "",
+                                        "fechaFpp": "",
+                                        "rs": "",
+                                        "disminorrea": "",
+                                        "nroGestaciones": "",
+                                        "paridad": "",
+                                        "fechaFup": "",
+                                        "nroCesareas": "",
+                                        "pap": "",
+                                        "mamografia": "",
+                                        "mac": "",
+                                        "otros": "",
+                                        "indReglaRegular": ""
+                                    },
+                                    "patologicos": "",
+                                    "patologicosFamiliares": ""
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/antecedentes/setFisiologico": {
+            "post": {
+                "tags": [
+                    "Antecedentes"
+                ],
+                "summary": "Guardar antecedentes fisiológicos (esta funcion graba un registro en una consulta - usar con cuidado)",
+                "operationId": "setFisiologico",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "codLocal",
+                                    "secuenciaHC"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string"
+                                    },
+                                    "codLocal": {
+                                        "type": "string"
+                                    },
+                                    "secuenciaHC": {
+                                        "type": "string"
+                                    },
+                                    "codMaestroDet": {
+                                        "type": "string"
+                                    },
+                                    "indTipo": {
+                                        "type": "string"
+                                    },
+                                    "descOtros": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codLocal": "001",
+                                    "codPaciente": "0010185756",
+                                    "codSecuencia": "1",
+                                    "codMaestroDet": "1",
+                                    "indTipo": "1",
+                                    "descOtros": "1"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/antecedentes/getHistorial": {
+            "post": {
+                "tags": [
+                    "Antecedentes"
+                ],
+                "summary": "Obtener el historial de antecedentes",
+                "operationId": "getHistorial",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "fechaInicio",
+                                    "fechaFin"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string"
+                                    },
+                                    "fechaInicio": {
+                                        "type": "string"
+                                    },
+                                    "fechaFin": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codPaciente": "0010185756",
+                                    "fechaInicio": "15-12-2021",
+                                    "fechaFin": "18-12-2021"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/login": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Inicio de sesión",
+                "operationId": "login",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nroCMP",
+                                    "nroDoc"
+                                ],
+                                "properties": {
+                                    "nroCMP": {
+                                        "type": "string"
+                                    },
+                                    "nroDoc": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "nroCMP": "25480",
+                                    "nroDoc": "41686893"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/getCMP": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Obtener código de médico",
+                "operationId": "getCMP",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codMedico"
+                                ],
+                                "properties": {
+                                    "codMedico": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codMedico": "0000026144"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/consulta/getEvolucionTratamientoOdonto": {
+            "post": {
+                "tags": [
+                    "Consulta"
+                ],
+                "summary": "Obtener la evolución del tratamiento odontológico",
+                "operationId": "getEvolucionTratamientoOdonto",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "nroAtencion"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string"
+                                    },
+                                    "nroAtencion": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codPaciente": "0010185756",
+                                    "nroAtencion": "0000384457"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/consulta/deleteEvolucionTratamientoOdonto": {
+            "post": {
+                "tags": [
+                    "Consulta"
+                ],
+                "summary": "Eliminar la evolución del tratamiento odontológico",
+                "operationId": "deleteEvolucionTratamientoOdonto",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/consulta/setEvolucionTratamientoOdonto": {
+            "post": {
+                "tags": [
+                    "Consulta"
+                ],
+                "summary": "Guardar la evolución del tratamiento odontológico",
+                "operationId": "setEvolucionTratamientoOdonto",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "codMedico",
+                                    "plan",
+                                    "descripcion",
+                                    "nroAtencion"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string"
+                                    },
+                                    "codMedico": {
+                                        "type": "string"
+                                    },
+                                    "plan": {
+                                        "type": "string"
+                                    },
+                                    "especialidad": {
+                                        "type": "string"
+                                    },
+                                    "nombreMedico": {
+                                        "type": "string"
+                                    },
+                                    "descripcion": {
+                                        "type": "string"
+                                    },
+                                    "nroAtencion": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codPaciente": "0010185756",
+                                    "codMedico": "0000026144",
+                                    "plan": "",
+                                    "especialidad": "",
+                                    "nombreMedico": "",
+                                    "descripcion": "",
+                                    "nroAtencion": ""
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/consulta/getEvolucionTratamiento": {
+            "post": {
+                "tags": [
+                    "Consulta"
+                ],
+                "summary": "Obtener los tratamientos de un paciente",
+                "operationId": "getEvolucionTratamiento",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "nroAtencion"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string"
+                                    },
+                                    "nroAtencion": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codPaciente": "0010185756",
+                                    "nroAtencion": "0000384457"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/consulta/deleteEvolucionTratamiento": {
+            "post": {
+                "tags": [
+                    "Consulta"
+                ],
+                "summary": "Eliminar la evolución de un tratamiento",
+                "operationId": "deleteEvolucionTratamiento",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "id": ""
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/consulta/setEvolucionTratamiento": {
+            "post": {
+                "tags": [
+                    "Consulta"
+                ],
+                "summary": "Guardar la evolución de un tratamiento",
+                "operationId": "setEvolucionTratamiento",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "codMedico",
+                                    "plan",
+                                    "descripcion",
+                                    "nroAtencion"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string"
+                                    },
+                                    "codMedico": {
+                                        "type": "string"
+                                    },
+                                    "plan": {
+                                        "type": "string"
+                                    },
+                                    "especialidad": {
+                                        "type": "string"
+                                    },
+                                    "nombreMedico": {
+                                        "type": "string"
+                                    },
+                                    "descripcion": {
+                                        "type": "string"
+                                    },
+                                    "nroAtencion": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "codGrupoCia": "001",
+                                    "codPaciente": "0010185756",
+                                    "codMedico": "0000026144",
+                                    "plan": "",
+                                    "especialidad": "",
+                                    "nombreMedico": "",
+                                    "descripcion": "",
+                                    "nroAtencion": ""
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/consulta/setConsulta": {
+            "post": {
+                "tags": [
+                    "Consulta"
+                ],
+                "summary": "Guardar la consulta",
+                "operationId": "setConsulta",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codCia",
+                                    "codMedico",
+                                    "codLocal",
+                                    "numAtencion"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codMedico": {
+                                        "type": "string",
+                                        "example": "0000026144"
+                                    },
+                                    "codLocal": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "numAtencion": {
+                                        "type": "string"
+                                    },
+                                    "enfermedadActual": {
+                                        "properties": {
+                                            "motivoConsulta": {
+                                                "type": "string"
+                                            },
+                                            "tipoInformante": {
+                                                "type": "string"
+                                            },
+                                            "tiempoEnfermedad": {
+                                                "type": "string"
+                                            },
+                                            "curso": {
+                                                "type": "string"
+                                            },
+                                            "relatoCronologico": {
+                                                "type": "string"
+                                            },
+                                            "apetito": {
+                                                "type": "string"
+                                            },
+                                            "sed": {
+                                                "type": "string"
+                                            },
+                                            "sueno": {
+                                                "type": "string"
+                                            },
+                                            "orina": {
+                                                "type": "string"
+                                            },
+                                            "deposicion": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "estadoFisico": {
+                                        "properties": {
+                                            "estadoGeneral": {
+                                                "type": "string"
+                                            },
+                                            "estadoConciencia": {
+                                                "type": "string"
+                                            },
+                                            "exaFisicoDirigido": {
+                                                "type": "string"
+                                            },
+                                            "imc": {
+                                                "type": "string"
+                                            },
+                                            "medCintura": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "triaje": {
+                                        "properties": {
+                                            "pa_1": {
+                                                "type": "string"
+                                            },
+                                            "pa_2": {
+                                                "type": "string"
+                                            },
+                                            "fr": {
+                                                "type": "string"
+                                            },
+                                            "fc": {
+                                                "type": "string"
+                                            },
+                                            "temp": {
+                                                "type": "string"
+                                            },
+                                            "peso": {
+                                                "type": "string"
+                                            },
+                                            "talla": {
+                                                "type": "string"
+                                            },
+                                            "satoxigeno": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "diagnostico": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/Diagnostico"
+                                        }
+                                    },
+                                    "cabeceraReceta": {
+                                        "properties": {
+                                            "cantitems": {
+                                                "type": "string"
+                                            },
+                                            "fechavigencia": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "cabeceraDetalle": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/CabeceraDetalleModel"
+                                        }
+                                    },
+                                    "tratamiento": {
+                                        "properties": {
+                                            "validezreceta": {
+                                                "type": "string"
+                                            },
+                                            "indicacionesgen": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "estadoConsulta": {
+                                        "properties": {
+                                            "codestadonew": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string"
+                                    },
+                                    "estomatologico": {
+                                        "properties": {
+                                            "fecha": {
+                                                "type": "string"
+                                            },
+                                            "cara": {
+                                                "type": "string"
+                                            },
+                                            "cuello": {
+                                                "type": "string"
+                                            },
+                                            "piel": {
+                                                "type": "string"
+                                            },
+                                            "ganglios": {
+                                                "type": "string"
+                                            },
+                                            "atm": {
+                                                "type": "string"
+                                            },
+                                            "labios": {
+                                                "type": "string"
+                                            },
+                                            "carrillos": {
+                                                "type": "string"
+                                            },
+                                            "fondo_surco": {
+                                                "type": "string"
+                                            },
+                                            "periodonto": {
+                                                "type": "string"
+                                            },
+                                            "zona_retromolar": {
+                                                "type": "string"
+                                            },
+                                            "saliva": {
+                                                "type": "string"
+                                            },
+                                            "glandulas_salivales": {
+                                                "type": "string"
+                                            },
+                                            "lengua": {
+                                                "type": "string"
+                                            },
+                                            "paladar_duro": {
+                                                "type": "string"
+                                            },
+                                            "paladar_blando": {
+                                                "type": "string"
+                                            },
+                                            "piso_boca": {
+                                                "type": "string"
+                                            },
+                                            "orofaringe": {
+                                                "type": "string"
+                                            },
+                                            "indice_higiene_oral": {
+                                                "type": "string"
+                                            },
+                                            "hendidura_gingival": {
+                                                "type": "string"
+                                            },
+                                            "vitalidad_palpar": {
+                                                "type": "string"
+                                            },
+                                            "odusion": {
+                                                "type": "string"
+                                            },
+                                            "guia_anterior": {
+                                                "type": "string"
+                                            },
+                                            "interferencias": {
+                                                "type": "string"
+                                            },
+                                            "contacto_prematuro": {
+                                                "type": "string"
+                                            },
+                                            "rebordes_alveolare": {
+                                                "type": "string"
+                                            },
+                                            "tuberosidades": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "consultasProcedimientos": {
+                                        "properties": {
+                                            "recomendacion": {
+                                                "type": "string"
+                                            },
+                                            "dataProcedimiento": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "imagenes": {
+                                        "properties": {
+                                            "recomendacion": {
+                                                "type": "string"
+                                            },
+                                            "dataProcedimiento": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "laboratorio": {
+                                        "properties": {
+                                            "recomendacion": {
+                                                "type": "string"
+                                            },
+                                            "dataLaboratorio": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "desarrolloProcedimiento": {
+                                        "properties": {
+                                            "relatoMedico": {
+                                                "type": "string"
+                                            },
+                                            "conclusion": {
+                                                "type": "string"
+                                            },
+                                            "observaciones": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "interconsultas": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/obs/tratamiento": {
+            "post": {
+                "tags": [
+                    "Observaciones"
+                ],
+                "summary": "Obtener la observación de un tratamiento",
+                "operationId": "tratamiento",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal",
+                                    "numAtendMed"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codLocal": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "numAtendMed": {
+                                        "type": "string",
+                                        "example": "0000384457"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/obs/procedimiento": {
+            "post": {
+                "tags": [
+                    "Observaciones"
+                ],
+                "summary": "Obtener la observación de un procedimiento",
+                "operationId": "procedimiento",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal",
+                                    "numAtendMed"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codLocal": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "numAtendMed": {
+                                        "type": "string",
+                                        "example": "0000384457"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/obs/imagenes": {
+            "post": {
+                "tags": [
+                    "Observaciones"
+                ],
+                "summary": "Obtener la observación de imagenes",
+                "operationId": "imagenes",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal",
+                                    "numAtendMed"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codLocal": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "numAtendMed": {
+                                        "type": "string",
+                                        "example": "0000384457"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/obs/laboratorio": {
+            "post": {
+                "tags": [
+                    "Observaciones"
+                ],
+                "summary": "Obtener la observación del laboratorio",
+                "operationId": "laboratorio",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal",
+                                    "numAtendMed"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codLocal": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "numAtendMed": {
+                                        "type": "string",
+                                        "example": "0000384457"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/tabla/procedimientos": {
+            "post": {
+                "tags": [
+                    "Tablas"
+                ],
+                "summary": "Obtener la tabla de procedimientos",
+                "operationId": "tablaProcedimientos",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal",
+                                    "numAtendMed"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codLocal": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "numAtendMed": {
+                                        "type": "string",
+                                        "example": "0000384457"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/tabla/imagenes": {
+            "post": {
+                "tags": [
+                    "Tablas"
+                ],
+                "summary": "Obtener la tabla de imagenes",
+                "operationId": "tablaImagenes",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal",
+                                    "numAtendMed"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codLocal": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "numAtendMed": {
+                                        "type": "string",
+                                        "example": "0000384457"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/tabla/laboratorio": {
+            "post": {
+                "tags": [
+                    "Tablas"
+                ],
+                "summary": "Obtener la tabla de laboratorio",
+                "operationId": "tablaLaboratorio",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal",
+                                    "numAtendMed"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codLocal": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "numAtendMed": {
+                                        "type": "string",
+                                        "example": "0000384457"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/medicos/DatosFirmas": {
+            "post": {
+                "tags": [
+                    "Medicos"
+                ],
+                "summary": "Grabar los datos de firma",
+                "operationId": "medicosDatosFirmas",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "codMedi",
+                                    "fechaFirma",
+                                    "imagen"
+                                ],
+                                "properties": {
+                                    "codMedi": {
+                                        "type": "string"
+                                    },
+                                    "fechaFirma": {
+                                        "type": "string"
+                                    },
+                                    "imagen": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/medicos/getFirma": {
+            "post": {
+                "tags": [
+                    "Medicos"
+                ],
+                "summary": "Obtener firma",
+                "operationId": "medicosGetFirma",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codMedico"
+                                ],
+                                "properties": {
+                                    "codMedico": {
+                                        "type": "string",
+                                        "example": "0000026144"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/modulos/getDataMedicos": {
+            "post": {
+                "tags": [
+                    "Modulo"
+                ],
+                "summary": "Búsqueda de medicos",
+                "operationId": "getDataMedicos",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "num_cmp": {
+                                        "type": "string"
+                                    },
+                                    "des_nom_medico": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "num_cmp": "144",
+                                    "des_nom_medico": ""
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Medicos"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/odontograma/registrar": {
+            "post": {
+                "tags": [
+                    "Odontograma"
+                ],
+                "summary": "Registrar odontograma",
+                "operationId": "odontogramaRegistrar",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "data",
+                                    "COD_PACIENTE",
+                                    "COD_MEDICO",
+                                    "COD_GRUPO_CIA",
+                                    "DETALLES",
+                                    "OBSERVACIONES",
+                                    "ESPECIFICACIONES"
+                                ],
+                                "properties": {
+                                    "COD_PACIENTE": {
+                                        "type": "string",
+                                        "example": "0010185756"
+                                    },
+                                    "COD_MEDICO": {
+                                        "type": "string",
+                                        "example": "0000026144"
+                                    },
+                                    "COD_GRUPO_CIA": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "DETALLES": {
+                                        "type": "string"
+                                    },
+                                    "OBSERVACIONES": {
+                                        "type": "string"
+                                    },
+                                    "ESPECIFICACIONES": {
+                                        "type": "string"
+                                    },
+                                    "data": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/odontograma/inicial": {
+            "post": {
+                "tags": [
+                    "Odontograma"
+                ],
+                "summary": "Obtener el odontograma inicial",
+                "operationId": "odontogramaInicial",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "COD_PACIENTE",
+                                    "COD_MEDICO",
+                                    "COD_GRUPO_CIA"
+                                ],
+                                "properties": {
+                                    "COD_PACIENTE": {
+                                        "type": "string",
+                                        "example": "0010185756"
+                                    },
+                                    "COD_MEDICO": {
+                                        "type": "string",
+                                        "example": "0000026144"
+                                    },
+                                    "COD_GRUPO_CIA": {
+                                        "type": "string",
+                                        "example": "001"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/odontograma/final": {
+            "post": {
+                "tags": [
+                    "Odontograma"
+                ],
+                "summary": "Obtener el odontograma final",
+                "operationId": "odontogramaFinal",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "COD_PACIENTE",
+                                    "COD_MEDICO",
+                                    "COD_GRUPO_CIA"
+                                ],
+                                "properties": {
+                                    "COD_PACIENTE": {
+                                        "type": "string",
+                                        "example": "0010185756"
+                                    },
+                                    "COD_MEDICO": {
+                                        "type": "string",
+                                        "example": "0000026144"
+                                    },
+                                    "COD_GRUPO_CIA": {
+                                        "type": "string",
+                                        "example": "001"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/odontograma/historial/fecha": {
+            "post": {
+                "tags": [
+                    "Odontograma"
+                ],
+                "summary": "Obtener el historial entre fechas",
+                "operationId": "odontogramaHistorialFecha",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "COD_PACIENTE",
+                                    "COD_GRUPO_CIA",
+                                    "FECHA_INICIO",
+                                    "FECHA_FIN"
+                                ],
+                                "properties": {
+                                    "COD_PACIENTE": {
+                                        "type": "string",
+                                        "example": "0010185756"
+                                    },
+                                    "COD_GRUPO_CIA": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "FECHA_INICIO": {
+                                        "type": "string",
+                                        "example": "2021-12-20"
+                                    },
+                                    "FECHA_FIN": {
+                                        "type": "string",
+                                        "example": "2021-12-22"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/odontograma/historial": {
+            "post": {
+                "tags": [
+                    "Odontograma"
+                ],
+                "summary": "Obtener el historial",
+                "operationId": "odontogramaHistorial",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "COD_PACIENTE",
+                                    "COD_GRUPO_CIA"
+                                ],
+                                "properties": {
+                                    "COD_PACIENTE": {
+                                        "type": "string",
+                                        "example": "0010185756"
+                                    },
+                                    "COD_GRUPO_CIA": {
+                                        "type": "string",
+                                        "example": "001"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/odontograma/detalle/{idHistorial}": {
+            "get": {
+                "tags": [
+                    "Odontograma"
+                ],
+                "summary": "Obtener el detalle de un historial",
+                "operationId": "odontogramaDetalleHistorial",
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/pacientes": {
+            "post": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Obtener la lista de espera",
+                "operationId": "pacientes",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codEstado",
+                                    "codMedico"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codEstado": {
+                                        "type": "string",
+                                        "example": "2"
+                                    },
+                                    "codMedico": {
+                                        "type": "string",
+                                        "example": "0000026144"
+                                    },
+                                    "consultorio": {
+                                        "type": "string",
+                                        "example": "0"
+                                    },
+                                    "bus": {
+                                        "type": "string",
+                                        "example": "0"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/pacientes/getBusMedico": {
+            "post": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Obtener bus medico",
+                "operationId": "getBusMedico",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cmp"
+                                ],
+                                "properties": {
+                                    "cmp": {
+                                        "type": "string",
+                                        "example": "60245"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/pacientes/getTipoAcomp": {
+            "post": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Obtener tipo de acompañante",
+                "operationId": "getTipoAcomp",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/pacientes/getPaciente": {
+            "post": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Obtener paciente",
+                "operationId": "getPaciente",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string",
+                                        "example": "0010185756"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/pacientes/getAlergias": {
+            "post": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Obtener alergias",
+                "operationId": "getAlergias",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string",
+                                        "example": "0010185756"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/pacientes/updateAlergia": {
+            "post": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Editar Alergias",
+                "operationId": "updateAlergia",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id",
+                                    "alergias",
+                                    "otros"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "alergias": {
+                                        "type": "string"
+                                    },
+                                    "otros": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/pacientes/setAlergia": {
+            "post": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Grabar Alergias",
+                "operationId": "setAlergia",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "alergias",
+                                    "otros"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string",
+                                        "example": "0000101857561"
+                                    },
+                                    "alergias": {
+                                        "type": "string"
+                                    },
+                                    "otros": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/pacientes/getInterconsultas": {
+            "post": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Obtener interconsultas",
+                "operationId": "getInterconsultas",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "nroAtencion"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string",
+                                        "example": "0010185756"
+                                    },
+                                    "nroAtencion": {
+                                        "type": "string",
+                                        "example": "0000384457"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/pacientes/setInterconsultas": {
+            "post": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Grabar interconsulta",
+                "operationId": "setInterconsultas",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "interconsultas"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string",
+                                        "example": "0010185756"
+                                    },
+                                    "interconsultas": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/Interconsultas"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/procedimientos/getProcedimientos": {
+            "post": {
+                "tags": [
+                    "Procedimientos"
+                ],
+                "summary": "Obtener lista de procedimientos",
+                "operationId": "comboProcedimientos",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "codMedico",
+                                    "nroAtencion"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string",
+                                        "example": "0010185756"
+                                    },
+                                    "codMedico": {
+                                        "type": "string",
+                                        "example": "0000026144"
+                                    },
+                                    "nroAtencion": {
+                                        "type": "string",
+                                        "example": "001"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/combo/maestro": {
+            "get": {
+                "tags": [
+                    "Listas"
+                ],
+                "summary": "Obtener lista de maestro",
+                "operationId": "comboMaestro",
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/combo/procedimientos": {
+            "post": {
+                "tags": [
+                    "Listas"
+                ],
+                "summary": "Obtener lista de procedimientos",
+                "operationId": "comboProcedimientos",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codLocal": {
+                                        "type": "string",
+                                        "example": "001"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/combo/imagenes": {
+            "post": {
+                "tags": [
+                    "Listas"
+                ],
+                "summary": "Obtener lista de imagenes",
+                "operationId": "comboImagenes",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codLocal": {
+                                        "type": "string",
+                                        "example": "001"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/combo/laboratorio": {
+            "post": {
+                "tags": [
+                    "Listas"
+                ],
+                "summary": "Obtener lista de laboratorio",
+                "operationId": "comboLaboratorio",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codLocal": {
+                                        "type": "string",
+                                        "example": "001"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/tratamientos/antecedentes": {
+            "post": {
+                "tags": [
+                    "Tratamientos"
+                ],
+                "summary": "Obtener lista de antecedentes de tratamientos",
+                "operationId": "tratamientosAntecedentes",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "codMedico"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string",
+                                        "example": "0010185756"
+                                    },
+                                    "codMedico": {
+                                        "type": "string",
+                                        "example": "0000026144"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/tratamientos/estomatologico": {
+            "post": {
+                "tags": [
+                    "Tratamientos"
+                ],
+                "summary": "Obtener lista de tratamientos estomatologico",
+                "operationId": "tratamientosEstomatologico",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codPaciente",
+                                    "codMedico",
+                                    "nroAtencion"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codPaciente": {
+                                        "type": "string",
+                                        "example": "0010185756"
+                                    },
+                                    "codMedico": {
+                                        "type": "string",
+                                        "example": "0000026144"
+                                    },
+                                    "nroAtencion": {
+                                        "type": "string",
+                                        "example": "0000347913"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/tratamientos": {
+            "post": {
+                "tags": [
+                    "Tratamientos"
+                ],
+                "summary": "Obtener tratamientos",
+                "operationId": "tratamientos",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codLocal"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codLocal": {
+                                        "type": "string",
+                                        "example": "001"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/tratamientos/recetaSugerido": {
+            "post": {
+                "tags": [
+                    "Tratamientos"
+                ],
+                "summary": "Obtener receta sugerida de tratamientos",
+                "operationId": "tratamientosRecetaSugerido",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codGrupoCia",
+                                    "codProdRuc"
+                                ],
+                                "properties": {
+                                    "codGrupoCia": {
+                                        "type": "string",
+                                        "example": "001"
+                                    },
+                                    "codProdRuc": {
+                                        "type": "string",
+                                        "example": "000023@20603070349"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/tratamientos/getRecomendaciones": {
+            "post": {
+                "tags": [
+                    "Tratamientos"
+                ],
+                "summary": "Obtener recomendaciones de tratamientos",
+                "operationId": "tratamientosGetRecomendaciones",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nunReceta",
+                                    "atencionMedica",
+                                    "codProducto"
+                                ],
+                                "properties": {
+                                    "nunReceta": {
+                                        "type": "string"
+                                    },
+                                    "atencionMedica": {
+                                        "type": "string"
+                                    },
+                                    "codProducto": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        },
+        "/historial-clinico-backend/public/api/tratamientos/setRecomendaciones": {
+            "post": {
+                "tags": [
+                    "Tratamientos"
+                ],
+                "summary": "Guardar recomendaciones de tratamientos",
+                "operationId": "tratamientosSetRecomendaciones",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nunReceta",
+                                    "atencionMedica",
+                                    "codProducto",
+                                    "recomendacion"
+                                ],
+                                "properties": {
+                                    "nunReceta": {
+                                        "type": "string"
+                                    },
+                                    "atencionMedica": {
+                                        "type": "string"
+                                    },
+                                    "codProducto": {
+                                        "type": "string"
+                                    },
+                                    "recomendacion": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Datos Encontrados"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Diagnostico": {
+                "title": "Diagnostico",
+                "properties": {
+                    "cie": {
+                        "type": "string"
+                    },
+                    "tipodiagnostico": {
+                        "type": "string"
+                    },
+                    "coddiagnostico": {
+                        "type": "string"
+                    },
+                    "diagnostico": {
+                        "type": "string"
+                    },
+                    "secuencia": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "CabeceraDetalleModel": {
+                "title": "Cabecera Detalle Model",
+                "properties": {
+                    "codprod": {
+                        "type": "string"
+                    },
+                    "cantidad": {
+                        "type": "string"
+                    },
+                    "valfrac": {
+                        "type": "string"
+                    },
+                    "unidvta": {
+                        "type": "string"
+                    },
+                    "frecuencia": {
+                        "type": "string"
+                    },
+                    "duracion": {
+                        "type": "string"
+                    },
+                    "viaadministracion": {
+                        "type": "string"
+                    },
+                    "dosis": {
+                        "type": "string"
+                    },
+                    "rucempresa": {
+                        "type": "string"
+                    },
+                    "recomendacionAplicar": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "Interconsultas": {
+                "title": "Interconsultas",
+                "properties": {
+                    "COD_PROD": {
+                        "type": "string",
+                        "example": "001"
+                    },
+                    "DESC_PROD": {
+                        "type": "string",
+                        "example": "001"
+                    },
+                    "NOM_LAB": {
+                        "type": "string",
+                        "example": "001"
+                    },
+                    "RUC": {
+                        "type": "string",
+                        "example": "001"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "security": [
+        []
+    ]
+}
