@@ -1614,131 +1614,129 @@ class ConsultaController extends Controller
 
             //ESTADO CONSULTA               
             try {
-                if ($estadoConsultaData['codestadonew'] === 'G') {
-                    $puntajes = DB::table('HCW_PESO_ESPECIALIDAD')->get();
-                    $data = [
-                        'enfermedadActual' => $completos['enfermedadActual'],
-                        'examenFisico' => $completos['examenFisico']['triaje'] || $completos['examenFisico']['examen'],
-                        'tratamiento' => $completos['tratamiento'],
-                        'procedimiento' => $completos['procedimiento']['observaciones'] || $completos['procedimiento']['dataProcedimiento'],
-                        'interconsulta' => $completos['interconsulta']['observaciones'] || $completos['interconsulta']['dataInterconsulta'],
-                        'imagenes' => $completos['imagenes']['observaciones'] || $completos['imagenes']['dataImagenes'],
-                        'laboratorio' => $completos['laboratorio']['observaciones'] || $completos['laboratorio']['dataLaboratorio'],
-                    ];
+                $puntajes = DB::table('HCW_PESO_ESPECIALIDAD')->get();
+                $data = [
+                    'enfermedadActual' => $completos['enfermedadActual'],
+                    'examenFisico' => $completos['examenFisico']['triaje'] || $completos['examenFisico']['examen'],
+                    'tratamiento' => $completos['tratamiento'],
+                    'procedimiento' => $completos['procedimiento']['observaciones'] || $completos['procedimiento']['dataProcedimiento'],
+                    'interconsulta' => $completos['interconsulta']['observaciones'] || $completos['interconsulta']['dataInterconsulta'],
+                    'imagenes' => $completos['imagenes']['observaciones'] || $completos['imagenes']['dataImagenes'],
+                    'laboratorio' => $completos['laboratorio']['observaciones'] || $completos['laboratorio']['dataLaboratorio'],
+                ];
 
-                    $puntaje = 0;
-                    foreach ($puntajes as $rowPuntaje) {
-                        if ($completos['enfermedadActual']) {
-                            if ($rowPuntaje->descripcion == 'enfermedad actual') {
-                                $puntaje = $puntaje + $rowPuntaje->peso;
-                            }
-                        }
-                        if ($completos['examenFisico']['triaje'] || $completos['examenFisico']['examen']) {
-                            if ($rowPuntaje->descripcion == 'examen fisico') {
-                                $puntaje = $puntaje + $rowPuntaje->peso;
-                            }
-                        }
-                        if ($completos['tratamiento']) {
-                            if ($rowPuntaje->descripcion == 'tratamiento') {
-                                $puntaje = $puntaje + $rowPuntaje->peso;
-                            }
-                        }
-                        if ($completos['procedimiento']['observaciones'] || $completos['procedimiento']['dataProcedimiento']) {
-                            if ($rowPuntaje->descripcion == 'procedimiento') {
-                                $puntaje = $puntaje + $rowPuntaje->peso;
-                            }
-                        }
-                        if ($completos['interconsulta']['observaciones'] || $completos['interconsulta']['dataInterconsulta']) {
-                            if ($rowPuntaje->descripcion == 'interconsulta') {
-                                $puntaje = $puntaje + $rowPuntaje->peso;
-                            }
-                        }
-                        if ($completos['imagenes']['observaciones'] || $completos['imagenes']['dataImagenes']) {
-                            if ($rowPuntaje->descripcion == 'imagenes') {
-                                $puntaje = $puntaje + $rowPuntaje->peso;
-                            }
-                        }
-                        if ($completos['laboratorio']['observaciones'] || $completos['laboratorio']['dataLaboratorio']) {
-                            if ($rowPuntaje->descripcion == 'laboratorio') {
-                                $puntaje = $puntaje + $rowPuntaje->peso;
-                            }
+                $puntaje = 0;
+                foreach ($puntajes as $rowPuntaje) {
+                    if ($completos['enfermedadActual']) {
+                        if ($rowPuntaje->descripcion == 'enfermedad actual') {
+                            $puntaje = $puntaje + $rowPuntaje->peso;
                         }
                     }
-
-                    $dataJson = json_encode($data);
-
-                    $reporteAuditoria = ReporteAuditoria::where('COD_PACIENTE', $codPaciente)
-                        ->where('COD_MEDICO', $codMedico)
-                        ->where('HC', $numAtencion)
-                        ->first();
-
-                    if ($reporteAuditoria) {
-                        DB::update('UPDATE HCW_REP_AUDITORIA SET COMPLETOS = :completos , PUNTAJE = :puntaje , ESPECIALIDAD = :especialidad WHERE COD_PACIENTE = :codPaciente AND COD_MEDICO = :codMedico AND HC = :hc', [
-                            'completos' => $dataJson,
-                            'puntaje' => $puntaje,
-                            'especialidad' => $especialidad,
-                            'codPaciente' => $codPaciente,
-                            'codMedico' => $codMedico,
-                            'hc' => $numAtencion
-                        ]);
-                        DB::update('UPDATE HCW_REP_AUDITORIA_V1 SET
-                            enfermedad_actual = :enfermedadActual,
-                            examen_fisico = :examenFisico,
-                            tratamiento = :tratamiento,
-                            procedimiento = :procedimiento,
-                            interconsulta = :interconsulta,
-                            imagenes = :imagenes,
-                            laboratorio = :laboratorio
-                            WHERE REP_AUDITORIA = :idReporteAuditoria',
-                        [
-                            'enfermedadActual' => $data['enfermedadActual'] ? '1' : '0',
-                            'examenFisico' => $data['examenFisico'] ? '1' : '0',
-                            'tratamiento' => $data['tratamiento'] ? '1' : '0',
-                            'procedimiento' => $data['procedimiento'] ? '1' : '0',
-                            'interconsulta' => $data['interconsulta'] ? '1' : '0',
-                            'imagenes' => $data['imagenes'] ? '1' : '0',
-                            'laboratorio' => $data['laboratorio'] ? '1' : '0',
-                            'idReporteAuditoria' => $reporteAuditoria->id
-                        ]);
-                    } else {
-                        $id_rep = round(((microtime(true)) * 1000)) . 'DT' . uniqid();
-                        ReporteAuditoria::insert([
-                            'COD_PACIENTE' => $codPaciente,
-                            'COD_MEDICO' => $codMedico,
-                            'ESPECIALIDAD' => $especialidad,
-                            'HC' => $numAtencion,
-                            'COMPLETOS' => $dataJson,
-                            'PUNTAJE' => $puntaje,
-                            'FECHA' => date('Y-m-d H:i:s'),
-                            'NOM_PACIENTE' => $nomPaciente,
-                            'NOM_MEDICO' => $nomMedico,
-                            'ID' => $id_rep
-                        ]);
-
-                        DB::insert('insert into HCW_REP_AUDITORIA_V1 
-                        (
-                            id_rep,
-                            rep_auditoria,
-                            enfermedad_actual,
-                            examen_fisico,
-                            tratamiento,
-                            procedimiento,
-                            interconsulta,
-                            imagenes,
-                            laboratorio
-                        ) values (?,?,?,?,?,?,?,?,?)',
-                        [
-                            round(((microtime(true)) * 1000)) . 'DTV' . uniqid(),
-                            $id_rep,
-                            $data['enfermedadActual'] ? '1' : '0',
-                            $data['examenFisico'] ? '1' : '0',
-                            $data['tratamiento'] ? '1' : '0',
-                            $data['procedimiento'] ? '1' : '0',
-                            $data['interconsulta'] ? '1' : '0',
-                            $data['imagenes'] ? '1' : '0',
-                            $data['laboratorio'] ? '1' : '0'
-                        ]);
+                    if ($completos['examenFisico']['triaje'] || $completos['examenFisico']['examen']) {
+                        if ($rowPuntaje->descripcion == 'examen fisico') {
+                            $puntaje = $puntaje + $rowPuntaje->peso;
+                        }
                     }
+                    if ($completos['tratamiento']) {
+                        if ($rowPuntaje->descripcion == 'tratamiento') {
+                            $puntaje = $puntaje + $rowPuntaje->peso;
+                        }
+                    }
+                    if ($completos['procedimiento']['observaciones'] || $completos['procedimiento']['dataProcedimiento']) {
+                        if ($rowPuntaje->descripcion == 'procedimiento') {
+                            $puntaje = $puntaje + $rowPuntaje->peso;
+                        }
+                    }
+                    if ($completos['interconsulta']['observaciones'] || $completos['interconsulta']['dataInterconsulta']) {
+                        if ($rowPuntaje->descripcion == 'interconsulta') {
+                            $puntaje = $puntaje + $rowPuntaje->peso;
+                        }
+                    }
+                    if ($completos['imagenes']['observaciones'] || $completos['imagenes']['dataImagenes']) {
+                        if ($rowPuntaje->descripcion == 'imagenes') {
+                            $puntaje = $puntaje + $rowPuntaje->peso;
+                        }
+                    }
+                    if ($completos['laboratorio']['observaciones'] || $completos['laboratorio']['dataLaboratorio']) {
+                        if ($rowPuntaje->descripcion == 'laboratorio') {
+                            $puntaje = $puntaje + $rowPuntaje->peso;
+                        }
+                    }
+                }
+
+                $dataJson = json_encode($data);
+
+                $reporteAuditoria = ReporteAuditoria::where('COD_PACIENTE', $codPaciente)
+                    ->where('COD_MEDICO', $codMedico)
+                    ->where('HC', $numAtencion)
+                    ->first();
+
+                if ($reporteAuditoria) {
+                    DB::update('UPDATE HCW_REP_AUDITORIA SET COMPLETOS = :completos , PUNTAJE = :puntaje , ESPECIALIDAD = :especialidad , ESTADO = :estado WHERE ID = :id', [
+                        'completos' => $dataJson,
+                        'puntaje' => $puntaje,
+                        'especialidad' => $especialidad,
+                        'estado' => $estadoConsultaData['codestadonew'],
+                        'id' => $reporteAuditoria['ID']
+                    ]);
+                    DB::update('UPDATE HCW_REP_AUDITORIA_V1 SET
+                        enfermedad_actual = :enfermedadActual,
+                        examen_fisico = :examenFisico,
+                        tratamiento = :tratamiento,
+                        procedimiento = :procedimiento,
+                        interconsulta = :interconsulta,
+                        imagenes = :imagenes,
+                        laboratorio = :laboratorio
+                        WHERE rep_auditoria = :idReporteAuditoria',
+                    [
+                        'enfermedadActual' => $data['enfermedadActual'] ? '1' : '0',
+                        'examenFisico' => $data['examenFisico'] ? '1' : '0',
+                        'tratamiento' => $data['tratamiento'] ? '1' : '0',
+                        'procedimiento' => $data['procedimiento'] ? '1' : '0',
+                        'interconsulta' => $data['interconsulta'] ? '1' : '0',
+                        'imagenes' => $data['imagenes'] ? '1' : '0',
+                        'laboratorio' => $data['laboratorio'] ? '1' : '0',
+                        'idReporteAuditoria' => $reporteAuditoria['ID']
+                    ]);
+                } else {
+                    $id_rep = round(((microtime(true)) * 1000)) . 'DT' . uniqid();
+                    ReporteAuditoria::insert([
+                        'COD_PACIENTE' => $codPaciente,
+                        'COD_MEDICO' => $codMedico,
+                        'ESPECIALIDAD' => $especialidad,
+                        'HC' => $numAtencion,
+                        'COMPLETOS' => $dataJson,
+                        'PUNTAJE' => $puntaje,
+                        'FECHA' => date('Y-m-d H:i:s'),
+                        'NOM_PACIENTE' => $nomPaciente,
+                        'NOM_MEDICO' => $nomMedico,
+                        'estado' => $estadoConsultaData['codestadonew'],
+                        'ID' => $id_rep
+                    ]);
+
+                    DB::insert('insert into HCW_REP_AUDITORIA_V1
+                    (
+                        id_rep,
+                        rep_auditoria,
+                        enfermedad_actual,
+                        examen_fisico,
+                        tratamiento,
+                        procedimiento,
+                        interconsulta,
+                        imagenes,
+                        laboratorio
+                    ) values (?,?,?,?,?,?,?,?,?)',
+                    [
+                        round(((microtime(true)) * 1000)) . 'DTV' . uniqid(),
+                        $id_rep,
+                        $data['enfermedadActual'] ? '1' : '0',
+                        $data['examenFisico'] ? '1' : '0',
+                        $data['tratamiento'] ? '1' : '0',
+                        $data['procedimiento'] ? '1' : '0',
+                        $data['interconsulta'] ? '1' : '0',
+                        $data['imagenes'] ? '1' : '0',
+                        $data['laboratorio'] ? '1' : '0'
+                    ]);
                 }
 
                 $cursor = oci_new_cursor($conn);

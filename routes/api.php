@@ -22,6 +22,7 @@ Route::post('/pacientes/setHospitalizacion', 'App\Http\Controllers\PacientesCont
 Route::post('/pacientes/updateHospitalizacion', 'App\Http\Controllers\PacientesController@actualizarHospi');
 Route::post('/pacientes/upsertPaciente', 'App\Http\Controllers\PacientesController@upsertPaciente');
 Route::post('/pacientes/searchPacientes', 'App\Http\Controllers\PacientesController@searchPacientes');
+Route::post('/pacientes/getAtencionPaciente', 'App\Http\Controllers\PacientesController@obtenerAtencionPaciente');
 
 //DATA SELECT
 Route::get('/combo/maestro', 'App\Http\Controllers\SelectController@maestro');

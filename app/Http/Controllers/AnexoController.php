@@ -295,7 +295,7 @@ class AnexoController extends Controller
      */
     public function TipoAnexos(Request $request)
     {
-        $anexos = DB::select('select * from pbl_tab_gral where ID_TAB_GRAL = 1000');
+        $anexos = DB::select("select * from pbl_tab_gral where ID_TAB_GRAL = '1001'");
         return CustomResponse::success('Datos encontrados', $anexos);
     }
 }

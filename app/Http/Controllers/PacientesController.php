@@ -1396,4 +1396,76 @@ class PacientesController extends Controller
             }
         }
     }
+
+    public function obtenerAtencionPaciente(Request $request) {
+        $nroAtencion = $request->input('nroAtencion');
+        $codPaciente = $request->input('codPaciente');
+
+        $validator = Validator::make($request->all(), [
+            'nroAtencion' => 'required',
+            'codPaciente' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, "SELECT
+                A.COD_CIA, 
+                A.ESTADO AS COD_ESTADO,
+                A.COD_GRUPO_CIA,
+                A.COD_LOCAL,
+                A.COD_MEDICO,
+                A.COD_PACIENTE,
+                C.DESCRIPCION,
+                A.NUM_ATEN_MED,
+                A.NUM_ORDEN_VTA,
+                DECODE(A.ESTADO, 'T', 'PEND.TRIAJE', 'P', 'PEND.ATENCION', 'C', 'EN CONSULTA', 'A', 'ATENDIDO', 'G', 'GRABADO TEMPORAL','ERROR') AS ESTADO,
+                CONCAT(TRIM(M.DES_APE_MEDICO), CONCAT(' ', TRIM(M.DES_NOM_MEDICO))) AS MEDICO,
+                CONCAT(P.APE_PAT_CLI, CONCAT(' ', CONCAT(P.APE_MAT_CLI, CONCAT(' ', P.NOM_CLI)))) AS NOMBRE,
+                A.IND_ANULADO,
+                C.ID_CONSULTORIO,
+                H.NRO_HC_FISICA,
+                H.NRO_HC_ACTUAL,
+                D.DESCRIPCION AS ESPECIALIDAD,
+                TO_CHAR(A.FEC_CREA, 'DD/MM/YYYY') AS FEC_CREA,
+                TO_CHAR(A.FEC_CREA, 'HH24:MI:SS') AS FEC_CREA_HORA
+            FROM 
+                CME_ATENCION_MEDICA A,
+                CC_CONSULTORIO C,
+                CME_PACIENTE P,
+                CME_HISTORIA_CLINICA H,
+                MAESTRO_DETALLE D,
+                MAE_MEDICO M
+            WHERE
+                P.Cod_Paciente = :codPaciente AND
+                A.num_aten_med = :nroAtencion AND
+                A.ID_CONSULTORIO = C.ID_CONSULTORIO AND
+                A.COD_MAES_DET = D.COD_MAES_DET AND
+                A.COD_GRUPO_CIA = H.COD_GRUPO_CIA AND
+                A.COD_PACIENTE = H.COD_PACIENTE AND
+                A.COD_MEDICO = M.COD_MEDICO
+            ");
+
+            oci_bind_by_name($stid, ":codPaciente", $codPaciente);
+            oci_bind_by_name($stid, ":nroAtencion", $nroAtencion);
+            oci_execute($stid);
+            
+            $lista = [];
+            while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
+                array_push($lista, $row);
+            }
+
+            if (count($lista) == 1) {
+                return CustomResponse::success("Dato Encontrados", $lista[0]);
+            } else {
+                return CustomResponse::success("Dato no Encontrado", []);
+            }
+            oci_close($conn);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
 }
