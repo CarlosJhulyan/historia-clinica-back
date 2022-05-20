@@ -335,4 +335,16 @@ class AdminController extends Controller
             return CustomResponse::failure('Error: ' . $th->getMessage());
         }
     }
+
+    public function obtenerVersionSistemaWeb() {
+        try {
+            $data = DB::select('SELECT * FROM REL_APLICACION_VERSION_WEB WHERE FLG_PERMITIDO = 1');
+            if (count($data) <= 0) {
+                return CustomResponse::failture('No se encontro una versión permitida del sistema.');
+            }
+            return CustomResponse::success('Nueva version encontrada.', $data[0]);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure('Error en los servidores');
+        }
+    }
 }

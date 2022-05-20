@@ -99,6 +99,24 @@ Route::post('/consulta/getExamenesLaboratorio', 'App\Http\Controllers\ConsultaCo
 Route::post('/procedimientos/getProcedimientos', 'App\Http\Controllers\ProcedimientosController@getProcedimientos');
 Route::post('/procedimientos/setProcedimientos', 'App\Http\Controllers\ProcedimientosController@setProcedimientos');
 
+Route::post('triaje/upsertTriaje', 'App\Http\Controllers\ConsultaController@upsertTriaje');
+Route::post('triaje/getTriajeLista', 'App\Http\Controllers\ConsultaController@getListaTriaje');
+Route::post('triaje/getTriaje', 'App\Http\Controllers\ConsultaController@traerTriaje');
+
+Route::post('pedido/getPedidoCabecera', 'App\Http\Controllers\ConsultaController@busquedaPedidoCabecera');
+Route::post('pedido/getPedidoDetalles', 'App\Http\Controllers\ConsultaController@busquedaPedidoDetalles');
+Route::post('pedido/verificacionPedido', 'App\Http\Controllers\ConsultaController@verificarPedido');
+
+Route::post('orden/getOrdenCabecera', 'App\Http\Controllers\ConsultaController@busquedaOrdenCabecera');
+Route::post('orden/getOrdenDetalles', 'App\Http\Controllers\ConsultaController@busquedaOrdenDetalles');
+
+Route::post('comprobante/getComprobantesPago', 'App\Http\Controllers\ConsultaController@obtenerComprobantesPago');
+Route::post('comprobante/getCorrelativoMontoNeto', 'App\Http\Controllers\ConsultaController@obtenerCorrelativoMontoNeto');
+Route::post('consultaMedica/getEspecialidades', 'App\Http\Controllers\ConsultaController@obtenerEspecialidadConsultaMedico');
+Route::post('consultaMedica/getConsultorios', 'App\Http\Controllers\ConsultaController@obtenerConsultorioConsultaMedico');
+Route::post('consultaMedica/setConfirmarRecepcion', 'App\Http\Controllers\ConsultaController@setConfirmarRecepcion');
+
+
 // ADMIN
 Route::post('/admin/getEspecialidades', 'App\Http\Controllers\AdminController@getEspecialidades');
 Route::post('/admin/getListaAtenciones', 'App\Http\Controllers\AdminController@getListaAtenciones');
@@ -163,6 +181,15 @@ Route::post('/vitales/getOneSignosVitales', 'App\Http\Controllers\SignosVitalesC
 Route::post('/vitales/createSignosVitales', 'App\Http\Controllers\SignosVitalesController@createSignosVitales');
 Route::post('/vitales/updateSignosVitales', 'App\Http\Controllers\SignosVitalesController@updateSignosVitales');
 
+// KARDEX
+Route::post('/kardex/getKardex', 'App\Http\Controllers\KardexController@getKardex');
+Route::post('/kardex/getHistorialKardex', 'App\Http\Controllers\KardexController@getKardexHistorialTratamiento');
+Route::post('/kardex/getFechaAtencion', 'App\Http\Controllers\KardexController@getFechaAtencion');
+Route::post('/kardex/setKardexTratamiento', 'App\Http\Controllers\KardexController@setKardexTratamiento');
+Route::post('/kardex/setKardexExamen', 'App\Http\Controllers\KardexController@setKardexExamen');
+Route::post('/kardex/setKardexInterconsulta', 'App\Http\Controllers\KardexController@setKardexInterconsulta');
+Route::post('/kardex/setKardexEspecial', 'App\Http\Controllers\KardexController@setKardexEspecial');
+
 // REPORTES AUDITORIA
 Route::post('/auditoria/getAuditoria', 'App\Http\Controllers\ReportController@getAuditoria');
 Route::post('/auditoria/getAuditoriaxEspecialidad', 'App\Http\Controllers\ReportController@getAuditoriaEspecialidades');
@@ -174,3 +201,12 @@ Route::post('/evolucionEnfermeria/setData', 'App\Http\Controllers\EvolucionEnfer
 Route::post('/evolucionEnfermeria/getByFecha', 'App\Http\Controllers\EvolucionEnfermeriaController@filtrarEEPorFecha');
 Route::post('/evolucionEnfermeria/getPacientes', 'App\Http\Controllers\EvolucionEnfermeriaController@getPacientes');
 Route::post('/evolucionEnfermeria/getMedicos', 'App\Http\Controllers\EvolucionEnfermeriaController@getMedicos');
+
+// PRE TRIAJE
+Route::post('/preTriaje/setPreTriaje', 'App\Http\Controllers\ConsultaController@generarPreTriaje');
+Route::post('/preTriaje/searchPreTriaje', 'App\Http\Controllers\ConsultaController@busquedaPreTriaje');
+Route::post('/preTriaje/searchPacientes', 'App\Http\Controllers\ConsultaController@busquedaPreTriajePacientes');
+Route::post('/preTriaje/searchMedicos', 'App\Http\Controllers\ConsultaController@busquedaPreTriajeMedicos');
+
+// VERSION SISTEMA
+Route::post('/sistema/getVersion', 'App\Http\Controllers\AdminController@obtenerVersionSistemaWeb');

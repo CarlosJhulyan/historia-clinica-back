@@ -18,6 +18,7 @@ use App\Models\SugInterconsulta;
 use App\Models\SugLaboratorio;
 use App\Models\SugProcedimiento;
 use App\Models\SugTratamiento;
+use App\Models\PreTriaje;
 use App\Oracle\OracleDB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -2109,6 +2110,880 @@ class ConsultaController extends Controller
             return CustomResponse::failure('Error: ' . $th->getMessage());
         }
     }
+
+    public function upsertTriaje(Request $request) {
+        $codPaciente = $request->input('COD_PACIENTE');
+        $nroHC = $request->input('NUM_HC');
+        $asignacion = $request->input('ASIGNADO');
+        $fechaNac = $request->input('FECHA_NAC');
+        $paciente = $request->input('PACIENTE');
+        $usuCrea = $request->input('USU_CREA');
+
+        $nPA1 = $request->input('PA1');
+        $nPA2 = $request->input('PA2');
+        $nFR = $request->input('FR');
+        $nFC = $request->input('FC');
+        $nTemp = $request->input('TEMP');
+        $nPeso = $request->input('PESO');
+        $nTalla = $request->input('TALLA');
+        $nSaturacion = $request->input('SATURACION');
+
+        $codGrupoCia = '001';
+        $cCodCia = '001';
+        $cCodLocal = '001';
+
+        $validator = Validator::make($request->all(), [
+            'PA1' => 'required',
+            'PA2' => 'required',
+            'FR' => 'required',
+            'FC' => 'required',
+            'TEMP' => 'required',
+            'PESO' => 'required',
+            'TALLA' => 'required',
+            'SATURACION' => 'required',
+            'COD_PACIENTE' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes.');
+        }
+
+        try {
+            $triajeSearch = DB::select('SELECT * FROM HCW_DATOS_CLI_TICKET c WHERE c.COD_PACIENTE = ?', [$codPaciente]);
+
+            if ($triajeSearch) {
+                DB::update('UPDATE HCW_DATOS_TRIAJE_TICKET t SET t.PA_1=?,t.PA_2=?,t.FR=?,t.FC=?,t.TEMP=?,t.PESO=?,t.TALLA=?,t.SATURACION_OXIGENO=? WHERE t.ID=?', [
+                    $nPA1,
+                    $nPA2,
+                    $nFR,
+                    $nFC,
+                    $nTemp,
+                    $nPeso,
+                    $nTalla,
+                    $nSaturacion,
+                    $triajeSearch[0]->triaje
+                ]);
+                DB::update('UPDATE HCW_DATOS_CLI_TICKET t SET t.USU_MOD=?,t.FEC_MOD=? WHERE t.TRIAJE=?', [
+                    $usuCrea,
+                    date('Y-m-d H:i:s'),
+                    $triajeSearch[0]->triaje
+                ]);
+                return CustomResponse::success('Triaje actualizado.');
+            }
+
+            $idTriaje = round(((microtime(true)) * 1000)) . 'DTT' . uniqid();
+            $data = DB::insert('INSERT INTO HCW_DATOS_TRIAJE_TICKET (ID,PA_1,PA_2,FR,FC,TEMP,PESO,TALLA,SATURACION_OXIGENO) VALUES(?,?,?,?,?,?,?,?,?)', [
+                $idTriaje,
+                $nPA1,
+                $nPA2,
+                $nFR,
+                $nFC,
+                $nTemp,
+                $nPeso,
+                $nTalla,
+                $nSaturacion,
+            ]);
+            $dataTriaje = DB::insert('INSERT INTO HCW_DATOS_CLI_TICKET (ID,COD_GRUPO_CIA,COD_CIA,COD_LOCAL,COD_PACIENTE,NRO_HC,ASIGNADO,PACIENTE,FECHA_NAC,USU_CREA,TRIAJE) VALUES(?,?,?,?,?,?,?,?,?,?,?)', [
+                round(((microtime(true)) * 1000)) . 'DCT' . uniqid(),
+                $codGrupoCia,
+                $cCodCia,
+                $cCodLocal,
+                $codPaciente,
+                $nroHC,
+                $asignacion,
+                $paciente,
+                $fechaNac,
+                $usuCrea,
+                $idTriaje
+            ]);
+            return CustomResponse::success('Triaje Registrado.', $dataTriaje);
+        } catch (Throwable $e) {
+            error_log($e->getMessage());
+            if (str_contains($e, 'value larger than specified precision')) {
+                return CustomResponse::failure('Datos invalidos.');
+            }
+            return CustomResponse::failure($e->getMessage());
+        }
+    }
+
+    public function traerTriaje(Request $request) {
+        $codPaciente = $request->input('COD_PACIENTE');
+
+        $validator = Validator::make($request->all(), [
+            'COD_PACIENTE' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes.');
+        }
+
+        try {
+            $data = DB::select('SELECT t.PA_1, t.PA_2, t.FC, t.FR, t.PESO, t.TEMP, t.TALLA, t.SATURACION_OXIGENO FROM HCW_DATOS_CLI_TICKET c, HCW_DATOS_TRIAJE_TICKET t WHERE c.TRIAJE = t.ID AND c.COD_PACIENTE = ?', [$codPaciente]);
+            if (count($data) === 1) {
+                return CustomResponse::success('Datos encontrados.', $data[0]);
+            } else {
+                return CustomResponse::success('No encontrado.', []);
+            }
+        } catch (\Throwable $th) {
+            return CustomResponse::failure('Error en los servidores');
+        }
+    }
+
+    public function getListaTriaje() {
+        try {
+            $data = DB::select('SELECT * FROM HCW_DATOS_CLI_TICKET');
+            return CustomResponse::success('Datos encontrados.', $data);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure('Error en los servidores');
+        }
+    }
+
+    // Pre Triaje
+
+    public function generarPreTriaje(Request $request) {
+        $codPaciente = $request->input('COD_PACIENTE');
+        $nroHC = $request->input('NUM_HC');
+        $fechaToma = $request->input('FECHA_TOMA');
+        $paciente = $request->input('PACIENTE');
+        $usuCrea = $request->input('USU_CREA');
+        $codUsuCrea = $request->input('COD_USU_CREA');
+
+        $nPA1 = $request->input('PA1');
+        $nPA2 = $request->input('PA2');
+        $nFR = $request->input('FR');
+        $nFC = $request->input('FC');
+        $nTemp = $request->input('TEMP');
+        $nPeso = $request->input('PESO');
+        $nTalla = $request->input('TALLA');
+        $nSaturacion = $request->input('SATURACION');
+
+        $codGrupoCia = '001';
+        $cCodCia = '001';
+        $cCodLocal = '001';
+
+        $validator = Validator::make($request->all(), [
+            'PA1' => 'required',
+            'PA2' => 'required',
+            'FR' => 'required',
+            'FC' => 'required',
+            'TEMP' => 'required',
+            'PESO' => 'required',
+            'TALLA' => 'required',
+            'SATURACION' => 'required',
+            'COD_PACIENTE' => 'required',
+            'COD_USU_CREA' =>  'required',
+            'FECHA_TOMA' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes.');
+        }
+
+        try {
+            $dataPreTriaje = DB::insert('INSERT INTO HCW_PRE_TRIAJE (
+                ID,
+                COD_GRUPO_CIA,
+                COD_CIA,
+                COD_LOCAL,
+                COD_PACIENTE,
+                NRO_HC,
+                PACIENTE,
+                FEC_TOMA,
+                USU_CREA,
+                COD_USU_CREA,
+                PA_1,
+                PA_2,
+                FR,
+                FC,
+                TEMP,
+                PESO,
+                TALLA,
+                SATURACION_OXIGENO
+            ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [
+                round(((microtime(true)) * 1000)) . 'PT' . uniqid(),
+                $codGrupoCia,
+                $cCodCia,
+                $cCodLocal,
+                $codPaciente,
+                $nroHC,
+                $paciente,
+                $fechaToma,
+                $usuCrea,
+                $codUsuCrea,
+                $nPA1,
+                $nPA2,
+                $nFR,
+                $nFC,
+                $nTemp,
+                $nPeso,
+                $nTalla,
+                $nSaturacion
+            ]);
+            return CustomResponse::success('Pre triaje generado.', $dataPreTriaje);
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            if (str_contains($th, 'value larger than specified precision')) {
+                return CustomResponse::failure('Datos invalidos.');
+            }
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    public function busquedaPreTriaje(Request $request) {
+        $fechaInicio = $request->input('FECHA_INICIO');
+        $fechaFin = $request->input('FECHA_FIN');
+        $cmp = $request->input('NUM_CMP');
+        $codPaciente = $request->input('COD_PACIENTE');
+
+        $validator = Validator::make($request->all(), [
+            'FECHA_INICIO' => 'required',
+            'FECHA_FIN' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return CustomResponse::failure('Rango de fecha necesario.');
+        }
+
+        try {
+            $data = PreTriaje::select('*')
+                ->whereBetween('FEC_TOMA', [$fechaInicio, $fechaFin])
+                ->orderBy('FEC_TOMA', 'DESC')
+                ->get();
+
+            return CustomResponse::success('Datos obtenidos', $data);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure('Ocurrió un error en los servidores');
+        }
+    }
+
+    public function busquedaPreTriajePacientes(Request $request) {
+        $nomPaciente = $request->input('NOM_PACIENTE');
+
+        $validator = Validator::make($request->all(), [
+            'NOM_PACIENTE' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('No se esta ingresando el nombre del paciente.');
+        }
+
+        try {
+            $data = PreTriaje::select('PACIENTE', 'COD_PACIENTE as KEY', 'PACIENTE as VALUE')
+                ->where('PACIENTE', 'like', '%'. strtoupper($nomPaciente) .'%')
+                ->limit(20)
+                ->get();
+            
+            return CustomResponse::success('Pacientes encontrados.', $data);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    public function busquedaPreTriajeMedicos(Request $request) {
+        $nomMedico = $request->input('NOM_MEDICO');
+
+        $validator = Validator::make($request->all(), [
+            'NOM_MEDICO' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('No se esta ingresando el nombre del médico.');
+        }
+
+        try {
+            $data = PreTriaje::select(DB::raw('concat(MAE_MEDICO.DES_NOM_MEDICO, concat(\' \', trim(MAE_MEDICO.DES_APE_MEDICO))) as MEDICO'), 'COD_USU_CREA as KEY', DB::raw('concat(MAE_MEDICO.DES_NOM_MEDICO, concat(\' \', trim(MAE_MEDICO.DES_APE_MEDICO))) as VALUE'))
+                ->join('MAE_MEDICO', 'NUM_CMP', '=', 'COD_USU_CREA')
+                ->where('MAE_MEDICO.DES_NOM_MEDICO', 'like', '%'. strtoupper($nomMedico) .'%')
+                ->limit(20)
+                ->get();
+            
+            return CustomResponse::success('Medicos encontrados.', $data);
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    // CONSULTA ADMISION
+
+    public function busquedaPedidoCabecera(Request $request) {
+        $numPedido = $request->input('NUM_PEDIDO');
+        $codGrupoCia = '001';
+        $cCodLocal = '001';
+        $numComprobante = '';
+        $tipoPago = '';
+
+        $validator = Validator::make($request->all(), [
+            'NUM_PEDIDO' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('No se ingreso Número de Pedido.');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+            $stid = oci_parse($conn, "BEGIN :result := HHC_LABORATORIO.CAJ_LISTA_CABECERA_PEDIDO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumPedVta_in => :cNumPedVta_in,
+                cNumCompPag => :cNumCompPag,
+                cFlagTipProcPago => :cFlagTipProcPago
+            );END;");
+
+            oci_bind_by_name($stid, ":result", $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cNumPedVta_in", $numPedido);
+            oci_bind_by_name($stid, ":cNumCompPag", $numComprobante);
+            oci_bind_by_name($stid, ":cFlagTipProcPago", $tipoPago);
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'FECHA' => $datos[1],
+                                'MONTO' => $datos[2],
+                                'NUM_DOCUMENTO' => $datos[3],
+                                'PACIENTE' => $datos[4],
+                                'CAJERO' => $datos[5],
+                                'FEC_PENDIENTE' => $datos[6],
+                                'FEC_ENVIO_CONSULTA' => $datos[7],
+                                'FEC_INI_CONSULTA' => $datos[8],
+                                'FEC_FIN_CONSULTA' => $datos[9],
+                                '10' => $datos[10],
+                                'COD_PACIENTE' => $datos[11],
+                                '12' => $datos[12],
+                                '13' => $datos[13],
+                                'NUM_COMP_PAGO' => $datos[14],
+                                '15' => $datos[15],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            if (count($lista) == 0) {
+                return CustomResponse::failure('No existen información con este número de pedido.');
+            }
+            
+            return CustomResponse::success('Cabecera pedido encontrado.', $lista);
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            if (str_contains($th, 'No puede ingresar el pedido por esta opción')) {
+                return CustomResponse::failure('No puede ingresar el pedido por esta opción.');
+            }
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    public function busquedaPedidoDetalles(Request $request) {
+        $numPedido = $request->input('NUM_PEDIDO');
+        $codGrupoCia = '001';
+        $cCodLocal = '001';
+        $numComprobante = '';
+        $tipoPago = '01';
+
+        $validator = Validator::make($request->all(), [
+            'NUM_PEDIDO' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('No se ingreso Número de Pedido.');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+            $stid = oci_parse($conn, "BEGIN :result := HHC_LABORATORIO.CAJ_LISTA_DETALLE_PEDIDO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumPedVta_in => :cNumPedVta_in,
+                cTipComp_in => :cTipComp_in,
+                cNumComp_in => :cNumComp_in
+            );END;");
+
+            oci_bind_by_name($stid, ":result", $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cNumPedVta_in", $numPedido);
+            oci_bind_by_name($stid, ":cTipComp_in", $tipoPago);
+            oci_bind_by_name($stid, ":cNumComp_in", $numComprobante);
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'DESCRIPCION' => $datos[1],
+                                'UNIDAD' => $datos[2],
+                                'PRE_VTA' => $datos[3],
+                                'CANTIDAD' => $datos[4],
+                                'TOTAL' => $datos[5],
+                                'ESPECIALIDAD' => $datos[6]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            if (count($lista) == 0) {
+                return CustomResponse::failure('No existen información con este número de pedido.');
+            }
+            
+            return CustomResponse::success('Detalles pedido encontrado.', $lista);
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    public function busquedaOrdenCabecera(Request $request) {
+        $numOrden = $request->input('NUM_ORDEN');
+        $codGrupoCia = '001';
+        $cCodLocal = '001';
+        $numComprobante = '';
+        $tipoPago = '';
+
+        $validator = Validator::make($request->all(), [
+            'NUM_ORDEN' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('No se ingreso Número de Pedido.');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+            $stid = oci_parse($conn, "BEGIN :result := HHC_LABORATORIO.CAJ_LISTA_CABECERA_ORDEN(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumOrden_in => :cNumOrden_in,
+                cNumCompPag => :cNumCompPag,
+                cFlagTipProcPago => :cFlagTipProcPago
+            );END;");
+
+            oci_bind_by_name($stid, ":result", $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cNumOrden_in", $numOrden);
+            oci_bind_by_name($stid, ":cNumCompPag", $numComprobante);
+            oci_bind_by_name($stid, ":cFlagTipProcPago", $tipoPago);
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'FECHA' => $datos[1],
+                                'MONTO' => $datos[2],
+                                'NUM_DOCUMENTO' => $datos[3],
+                                'PACIENTE' => $datos[4],
+                                'CAJERO' => $datos[5],
+                                'FEC_PENDIENTE' => $datos[6],
+                                'FEC_ENVIO_CONSULTA' => $datos[7],
+                                'FEC_INI_CONSULTA' => $datos[8],
+                                'FEC_FIN_CONSULTA' => $datos[9],
+                                '10' => $datos[10],
+                                'COD_PACIENTE' => $datos[11],
+                                '12' => $datos[12],
+                                '13' => $datos[13],
+                                'NUM_COMP_PAGO' => $datos[14],
+                                'NUM_PEDIDO' => $datos[0],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            if (count($lista) == 0) {
+                return CustomResponse::failure('No existen información con este número de orden.');
+            }
+            
+            return CustomResponse::success('Cabecera orden encontrado.', $lista);
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    public function busquedaOrdenDetalles(Request $request) {
+        $numOrden = $request->input('NUM_ORDEN');
+        $codGrupoCia = '001';
+        $cCodLocal = '001';
+        $numComprobante = '';
+        $tipoPago = '01';
+
+        $validator = Validator::make($request->all(), [
+            'NUM_ORDEN' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('No se ingreso Número de Pedido.');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+            $stid = oci_parse($conn, "BEGIN :result := HHC_LABORATORIO.CAJ_LISTA_DETALLE_ORDEN(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumOrden_in => :cNumOrden_in,
+                cTipComp_in => :cTipComp_in,
+                cNumComp_in => :cNumComp_in
+            );END;");
+
+            oci_bind_by_name($stid, ":result", $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cNumOrden_in", $numOrden);
+            oci_bind_by_name($stid, ":cNumComp_in", $numComprobante);
+            oci_bind_by_name($stid, ":cTipComp_in", $tipoPago);
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'DESCRIPCION' => $datos[1],
+                                'UNIDAD' => $datos[2],
+                                'PRE_VTA' => $datos[3],
+                                'CANTIDAD' => $datos[4],
+                                'TOTAL' => $datos[5],
+                                'ESPECIALIDAD' => $datos[6],
+                                '7' => $datos[7]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            if (count($lista) == 0) {
+                return CustomResponse::failure('No existen información con este número de orden.');
+            }
+            
+            return CustomResponse::success('Cabecera orden encontrado.', $lista);
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    public function obtenerComprobantesPago() {
+        $codGrupoCia = '001';
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+            $stid = oci_parse($conn, "BEGIN :result := PTOVENTA_ADMIN_IMP.IMP_LISTA_TIPOS_COMPROBANTE(cCodGrupoCia_in => :cCodGrupoCia_in);END;");
+            oci_bind_by_name($stid, ":result", $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'descripcion' => $datos[1],
+                                'value' => $datos[0]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success('Lista de comprobantes de pago encontrada.', $lista);
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    public function obtenerCorrelativoMontoNeto(Request $request) {
+        $numComprobante = $request->input('NUM_COMPROBANTE');
+        $fecha = $request->input('FECHA');
+        $numTipoComp = $request->input('TIPO_COMP_PAGO');
+        $codGrupoCia = '001';
+        $cCodLocal = '001';
+
+        $validator = Validator::make($request->all(), [
+            'NUM_COMPROBANTE' => 'required',
+            'TIPO_COMP_PAGO' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes.');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = '';
+            $stid = oci_parse($conn, "BEGIN :result := HHC_LABORATORIO.F_GET_CORRELATIVO_MONTO_NETO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCod_Local_in => :cCod_Local_in,
+                cTipo_Comp_in => :cTipo_Comp_in,
+                cNum_Comp_Pago_in => :cNum_Comp_Pago_in,
+                cFechaPedido_in => :cFechaPedido_in);
+            end;");
+            oci_bind_by_name($stid, ":result", $result, 50, SQLT_CHR);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCod_Local_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cTipo_Comp_in", $numTipoComp);
+            oci_bind_by_name($stid, ":cNum_Comp_Pago_in", $numComprobante);
+            oci_bind_by_name($stid, ":cFechaPedido_in", $fecha);
+            oci_execute($stid);
+
+            $data = explode(';', $result);
+
+            if (count($data) <= 1) {
+                return CustomResponse::failure('No se encontro comprobante.');
+            }
+
+            return CustomResponse::success('Lista de comprobantes de pago encontrada.', [
+                'NUM_PED_VTA' => $data[0],
+                'MONTO' => $data[1],
+                'FECHA' => $data[2],
+            ]);
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    public function verificarPedido(Request $request) {
+        $numPedido = $request->input('NUM_PEDIDO');
+        $monto = $request->input('MONTO');
+        $reclamo = '';
+        $anula = '';
+        $valmin = '';
+        $codGrupoCia = '001';
+        $cCodLocal = '001';
+
+        $validator = Validator::make($request->all(), [
+            'NUM_PEDIDO' => 'required',
+            'MONTO' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes.');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, "BEGIN PTOVENTA_CAJ_ANUL.CAJ_VERIFICA_PEDIDO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumPedVta_in => :cNumPedVta_in,
+                nMontoVta_in => :nMontoVta_in,
+                nIndReclamoNavsat_in => :nIndReclamoNavsat_in,
+                cIndAnulaTodoPedido_in => :cIndAnulaTodoPedido_in,
+                cValMints_in => :cValMints_in);
+            end;");
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cNumPedVta_in", $numPedido);
+            oci_bind_by_name($stid, ":nMontoVta_in", $monto);
+            oci_bind_by_name($stid, ":nIndReclamoNavsat_in", $reclamo);
+            oci_bind_by_name($stid, ":cIndAnulaTodoPedido_in", $anula);
+            oci_bind_by_name($stid, ":cValMints_in", $valmin);
+            oci_execute($stid);
+
+            return CustomResponse::success('Verificación exitosa.');
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            return CustomResponse::failure(substr($th->getMessage(), 26, -91));
+        }
+    }
+
+    public function obtenerEspecialidadConsultaMedico() {
+        $codGrupoCia = '001';
+        $cCodLocal = '001';
+        $usuLocal = '';
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+            $stid = oci_parse($conn, "BEGIN :result :=HHC_LABORATORIO.GET_ESPECIALIDAD(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCod_Local_in => :cCod_Local_in,
+                cSecUsu_local_in => :cSecUsu_local_in);
+            END;");
+            oci_bind_by_name($stid, ":result", $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCod_Local_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cSecUsu_local_in", $usuLocal);
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'value' => $datos[0],
+                                'descripcion' => $datos[1]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success('Lista de especialidades encontrada.', $lista);
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    public function obtenerConsultorioConsultaMedico(Request $request) {
+        $codEspecialidad = $request->input('COD_ESPECIALIDAD');
+        $codGrupoCia = '001';
+        $cCodLocal = '001';
+        $usuLocal = '';
+
+        $validator = Validator::make($request->all(), [
+            'COD_ESPECIALIDAD' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Código de especialidad faltante.');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+            $stid = oci_parse($conn, "BEGIN :result :=HHC_LABORATORIO.GET_CONSULTORIO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCod_Local_in => :cCod_Local_in,
+                cSecUsu_local_in => :cSecUsu_local_in,
+                vIDEspecialidad => :vIDEspecialidad);
+            END;");
+            oci_bind_by_name($stid, ":result", $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCod_Local_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cSecUsu_local_in", $usuLocal);
+            oci_bind_by_name($stid, ":vIDEspecialidad", $codEspecialidad);
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'value' => $datos[0],
+                                'descripcion' => $datos[1]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success('Lista de especialidades encontrada.', $lista);
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    public function setConfirmarRecepcion(Request $request) {
+        $numPedido = $request->input('NUM_PEDIDO');
+        $usuCrea = $request->input('USU_CREA');
+        $codGrupoCia = '001';
+        $cCodLocal = '001';
+
+        $validator = Validator::make($request->all(), [
+            'NUM_PEDIDO' => 'required',
+            'USU_CREA' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes.');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, "BEGIN HHC_LABORATORIO.P_CONFIRMA_RECEPCION(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumPedVta_in => :cNumPedVta_in,
+                cUsuCrea_in => :cUsuCrea_in
+            );END;");
+
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cNumPedVta_in", $numPedido);
+            oci_bind_by_name($stid, ":cUsuCrea_in", $usuCrea);
+            oci_execute($stid);
+
+            return CustomResponse::success('Recepción Confirmada. Realice la consulta.');
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    
 }
 
 

@@ -132,6 +132,10 @@ class PacientesController extends Controller
                             'COD_GRUPO_CIA' => $codGrupoCia,
                         ])
                         ->first();
+                    
+                    $especialidad = DB::select("SELECT * FROM CC_CONSULTORIO C, CC_MEDICO_X_BUS M WHERE C.Id_Consultorio = M.Id_Consultorio AND M.Cod_Medico =?", [$atencionMedica['cod_medico']]);
+                    $lista[$key]['ESPECIALIDAD'] = $especialidad[0]->descripcion;
+                    
                     $lista[$key]['COD_CIA'] = $atencionMedica['cod_cia'];
                     if ($hospitalizacion) {
                         $lista[$key]['ASIGNADO'] = $hospitalizacion['asignado'];
