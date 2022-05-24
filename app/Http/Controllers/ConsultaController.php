@@ -2462,7 +2462,7 @@ class ConsultaController extends Controller
                                 '12' => $datos[12],
                                 '13' => $datos[13],
                                 'NUM_COMP_PAGO' => $datos[14],
-                                '15' => $datos[15],
+                                '15' => $datos[15]
                             ]
                         );
                     }
@@ -2983,7 +2983,264 @@ class ConsultaController extends Controller
         }
     }
 
-    
+    public function insertarAtencionMedica(Request $request) {
+        $tipoComp = $request->input('TIPO_COMPROBANTE');
+        $numComp = $request->input('NUM_COMPROBANTE');
+        $usuCrea = $request->input('USU_CREA');
+        $numPedido = $request->input('NUM_PEDIDO');
+        $codPaciente = $request->input('COD_PACIENTE');
+        $codMedico = $request->input('COD_MEDICO');
+        $estado = $request->input('ESTADO');
+        $codConsulta = '1';
+        $codTipoAtencion = $request->input('COD_TIPO_ATENCION');
+        $codConsultorio = $request->input('COD_ESPECIALIDAD');
+        $numOrden = 'N';
+        $codBus = $request->input('COD_BUS');
+
+        $codGrupoCia = '001';
+        $cCodLocal = '001';
+        $cCodCia = '001';
+
+        $validator = Validator::make($request->all(), [
+            'NUM_PEDIDO' => 'required',
+            'USU_CREA' => 'required',
+            'COD_PACIENTE' => 'required',
+            'COD_MEDICO' => 'required',
+            'COD_ESPECIALIDAD' => 'required',
+            'COD_BUS' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes.');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = '';
+            $stid = oci_parse($conn, "BEGIN :result := PTOVENTA_CME_ADM.CME_INSERT_ATENCION_MEDICA(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodCia_in => :cCodCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cUsu_in => :cUsu_in,
+                cTipComPago_in => :cTipComPago_in,
+                cNumComPago_in => :cNumComPago_in,
+                cNumPedVta_in => :cNumPedVta_in,
+                cCodLocalVta_in => :cCodLocalVta_in,
+                vCodPaciente => :vCodPaciente,
+                vCodMedico => :vCodMedico,
+                vEstado => :vEstado,
+                vCodConsulta => :vCodConsulta,
+                vCodTipAten => :vCodTipAten,
+                vIdConsultorio_in => :vIdConsultorio_in,
+                vIdBus_in => :vIdBus_in,
+                vOrdenMedica_in => :vOrdenMedica_in
+            );end;");
+            oci_bind_by_name($stid, ":result", $result, 50, SQLT_CHR);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodCia_in", $cCodCia);
+            oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cUsu_in", $usuCrea);
+            oci_bind_by_name($stid, ":cTipComPago_in", $tipoComp);
+            oci_bind_by_name($stid, ":cNumComPago_in", $numComprobante);
+            oci_bind_by_name($stid, ":cNumPedVta_in", $numPedido);
+            oci_bind_by_name($stid, ":cCodLocalVta_in", $cCodLocal);
+            oci_bind_by_name($stid, ":vCodPaciente", $codPaciente);
+            oci_bind_by_name($stid, ":vCodMedico", $codMedico);
+            oci_bind_by_name($stid, ":vEstado", $estado);
+            oci_bind_by_name($stid, ":vCodConsulta", $codConsulta);
+            oci_bind_by_name($stid, ":vCodTipAten", $codTipoAtencion);
+            oci_bind_by_name($stid, ":vIdConsultorio_in", $codConsultorio);
+            oci_bind_by_name($stid, ":vIdBus_in", $codBus);
+            oci_bind_by_name($stid, ":vOrdenMedica_in", $numOrden);
+
+            oci_execute($stid);
+
+            return CustomResponse::success('Atención médica registrada.', $result);
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            if (str_contains($th, 'ORA-20019')) return CustomResponse::failure(substr($th->getMessage(), 26, -90));
+            return CustomResponse::failure('Error en los servidores');
+        }
+    }
+
+    public function obtenerTipoConsultaModulos(Request $request) {
+        try {
+            $modulos = DB::select("select t.llave_tab_gral, t.cod_tab_gral from pbl_tab_gral t where t.cod_apl = 'HHC_LABORATORIO'");
+            return CustomResponse::success('Modulos encontrados', $modulos);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    public function anularConsultaMedica(Request $request) {
+        $numAtencion = $request->input('NUM_ATENCION');
+        $usuCrea = $request->input('USU_CREA');
+        
+        $codGrupoCia = '001';
+        $cCodCia = '001';
+        $cCodLocal = '001';
+        $tipoComprobante = '';
+        $numComprobante = '';
+
+        $validator = Validator::make($request->all(), [
+            'NUM_ATENCION' => 'required',
+            'USU_CREA' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes.');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = '';
+            $stid = oci_parse($conn, "BEGIN :result := PTOVENTA_CME_ADM.CME_ANULAR_ATENCION_MEDICA(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodCia_in => :cCodCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumAtencion_in => :cNumAtencion_in,
+                cUsuario_in => :cUsuario_in,
+                cTipComPago_in => :cTipComPago_in,
+                cNumComPago_in => :cNumComPago_in
+            );end;");
+
+            oci_bind_by_name($stid, ":result", $result, 1, SQLT_CHR);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodCia_in", $cCodCia);
+            oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cNumAtencion_in", $numAtencion);
+            oci_bind_by_name($stid, ":cUsuario_in", $usuCrea);
+            oci_bind_by_name($stid, ":cTipComPago_in", $tipoComprobante);
+            oci_bind_by_name($stid, ":cNumComPago_in", $numComprobante);
+
+            oci_execute($stid);
+
+            return CustomResponse::success('Atención médica anulada.', $result);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    public function insertarTriaje(Request $request) {
+        $numAtencion = $request->input('NUM_ATENCION');
+        $usuCrea = $request->input('USU_CREA');
+
+        $nPA1 = $request->input('PA1');
+        $nPA2 = $request->input('PA2');
+        $nFR = $request->input('FR');
+        $nFC = $request->input('FC');
+        $nTemp = $request->input('TEMP');
+        $nPeso = $request->input('PESO');
+        $nTalla = $request->input('TALLA');
+        $nSaturacion = $request->input('SATURACION');
+        
+        $codGrupoCia = '001';
+        $cCodCia = '001';
+        $cCodLocal = '001';
+
+        $validator = Validator::make($request->all(), [
+            'NUM_ATENCION' => 'required',
+            'USU_CREA' => 'required',
+            'PA1' => 'required',
+            'PA2' => 'required',
+            'FR' => 'required',
+            'FC' => 'required',
+            'TEMP' => 'required',
+            'PESO' => 'required',
+            'TALLA' => 'required',
+            'SATURACION' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes.');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = '';
+            $stid = oci_parse($conn, "BEGIN :result := PTOVENTA_CME_ADM.CME_INSERT_TRIAJE(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodCia_in => :cCodCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cUsu_in => :cUsu_in,
+                cNumAtenMed_in => :cNumAtenMed_in,
+                nPA1_in => :nPA1_in,
+                nPA2_in => :nPA2_in,
+                nFR_in => :nFR_in,
+                nFC_in => :nFC_in,
+                nTemp_in => :nTemp_in,
+                nPeso_in => :nPeso_in,
+                nTalla_in => :nTalla_in,
+                nSaturacion_in => :nSaturacion_in
+            );end;");
+
+            oci_bind_by_name($stid, ":result", $result, 20, SQLT_CHR);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodCia_in", $cCodCia);
+            oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cUsu_in", $usuCrea);
+            oci_bind_by_name($stid, ":cNumAtenMed_in", $numAtencion);
+            oci_bind_by_name($stid, ":nPA1_in", $nPA1);
+            oci_bind_by_name($stid, ":nPA2_in", $nPA2);
+            oci_bind_by_name($stid, ":nFR_in", $nFR);
+            oci_bind_by_name($stid, ":nFC_in", $nFC);
+            oci_bind_by_name($stid, ":nTemp_in", $nTemp);
+            oci_bind_by_name($stid, ":nPeso_in", $nPeso);
+            oci_bind_by_name($stid, ":nTalla_in", $nTalla);
+            oci_bind_by_name($stid, ":nSaturacion_in", $nSaturacion);
+
+            oci_execute($stid);
+
+            return CustomResponse::success('Triaje generado correctamente.', $result);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
+
+    public function actualizarSolicitudAtencion(Request $request) {
+        $numAtencion = $request->input('NUM_ATENCION');
+        $usuCrea = $request->input('USU_CREA');
+        $codEstado = $request->input('ESTADO');
+        $codGrupoCia = '001';
+        $cCodLocal = '001';
+
+        $validator = Validator::make($request->all(), [
+            'NUM_ATENCION' => 'required',
+            'USU_CREA' => 'required',
+            'ESTADO' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes.');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, "BEGIN CENTRO_MEDICO.F_UPDATE_SOLICITUD_ATENCION(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumAtencion_in => :cNumAtencion_in,
+                cCodEstadoNew_in => :cCodEstadoNew_in,
+                cUsuario_in => :cUsuario_in
+            );end;");
+
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
+            oci_bind_by_name($stid, ":cNumAtencion_in", $numAtencion);
+            oci_bind_by_name($stid, ":cCodEstadoNew_in", $codEstado);
+            oci_bind_by_name($stid, ":cUsuario_in", $usuCrea);
+
+            oci_execute($stid);
+
+            return CustomResponse::success('Atención actualizado correctamente.');
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure('Error en los servidores.');
+        }
+    }
 }
 
 

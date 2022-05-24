@@ -1472,4 +1472,82 @@ class PacientesController extends Controller
             return CustomResponse::failure($th->getMessage());
         }
     }
+
+    public function listaEsperaTriaje(Request $request)
+    {
+        $codGrupoCia = '001';
+        $codEstado = $request->input('codEstado');
+        $codMedico = $request->input('codMedico');
+        $consultorio = $request->input('consultorio');
+        $bus = $request->input('bus');
+
+        $validator = Validator::make($request->all(), [
+            'codEstado' => 'required',
+            'consultorio' => 'required',
+            'bus' => 'required',
+
+        ]);
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        } else {
+            try {
+                $conn = OracleDB::getConnection();
+                $cursor = oci_new_cursor($conn);
+                $stid = oci_parse($conn, "BEGIN :result :=  CENTRO_MEDICO.F_LISTA_ESPERA(
+                    cCodGrupoCia_in => :cCodGrupoCia_in,
+                    cTipoLista_in => :cTipoLista_in,
+                    cCodMedico_in => :cCodMedico_in,
+                    cIdConsultorio_in => :cIdConsultorio_in,
+                    cIdBus_in => :cIdBus_in
+                ); END;");
+                oci_bind_by_name($stid, ":result", $cursor, -1, OCI_B_CURSOR);
+                oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+                oci_bind_by_name($stid, ":cTipoLista_in", $codEstado);
+                oci_bind_by_name($stid, ":cCodMedico_in", $codMedico);
+                oci_bind_by_name($stid, ":cIdConsultorio_in", $consultorio);
+                oci_bind_by_name($stid, ":cIdBus_in", $bus);
+                oci_execute($stid);
+                oci_execute($cursor);
+                $lista = [];
+                if ($stid) {
+                    while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                        foreach ($row as $key => $value) {
+                            $datos = explode('Ã', $value);
+                            array_push(
+                                $lista,
+                                [
+                                    'key' => $datos[12],
+                                    'FECHA' => $datos[0],
+                                    'HORA' => $datos[1],
+                                    'COD_PACIENTE' => $datos[2],
+                                    'PACIENTE' => $datos[3],
+                                    'EDAD' => $datos[4],
+                                    'ESTADO' => $datos[5],
+                                    'NUM_ATEN_MED' => $datos[12],
+                                ]
+                            );
+                        }
+                    }
+                }
+                oci_free_statement($stid);
+                oci_free_statement($cursor);
+                oci_close($conn);
+
+                if (count($lista) == 0) {
+                    return CustomResponse::failure('No se encontro registros.');
+                }
+
+                return response()->json(
+                    [
+                        'success' => true,
+                        'message' => 'Datos encontrados',
+                        'data' => $lista,
+                    ]
+                );
+            } catch (Exception $e) {
+                error_log($e);
+                return CustomResponse::failure($e->getMessage());
+            }
+        }
+    }
 }

@@ -23,6 +23,7 @@ Route::post('/pacientes/updateHospitalizacion', 'App\Http\Controllers\PacientesC
 Route::post('/pacientes/upsertPaciente', 'App\Http\Controllers\PacientesController@upsertPaciente');
 Route::post('/pacientes/searchPacientes', 'App\Http\Controllers\PacientesController@searchPacientes');
 Route::post('/pacientes/getAtencionPaciente', 'App\Http\Controllers\PacientesController@obtenerAtencionPaciente');
+Route::post('/pacientes/getListaEsperaTriaje', 'App\Http\Controllers\PacientesController@listaEsperaTriaje');
 
 //DATA SELECT
 Route::get('/combo/maestro', 'App\Http\Controllers\SelectController@maestro');
@@ -112,9 +113,15 @@ Route::post('orden/getOrdenDetalles', 'App\Http\Controllers\ConsultaController@b
 
 Route::post('comprobante/getComprobantesPago', 'App\Http\Controllers\ConsultaController@obtenerComprobantesPago');
 Route::post('comprobante/getCorrelativoMontoNeto', 'App\Http\Controllers\ConsultaController@obtenerCorrelativoMontoNeto');
-Route::post('consultaMedica/getEspecialidades', 'App\Http\Controllers\ConsultaController@obtenerEspecialidadConsultaMedico');
-Route::post('consultaMedica/getConsultorios', 'App\Http\Controllers\ConsultaController@obtenerConsultorioConsultaMedico');
-Route::post('consultaMedica/setConfirmarRecepcion', 'App\Http\Controllers\ConsultaController@setConfirmarRecepcion');
+Route::post('atencionMedica/getEspecialidades', 'App\Http\Controllers\ConsultaController@obtenerEspecialidadConsultaMedico');
+Route::post('atencionMedica/getConsultorios', 'App\Http\Controllers\ConsultaController@obtenerConsultorioConsultaMedico');
+Route::post('atencionMedica/setConfirmarRecepcion', 'App\Http\Controllers\ConsultaController@setConfirmarRecepcion');
+Route::post('atencionMedica/setConsultaMedica', 'App\Http\Controllers\ConsultaController@insertarAtencionMedica');
+
+Route::post('atencionMedica/getTipoConsultaModulos', 'App\Http\Controllers\ConsultaController@obtenerTipoConsultaModulos');
+Route::post('atencionMedica/setTriaje', 'App\Http\Controllers\ConsultaController@insertarTriaje');
+Route::post('atencionMedica/setAnular', 'App\Http\Controllers\ConsultaController@anularConsultaMedica');
+Route::post('atencionMedica/updateAtencion', 'App\Http\Controllers\ConsultaController@actualizarSolicitudAtencion');
 
 
 // ADMIN
