@@ -2118,6 +2118,8 @@ class ConsultaController extends Controller
         $fechaNac = $request->input('FECHA_NAC');
         $paciente = $request->input('PACIENTE');
         $usuCrea = $request->input('USU_CREA');
+        $numAtencionMedica = $request->input('NUM_ATEN_MED');
+        // $actualizar = $request->input('ACTUALIZAR');
 
         $nPA1 = $request->input('PA1');
         $nPA2 = $request->input('PA2');
@@ -2162,9 +2164,10 @@ class ConsultaController extends Controller
                     $nSaturacion,
                     $triajeSearch[0]->triaje
                 ]);
-                DB::update('UPDATE HCW_DATOS_CLI_TICKET t SET t.USU_MOD=?,t.FEC_MOD=? WHERE t.TRIAJE=?', [
+                DB::update('UPDATE HCW_DATOS_CLI_TICKET t SET t.USU_MOD=?,t.FEC_MOD=?,t.NUM_ATEN_MED=? WHERE t.TRIAJE=?', [
                     $usuCrea,
                     date('Y-m-d H:i:s'),
+                    $numAtencionMedica,
                     $triajeSearch[0]->triaje
                 ]);
                 return CustomResponse::success('Triaje actualizado.');
@@ -2182,7 +2185,7 @@ class ConsultaController extends Controller
                 $nTalla,
                 $nSaturacion,
             ]);
-            $dataTriaje = DB::insert('INSERT INTO HCW_DATOS_CLI_TICKET (ID,COD_GRUPO_CIA,COD_CIA,COD_LOCAL,COD_PACIENTE,NRO_HC,ASIGNADO,PACIENTE,FECHA_NAC,USU_CREA,TRIAJE) VALUES(?,?,?,?,?,?,?,?,?,?,?)', [
+            $dataTriaje = DB::insert('INSERT INTO HCW_DATOS_CLI_TICKET (ID,COD_GRUPO_CIA,COD_CIA,COD_LOCAL,COD_PACIENTE,NRO_HC,ASIGNADO,PACIENTE,FECHA_NAC,USU_CREA,TRIAJE,NUM_ATEN_MED) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)', [
                 round(((microtime(true)) * 1000)) . 'DCT' . uniqid(),
                 $codGrupoCia,
                 $cCodCia,
@@ -2193,7 +2196,8 @@ class ConsultaController extends Controller
                 $paciente,
                 $fechaNac,
                 $usuCrea,
-                $idTriaje
+                $idTriaje,
+                $numAtencionMedica
             ]);
             return CustomResponse::success('Triaje Registrado.', $dataTriaje);
         } catch (Throwable $e) {
@@ -2230,9 +2234,29 @@ class ConsultaController extends Controller
 
     public function getListaTriaje() {
         try {
-            $data = DB::select('SELECT * FROM HCW_DATOS_CLI_TICKET');
-            return CustomResponse::success('Datos encontrados.', $data);
+            $data = DB::select("SELECT * FROM HCW_DATOS_CLI_TICKET T, CME_ATENCION_MEDICA A WHERE T.NUM_ATEN_MED = A.NUM_ATEN_MED AND T.ASIGNADO IS NOT NULL ORDER BY T.FEC_CREA DESC");
+            $lista = [];
+
+            foreach ($data as $key) {
+                array_push($lista, [
+                    'PACIENTE' => $key->paciente,
+                    'COD_GRUPO_CIA' => $key->cod_grupo_cia,
+                    'COD_CIA' => $key->cod_cia,
+                    'COD_LOCAL' => $key->cod_local,
+                    'NRO_HC' => $key->nro_hc,
+                    'ASIGNADO' => $key->asignado,
+                    'FEC_NAC' => $key->fecha_nac,
+                    'FEC_CREA' => $key->fec_crea,
+                    'key' => $key->id,
+                    'COD_PACIENTE' => $key->cod_paciente,
+                    'NUM_ATEN_MED' => $key->num_aten_med,
+                    'ESTADO' => $key->estado
+                ]);
+            }
+            
+            return CustomResponse::success('Datos encontrados.', $lista);
         } catch (\Throwable $th) {
+            error_log($th);
             return CustomResponse::failure('Error en los servidores');
         }
     }
@@ -3002,7 +3026,6 @@ class ConsultaController extends Controller
         $cCodCia = '001';
 
         $validator = Validator::make($request->all(), [
-            'NUM_PEDIDO' => 'required',
             'USU_CREA' => 'required',
             'COD_PACIENTE' => 'required',
             'COD_MEDICO' => 'required',
@@ -3017,44 +3040,82 @@ class ConsultaController extends Controller
         try {
             $conn = OracleDB::getConnection();
             $result = '';
-            $stid = oci_parse($conn, "BEGIN :result := PTOVENTA_CME_ADM.CME_INSERT_ATENCION_MEDICA(
-                cCodGrupoCia_in => :cCodGrupoCia_in,
-                cCodCia_in => :cCodCia_in,
-                cCodLocal_in => :cCodLocal_in,
-                cUsu_in => :cUsu_in,
-                cTipComPago_in => :cTipComPago_in,
-                cNumComPago_in => :cNumComPago_in,
-                cNumPedVta_in => :cNumPedVta_in,
-                cCodLocalVta_in => :cCodLocalVta_in,
-                vCodPaciente => :vCodPaciente,
-                vCodMedico => :vCodMedico,
-                vEstado => :vEstado,
-                vCodConsulta => :vCodConsulta,
-                vCodTipAten => :vCodTipAten,
-                vIdConsultorio_in => :vIdConsultorio_in,
-                vIdBus_in => :vIdBus_in,
-                vOrdenMedica_in => :vOrdenMedica_in
-            );end;");
-            oci_bind_by_name($stid, ":result", $result, 50, SQLT_CHR);
-            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
-            oci_bind_by_name($stid, ":cCodCia_in", $cCodCia);
-            oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
-            oci_bind_by_name($stid, ":cUsu_in", $usuCrea);
-            oci_bind_by_name($stid, ":cTipComPago_in", $tipoComp);
-            oci_bind_by_name($stid, ":cNumComPago_in", $numComprobante);
-            oci_bind_by_name($stid, ":cNumPedVta_in", $numPedido);
-            oci_bind_by_name($stid, ":cCodLocalVta_in", $cCodLocal);
-            oci_bind_by_name($stid, ":vCodPaciente", $codPaciente);
-            oci_bind_by_name($stid, ":vCodMedico", $codMedico);
-            oci_bind_by_name($stid, ":vEstado", $estado);
-            oci_bind_by_name($stid, ":vCodConsulta", $codConsulta);
-            oci_bind_by_name($stid, ":vCodTipAten", $codTipoAtencion);
-            oci_bind_by_name($stid, ":vIdConsultorio_in", $codConsultorio);
-            oci_bind_by_name($stid, ":vIdBus_in", $codBus);
-            oci_bind_by_name($stid, ":vOrdenMedica_in", $numOrden);
-
-            oci_execute($stid);
-
+            if ($numPedido) {
+                $stid = oci_parse($conn, "BEGIN :result := PTOVENTA_CME_ADM.CME_INSERT_ATENCION_MEDICA(
+                    cCodGrupoCia_in => :cCodGrupoCia_in,
+                    cCodCia_in => :cCodCia_in,
+                    cCodLocal_in => :cCodLocal_in,
+                    cUsu_in => :cUsu_in,
+                    cTipComPago_in => :cTipComPago_in,
+                    cNumComPago_in => :cNumComPago_in,
+                    cNumPedVta_in => :cNumPedVta_in,
+                    cCodLocalVta_in => :cCodLocalVta_in,
+                    vCodPaciente => :vCodPaciente,
+                    vCodMedico => :vCodMedico,
+                    vEstado => :vEstado,
+                    vCodConsulta => :vCodConsulta,
+                    vCodTipAten => :vCodTipAten,
+                    vIdConsultorio_in => :vIdConsultorio_in,
+                    vIdBus_in => :vIdBus_in,
+                    vOrdenMedica_in => :vOrdenMedica_in
+                );end;");
+                oci_bind_by_name($stid, ":result", $result, 50, SQLT_CHR);
+                oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+                oci_bind_by_name($stid, ":cCodCia_in", $cCodCia);
+                oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
+                oci_bind_by_name($stid, ":cUsu_in", $usuCrea);
+                oci_bind_by_name($stid, ":cTipComPago_in", $tipoComp);
+                oci_bind_by_name($stid, ":cNumComPago_in", $numComprobante);
+                oci_bind_by_name($stid, ":cNumPedVta_in", $numPedido);
+                oci_bind_by_name($stid, ":cCodLocalVta_in", $cCodLocal);
+                oci_bind_by_name($stid, ":vCodPaciente", $codPaciente);
+                oci_bind_by_name($stid, ":vCodMedico", $codMedico);
+                oci_bind_by_name($stid, ":vEstado", $estado);
+                oci_bind_by_name($stid, ":vCodConsulta", $codConsulta);
+                oci_bind_by_name($stid, ":vCodTipAten", $codTipoAtencion);
+                oci_bind_by_name($stid, ":vIdConsultorio_in", $codConsultorio);
+                oci_bind_by_name($stid, ":vIdBus_in", $codBus);
+                oci_bind_by_name($stid, ":vOrdenMedica_in", $numOrden);
+    
+                oci_execute($stid);
+            } else {
+                $stid = oci_parse($conn, "BEGIN :result := PTOVENTA_CME_ADM.CME_INSERT_ATENCION_HOSPI(
+                    cCodGrupoCia_in => :cCodGrupoCia_in,
+                    cCodCia_in => :cCodCia_in,
+                    cCodLocal_in => :cCodLocal_in,
+                    cUsu_in => :cUsu_in,
+                    cTipComPago_in => :cTipComPago_in,
+                    cNumComPago_in => :cNumComPago_in,
+                    cCodLocalVta_in => :cCodLocalVta_in,
+                    vCodPaciente => :vCodPaciente,
+                    vCodMedico => :vCodMedico,
+                    vEstado => :vEstado,
+                    vCodConsulta => :vCodConsulta,
+                    vCodTipAten => :vCodTipAten,
+                    vIdConsultorio_in => :vIdConsultorio_in,
+                    vIdBus_in => :vIdBus_in,
+                    vOrdenMedica_in => :vOrdenMedica_in
+                );end;");
+                oci_bind_by_name($stid, ":result", $result, 50, SQLT_CHR);
+                oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+                oci_bind_by_name($stid, ":cCodCia_in", $cCodCia);
+                oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal);
+                oci_bind_by_name($stid, ":cUsu_in", $usuCrea);
+                oci_bind_by_name($stid, ":cTipComPago_in", $tipoComp);
+                oci_bind_by_name($stid, ":cNumComPago_in", $numComprobante);
+                oci_bind_by_name($stid, ":cCodLocalVta_in", $cCodLocal);
+                oci_bind_by_name($stid, ":vCodPaciente", $codPaciente);
+                oci_bind_by_name($stid, ":vCodMedico", $codMedico);
+                oci_bind_by_name($stid, ":vEstado", $estado);
+                oci_bind_by_name($stid, ":vCodConsulta", $codConsulta);
+                oci_bind_by_name($stid, ":vCodTipAten", $codTipoAtencion);
+                oci_bind_by_name($stid, ":vIdConsultorio_in", $codConsultorio);
+                oci_bind_by_name($stid, ":vIdBus_in", $codBus);
+                oci_bind_by_name($stid, ":vOrdenMedica_in", $numOrden);
+    
+                oci_execute($stid);
+            }
+            
             return CustomResponse::success('Atención médica registrada.', $result);
         } catch (\Throwable $th) {
             error_log($th->getMessage());
