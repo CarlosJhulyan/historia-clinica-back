@@ -103,6 +103,7 @@ Route::post('/procedimientos/setProcedimientos', 'App\Http\Controllers\Procedimi
 Route::post('triaje/upsertTriaje', 'App\Http\Controllers\ConsultaController@upsertTriaje');
 Route::post('triaje/getTriajeLista', 'App\Http\Controllers\ConsultaController@getListaTriaje');
 Route::post('triaje/getTriaje', 'App\Http\Controllers\ConsultaController@traerTriaje');
+Route::post('triaje/getExisteTriaje', 'App\Http\Controllers\ConsultaController@traerExistePacienteTriaje');
 
 Route::post('pedido/getPedidoCabecera', 'App\Http\Controllers\ConsultaController@busquedaPedidoCabecera');
 Route::post('pedido/getPedidoDetalles', 'App\Http\Controllers\ConsultaController@busquedaPedidoDetalles');

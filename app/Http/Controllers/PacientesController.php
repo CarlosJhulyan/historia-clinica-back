@@ -672,7 +672,7 @@ class PacientesController extends Controller
         $HOSPITALIZACION    = $request->input('hospitalizacion');
         $URGENCIA       = $request->input('urgencia');
         $HISTORIA_CLINICA       = $request->input('historiaClinica');
-
+        $NUM_ATEN_MED = $request->input('numAtenMed');
         $validator = Validator::make($request->all(), [
             'codGrupoCia' => 'required',
             'codPaciente' => 'required',
@@ -689,8 +689,8 @@ class PacientesController extends Controller
                     'HOSPITALIZACION' => $HOSPITALIZACION,
                     'URGENCIA'   => $URGENCIA,
                     'HISTORIA_CLINICA'   => $HISTORIA_CLINICA,
-                    'ASIGNADO'   => "0",
-                    'NUM_ATENCION_MED' => $HISTORIA_CLINICA
+                    'ASIGNADO'   => "1",
+                    'NUM_ATEN_MED' => $NUM_ATEN_MED
                 ];
                 Hospitalizaciones::insert($datosAlergia);
                 return CustomResponse::success();
@@ -1241,6 +1241,7 @@ class PacientesController extends Controller
                                     'APE_PATERNO' => $datos[4],
                                     'ESTADO' => $datos[8],
                                     'APE_MATERNO' => $datos[5],
+                                    'COD_PACIENTE' => $datos[0]
                                 ]
                             );
                         }

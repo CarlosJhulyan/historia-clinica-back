@@ -2150,28 +2150,28 @@ class ConsultaController extends Controller
         }
 
         try {
-            $triajeSearch = DB::select('SELECT * FROM HCW_DATOS_CLI_TICKET c WHERE c.COD_PACIENTE = ?', [$codPaciente]);
+            // $triajeSearch = DB::select('SELECT * FROM HCW_DATOS_CLI_TICKET c WHERE c.COD_PACIENTE = ?', [$codPaciente]);
 
-            if ($triajeSearch) {
-                DB::update('UPDATE HCW_DATOS_TRIAJE_TICKET t SET t.PA_1=?,t.PA_2=?,t.FR=?,t.FC=?,t.TEMP=?,t.PESO=?,t.TALLA=?,t.SATURACION_OXIGENO=? WHERE t.ID=?', [
-                    $nPA1,
-                    $nPA2,
-                    $nFR,
-                    $nFC,
-                    $nTemp,
-                    $nPeso,
-                    $nTalla,
-                    $nSaturacion,
-                    $triajeSearch[0]->triaje
-                ]);
-                DB::update('UPDATE HCW_DATOS_CLI_TICKET t SET t.USU_MOD=?,t.FEC_MOD=?,t.NUM_ATEN_MED=? WHERE t.TRIAJE=?', [
-                    $usuCrea,
-                    date('Y-m-d H:i:s'),
-                    $numAtencionMedica,
-                    $triajeSearch[0]->triaje
-                ]);
-                return CustomResponse::success('Triaje actualizado.');
-            }
+            // if ($triajeSearch) {
+            //     DB::update('UPDATE HCW_DATOS_TRIAJE_TICKET t SET t.PA_1=?,t.PA_2=?,t.FR=?,t.FC=?,t.TEMP=?,t.PESO=?,t.TALLA=?,t.SATURACION_OXIGENO=? WHERE t.ID=?', [
+            //         $nPA1,
+            //         $nPA2,
+            //         $nFR,
+            //         $nFC,
+            //         $nTemp,
+            //         $nPeso,
+            //         $nTalla,
+            //         $nSaturacion,
+            //         $triajeSearch[0]->triaje
+            //     ]);
+            //     DB::update('UPDATE HCW_DATOS_CLI_TICKET t SET t.USU_MOD=?,t.FEC_MOD=?,t.NUM_ATEN_MED=? WHERE t.TRIAJE=?', [
+            //         $usuCrea,
+            //         date('Y-m-d H:i:s'),
+            //         $numAtencionMedica,
+            //         $triajeSearch[0]->triaje
+            //     ]);
+            //     return CustomResponse::success('Triaje actualizado.');
+            // }
 
             $idTriaje = round(((microtime(true)) * 1000)) . 'DTT' . uniqid();
             $data = DB::insert('INSERT INTO HCW_DATOS_TRIAJE_TICKET (ID,PA_1,PA_2,FR,FC,TEMP,PESO,TALLA,SATURACION_OXIGENO) VALUES(?,?,?,?,?,?,?,?,?)', [
@@ -2209,6 +2209,27 @@ class ConsultaController extends Controller
         }
     }
 
+    public function traerExistePacienteTriaje (Request $request) {
+        $codPaciente = $request->input('COD_PACIENTE');
+
+        $validator = Validator::make($request->all(), [
+            'COD_PACIENTE' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes.');
+        }
+
+        try {
+            $data = DB::select('select count(*) as exist from HCW_CAMAS t where t.paciente = ?', [$codPaciente]);
+            if ($data[0]->exist == 1) {
+                return CustomResponse::failure('Este paciente ya esta asignado.');
+            }
+            return CustomResponse::success('Continuar con el triaje.');
+        } catch (\Throwable $th) {
+            return CustomResponse::failure('Error en los servidores');
+        }
+    }
+
     public function traerTriaje(Request $request) {
         $codPaciente = $request->input('COD_PACIENTE');
 
@@ -2234,7 +2255,19 @@ class ConsultaController extends Controller
 
     public function getListaTriaje() {
         try {
-            $data = DB::select("SELECT * FROM HCW_DATOS_CLI_TICKET T, CME_ATENCION_MEDICA A WHERE T.NUM_ATEN_MED = A.NUM_ATEN_MED AND T.ASIGNADO IS NOT NULL ORDER BY T.FEC_CREA DESC");
+            $data = DB::select("SELECT t.*, a.estado FROM 
+                                HCW_DATOS_CLI_TICKET T,
+                                CME_ATENCION_MEDICA A,
+                                HCW_HOSPITALIZACION HOSP 
+                                WHERE T.NUM_ATEN_MED = A.NUM_ATEN_MED 
+                                AND EXISTS (
+                                SELECT * FROM HCW_CAMAS CAM WHERE 
+                                T.COD_PACIENTE = CAM.PACIENTE
+                                AND HOSP.NUM_ATEN_MED = T.NUM_ATEN_MED
+                                AND HOSP.MOTIVO_BAJA is null
+                                AND CAM.ESTADO = 1
+                                )
+                                AND T.ASIGNADO IS NOT NULL ORDER BY T.FEC_CREA DESC");
             $lista = [];
 
             foreach ($data as $key) {

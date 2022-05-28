@@ -650,7 +650,7 @@ class CamasController extends Controller
         "UPDATE HCW_CAMAS SET PACIENTE = NULL, ESPECIALIDAD = NULL, ESTADO = ?, FECHA_INGRESO = NULL, GENERO = NULL, HISTORIA_CLINICA = NULL WHERE CAMA_ID = ?",
         [$estado, $camaId]
       );
-      DB::update("update HCW_HOSPITALIZACION set ASIGNADO = ?, MOTIVO_BAJA = ? where HISTORIA_CLINICA = ?", ["0", $motivo, $id]);
+      DB::update("update HCW_HOSPITALIZACION set ASIGNADO = ?, MOTIVO_BAJA = ? where NUM_ATEN_MED = ?", ["0", $motivo, $id]);
       return CustomResponse::success("cama liberada");
     } catch (\Throwable $th) {
       return CustomResponse::failure($th->getMessage());
@@ -867,7 +867,9 @@ class CamasController extends Controller
                 full join CME_ATENCION_MEDICA a
                 on a.NUM_ATEN_MED = h.HISTORIA_CLINICA
                 ) 
-              WHERE HISTORIA_CLINICA LIKE '%" . $codPaciente . "%') 
+              WHERE HISTORIA_CLINICA LIKE '%" . $codPaciente . "%'
+              AND ASIGNADO = 1
+              )
             WHERE ROWNUM <=20"
         )
       );
