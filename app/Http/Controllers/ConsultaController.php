@@ -2264,8 +2264,7 @@ class ConsultaController extends Controller
                                 SELECT * FROM HCW_CAMAS CAM WHERE 
                                 T.COD_PACIENTE = CAM.PACIENTE
                                 AND HOSP.NUM_ATEN_MED = T.NUM_ATEN_MED
-                                AND HOSP.MOTIVO_BAJA is null
-                                AND CAM.ESTADO = 1
+                                AND HOSP.ASIGNADO = 1
                                 )
                                 AND T.ASIGNADO IS NOT NULL ORDER BY T.FEC_CREA DESC");
             $lista = [];
