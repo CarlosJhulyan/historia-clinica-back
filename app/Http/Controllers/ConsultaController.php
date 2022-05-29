@@ -2232,17 +2232,22 @@ class ConsultaController extends Controller
 
     public function traerTriaje(Request $request) {
         $codPaciente = $request->input('COD_PACIENTE');
+        $id = $request->input('ID');
 
-        $validator = Validator::make($request->all(), [
-            'COD_PACIENTE' => 'required'
-        ]);
+        // $validator = Validator::make($request->all(), [
+        //     'CIENTE' => 'required'
+        // ]);
 
-        if ($validator->fails()) {
-            return CustomResponse::failure('Datos faltantes.');
-        }
+        // if ($validator->fails()) {
+        //     return CustomResponse::failure('Datos faltantes.');
+        // }
 
         try {
-            $data = DB::select('SELECT t.PA_1, t.PA_2, t.FC, t.FR, t.PESO, t.TEMP, t.TALLA, t.SATURACION_OXIGENO FROM HCW_DATOS_CLI_TICKET c, HCW_DATOS_TRIAJE_TICKET t WHERE c.TRIAJE = t.ID AND c.COD_PACIENTE = ?', [$codPaciente]);
+            if ($id) {
+                $data = DB::select('SELECT t.PA_1, t.PA_2, t.FC, t.FR, t.PESO, t.TEMP, t.TALLA, t.SATURACION_OXIGENO FROM HCW_DATOS_CLI_TICKET c, HCW_DATOS_TRIAJE_TICKET t WHERE c.TRIAJE = t.ID AND c.ID = ?', [$id]);
+            } else {
+                $data = DB::select('SELECT t.PA_1, t.PA_2, t.FC, t.FR, t.PESO, t.TEMP, t.TALLA, t.SATURACION_OXIGENO FROM HCW_DATOS_CLI_TICKET c, HCW_DATOS_TRIAJE_TICKET t WHERE c.TRIAJE = t.ID AND c.COD_PACIENTE = ?', [$codPaciente]);
+            }
             if (count($data) === 1) {
                 return CustomResponse::success('Datos encontrados.', $data[0]);
             } else {

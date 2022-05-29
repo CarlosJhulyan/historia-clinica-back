@@ -822,6 +822,7 @@ class CamasController extends Controller
       );
       return CustomResponse::success("habitacion editado");
     } catch (\Throwable $th) {
+      error_log($th);
       return CustomResponse::failure($th->getMessage());
     }
   }

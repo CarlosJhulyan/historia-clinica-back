@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 //AUTH
 Route::post('/login', 'App\Http\Controllers\AuthController@login');
 Route::post('/getCMP', 'App\Http\Controllers\AuthController@getCMP');
+Route::post('/login-admin', 'App\Http\Controllers\AuthController@loginAdministrador');
 
 //PACIENTES
 Route::post('/pacientes', 'App\Http\Controllers\PacientesController@listaEspera');

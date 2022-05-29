@@ -168,4 +168,36 @@ class AuthController extends Controller
 			return CustomResponse::failure($th->getMessage());
 		}
 	}
+
+	public function loginAdministrador(Request $request) {
+		$usuario = $request->input('usuario');
+		$clave = $request->input('clave');
+
+		$validator = Validator::make($request->all(), [
+			'usuario' => 'required',
+			'clave' => 'required'
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes.');
+		}
+
+		try {
+			$data = DB::table('HWC_ADM_HC_SEC')
+				->where([
+					['login_usu', '=', strtoupper($usuario)],
+					['clave_usu', '=', $clave]
+				])
+				->pluck('nom_usu', 'cod_trab')
+				->first();
+
+			if (!$data) {
+				return CustomResponse::failure('Usuario o clave incorrectos.');
+			}
+			return CustomResponse::success('Ingreso exitoso', $data);
+		} catch (\Throwable $th) {
+			error_log($th);
+			return CustomResponse::failure('Error en los servidores.');
+		}
+	}
 }
