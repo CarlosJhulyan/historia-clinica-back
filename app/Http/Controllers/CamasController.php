@@ -855,6 +855,7 @@ class CamasController extends Controller
                 d.NOMBRE_HABITACION AS HABITACION,
                 e.NOMBRE_PISO AS PISO,
                 a.COD_MEDICO,
+                a.NUM_ATEN_MED,
                 CONCAT(NOM_CLI,CONCAT(' ',CONCAT(APE_PAT_CLI,CONCAT(' ', APE_MAT_CLI)))) AS NOMBRE_COMPLETO
                 from CME_PACIENTE p
                 right join HCW_HOSPITALIZACION h
@@ -866,7 +867,7 @@ class CamasController extends Controller
                 full join HCW_CAMAS_PISOS e
                 on e.PISO_ID = d.PISO_ID
                 full join CME_ATENCION_MEDICA a
-                on a.NUM_ATEN_MED = h.HISTORIA_CLINICA
+                on a.NUM_ATEN_MED = h.NUM_ATEN_MED
                 ) 
               WHERE HISTORIA_CLINICA LIKE '%" . $codPaciente . "%'
               AND ASIGNADO = 1
@@ -897,6 +898,7 @@ class CamasController extends Controller
               a.COD_MEDICO,
               m.DES_NOM_MEDICO,
               m.DES_APE_MEDICO,
+              a.NUM_ATEN_MED,
               CONCAT(NOM_CLI,CONCAT(' ',CONCAT(APE_PAT_CLI,CONCAT(' ', APE_MAT_CLI)))) AS NOMBRE_COMPLETO
               from CME_PACIENTE p
               right join HCW_HOSPITALIZACION h
@@ -908,11 +910,13 @@ class CamasController extends Controller
               full join HCW_CAMAS_PISOS e
               on e.PISO_ID = d.PISO_ID
               full join CME_ATENCION_MEDICA a
-              on a.NUM_ATEN_MED = h.HISTORIA_CLINICA
+              on a.NUM_ATEN_MED = h.NUM_ATEN_MED
               full join MAE_MEDICO m
               on a.COD_MEDICO = m.COD_MEDICO
               ) 
-            WHERE lower(NOMBRE_COMPLETO) LIKE '%" . strtolower($nombre) . "%') 
+            WHERE lower(NOMBRE_COMPLETO) LIKE '%" . strtolower($nombre) . "%'
+            AND ASIGNADO = 1
+          )
           WHERE ROWNUM <=20"
         )
       );

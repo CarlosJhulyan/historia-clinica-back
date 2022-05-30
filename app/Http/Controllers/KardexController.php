@@ -220,6 +220,7 @@ class KardexController extends Controller
             }
             return CustomResponse::success("Kardex creado");
         } catch (\Throwable $th) {
+            error_log($th);
             return CustomResponse::failure($th->getMessage());
         }
     }
