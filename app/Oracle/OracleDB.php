@@ -8,12 +8,10 @@ class OracleDB
 {
     static public function getConnection()
     {
-        $conn = oci_connect("venta_consorcio", "venta", "23.254.165.3/XE", "AL32UTF8" );
+        $conn = oci_connect("VENTA_BIENSALUD", "venta", "23.254.228.60/XE", "AL32UTF8" );
         if (!$conn) {
             throw new Exception('No se conectó');
         } else {
-            $abc = oci_parse($conn, "alter session set nls_numeric_characters='.,'");
-            oci_execute($abc);
             return $conn;
         }
     }
