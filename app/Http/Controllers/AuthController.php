@@ -188,7 +188,6 @@ class AuthController extends Controller
 					['login_usu', '=', strtoupper($usuario)],
 					['clave_usu', '=', $clave]
 				])
-				->pluck('nom_usu', 'cod_trab')
 				->first();
 
 			if (!$data) {
