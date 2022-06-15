@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Core\CustomResponse;
 use App\Models\Estemat;
+use App\Models\Invasivos;
 use App\Models\Kardex;
 use App\Models\KardexEspecial;
 use App\Models\KardexExamen;
@@ -669,4 +670,77 @@ class KardexController extends Controller
             }
         }
     }
+
+    
+    function addInvasivos(Request $request)
+    {
+        $FECHA_CVC = $request->input('cvc');
+        $FECHA_TET = $request->input('tet');
+        $FECHA_VIA_PERIFERIA = $request->input('via_periferica');
+        $MOTIVO_VIA_PERIFERICA = $request->input('MOTIVO_VIA_PERIFERICA');
+        $FECHA_SNG = $request->input('sng');
+        $FECHA_FOLEY = $request->input('foley');
+        $codPaciente = $request->input('codPaciente');
+
+        $validator = Validator::make($request->all(), [
+            
+            'cvc' => 'required',
+            'tet' => 'required',
+            'via_periferica' => 'required',
+            'MOTIVO_VIA_PERIFERICA' => 'required',
+            'sng' => 'required',
+            'foley' => 'required',
+            'codPaciente' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        } else {
+            try {
+                Invasivos::insert([
+                    "FECHA_CVC" => $FECHA_CVC,
+                    "FECHA_TET" => $FECHA_TET,
+                    "FECHA_VIA_PERIFERIA" => $FECHA_VIA_PERIFERIA,
+                    "MOTIVO_VIA_PERIFERICA" => $MOTIVO_VIA_PERIFERICA,
+                    "FECHA_SNG" => $FECHA_SNG,
+                    "FECHA_FOLEY" => $FECHA_FOLEY,
+                    "codPaciente" =>$codPaciente
+                ]);
+                // if ($kardex) {
+                    // $kardex->detalles = json_decode($kardex['detalles']);
+                    return CustomResponse::success('Se registraron invasivos');
+                // } else {
+                //     return CustomResponse::failure('No se encontró la fecha');
+                // }
+            } catch (\Throwable $th) {
+                return CustomResponse::failure($th->getMessage());
+            }
+        }
+    }
+    function getInvasivos(Request $request)
+    {
+    
+        $codPaciente = $request->input('codPaciente');
+
+        $validator = Validator::make($request->all(), [
+            
+            'codPaciente' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        } else {
+            try {
+                $Invasivos=Invasivos::where(['codpaciente' => $codPaciente])->get();
+                if ($Invasivos) {
+                    return CustomResponse::success('Se encontraron datos ',$Invasivos);
+                } else {
+                    return CustomResponse::failure('No se encontró la fecha');
+                }
+            } catch (\Throwable $th) {
+                return CustomResponse::failure($th->getMessage());
+            }
+        }
+    }
+
 }

@@ -219,3 +219,7 @@ Route::post('/preTriaje/searchMedicos', 'App\Http\Controllers\ConsultaController
 
 // VERSION SISTEMA
 Route::post('/sistema/getVersion', 'App\Http\Controllers\AdminController@obtenerVersionSistemaWeb');
+
+// kardex hospitalario
+Route::post('/kardex/addInvacivos', 'App\Http\Controllers\KardexController@addInvasivos');
+Route::post('/kardex/getInvacivos', 'App\Http\Controllers\KardexController@getInvasivos');
