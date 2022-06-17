@@ -681,6 +681,11 @@ class KardexController extends Controller
         $FECHA_SNG = $request->input('sng');
         $FECHA_FOLEY = $request->input('foley');
         $codPaciente = $request->input('codPaciente');
+        $MOTIVO_CVC = $request->input('MOTIVO_CVC');
+        $MOTIVO_TET = $request->input('MOTIVO_TET');
+        $MOTIVO_FOLEY = $request->input('MOTIVO_FOLEY');
+        $MOTIVO_SNG = $request->input('MOTIVO_SNG');
+
 
         $validator = Validator::make($request->all(), [
             
@@ -691,6 +696,10 @@ class KardexController extends Controller
             'sng' => 'required',
             'foley' => 'required',
             'codPaciente' => 'required',
+            'MOTIVO_CVC' => 'required',
+            'MOTIVO_TET' => 'required',
+            'MOTIVO_FOLEY' => 'required',
+            'MOTIVO_SNG' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -704,7 +713,11 @@ class KardexController extends Controller
                     "MOTIVO_VIA_PERIFERICA" => $MOTIVO_VIA_PERIFERICA,
                     "FECHA_SNG" => $FECHA_SNG,
                     "FECHA_FOLEY" => $FECHA_FOLEY,
-                    "codPaciente" =>$codPaciente
+                    "codPaciente" =>$codPaciente,
+                    'MOTIVO_CVC' => $MOTIVO_CVC,
+                    'MOTIVO_TET' => $MOTIVO_TET,
+                    'MOTIVO_FOLEY' => $MOTIVO_FOLEY,
+                    'MOTIVO_SNG' => $MOTIVO_SNG,
                 ]);
                 // if ($kardex) {
                     // $kardex->detalles = json_decode($kardex['detalles']);
@@ -721,6 +734,16 @@ class KardexController extends Controller
     {
     
         $codPaciente = $request->input('codPaciente');
+        $fecha1cvc = $request->input('fecha1cvc');
+        $fecha2cvc = $request->input('fecha2cvc');
+        $fecha1tet = $request->input('fecha1tet');
+        $fecha2tet = $request->input('fecha2tet');
+        $fecha1sng = $request->input('fecha1sng');
+        $fecha2sng = $request->input('fecha2sng');
+        $fecha1f = $request->input('fecha1f');
+        $fecha2f = $request->input('fecha2f');
+        $fecha1via = $request->input('fecha1via');
+        $fecha2via = $request->input('fecha2via');
 
         $validator = Validator::make($request->all(), [
             
@@ -731,7 +754,13 @@ class KardexController extends Controller
             return CustomResponse::failure('Datos faltantes');
         } else {
             try {
-                $Invasivos=Invasivos::where(['codpaciente' => $codPaciente])->get();
+                $Invasivos=Invasivos::where(['codpaciente' => $codPaciente])
+                ->FechaCVC($fecha1cvc,$fecha2cvc)
+                ->FechaTET($fecha1tet,$fecha2tet)
+                ->FechaSNG($fecha1sng,$fecha2sng)
+                ->FechaFOLEY($fecha1f,$fecha2f)
+                ->FechaVIA($fecha1via,$fecha2via)
+                ->get();
                 if ($Invasivos) {
                     return CustomResponse::success('Se encontraron datos ',$Invasivos);
                 } else {
