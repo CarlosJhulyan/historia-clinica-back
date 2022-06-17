@@ -14,7 +14,7 @@ class AuthController extends Controller
 {
 	/**
 	 * Inicio de sesión
-	 * 
+	 *
 	 * @OA\Post(
 	 *     path="/historial-clinico-backend/public/api/login",
 	 *     tags={"Autenticación"},
@@ -44,7 +44,7 @@ class AuthController extends Controller
 	 *     ),
 	 *     @OA\Response(
 	 *         response=200,
-	 *         description="Datos Encontrados",     
+	 *         description="Datos Encontrados",
 	 *     )
 	 * )
 	 */
@@ -100,7 +100,7 @@ class AuthController extends Controller
 							$resultado['modulos'][] = $value['cod_mod'];
 						}
 					}
-					
+
 					$resultado['des_especialidad'] = $data2[0]->descripcion;
 
 					return response()->json(
@@ -121,7 +121,7 @@ class AuthController extends Controller
 
 	/**
 	 * Obtener código de médico
-	 * 
+	 *
 	 * @OA\Post(
 	 *     path="/historial-clinico-backend/public/api/getCMP",
 	 *     tags={"Autenticación"},
@@ -145,7 +145,7 @@ class AuthController extends Controller
 	 *     ),
 	 *     @OA\Response(
 	 *         response=200,
-	 *         description="Datos Encontrados",     
+	 *         description="Datos Encontrados",
 	 *     )
 	 * )
 	 */
@@ -199,4 +199,32 @@ class AuthController extends Controller
 			return CustomResponse::failure('Error en los servidores.');
 		}
 	}
+
+    function getUsuarioInfoToToken(Request $request) {
+        $usuario = $request->input('usuario');
+        $clave = $request->input('clave');
+
+        $validator = Validator::make($request->all(), [
+            'usuario' => 'required',
+            'clave' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes.');
+        }
+
+        try {
+            $data = DB::table('PBL_USU_LOCAL')
+                ->where([
+                    ['login_usu', '=', strtoupper($usuario)],
+                    ['clave_usu', '=', $clave]
+                ])
+                ->first();
+
+            return CustomResponse::success('Informacion de usuario', $data);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
 }

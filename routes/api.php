@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', 'App\Http\Controllers\AuthController@login');
 Route::post('/getCMP', 'App\Http\Controllers\AuthController@getCMP');
 Route::post('/login-admin', 'App\Http\Controllers\AuthController@loginAdministrador');
+Route::post('/login/getUsuario', 'App\Http\Controllers\AuthController@getUsuarioInfoToToken');
 
 //PACIENTES
 Route::post('/pacientes', 'App\Http\Controllers\PacientesController@listaEspera');
@@ -223,3 +224,20 @@ Route::post('/sistema/getVersion', 'App\Http\Controllers\AdminController@obtener
 // kardex hospitalario
 Route::post('/kardex/addInvacivos', 'App\Http\Controllers\KardexController@addInvasivos');
 Route::post('/kardex/getInvacivos', 'App\Http\Controllers\KardexController@getInvasivos');
+
+// Pos Venta
+Route::post('/posventa/getProductos', 'App\Http\Controllers\PosVentaController@obtenerListaProductos');
+Route::post('/posventa/getEspecialidades', 'App\Http\Controllers\PosVentaController@obtenerListaEspecialidades');
+Route::post('/posventa/getCajaDispoUsuario', 'App\Http\Controllers\PosVentaController@obtenerCajaDispoUsuario');
+Route::post('/posventa/getFechaMovCaja', 'App\Http\Controllers\PosVentaController@obtenerFechaMovCaja');
+Route::get('/posventa/getFechaHoraDB', 'App\Http\Controllers\PosVentaController@obtenerFechaHoraDB');
+Route::post('/posventa/validaOperacionCaja', 'App\Http\Controllers\PosVentaController@validaOperadorCaja');
+Route::post('/posventa/getValorCompBoleta', 'App\Http\Controllers\PosVentaController@obtenerValorCompBoleta');
+Route::post('/posventa/getValorCompFactura', 'App\Http\Controllers\PosVentaController@obtenerValorCompFactura');
+Route::post('/posventa/getSeriesBoleta', 'App\Http\Controllers\PosVentaController@obtenerListaSeriesBoleta');
+Route::post('/posventa/getSeriesFactura', 'App\Http\Controllers\PosVentaController@obtenerListaSeriesFactura');
+Route::post('/posventa/getMovApertura', 'App\Http\Controllers\PosVentaController@obtenerMovApertura');
+Route::post('/posventa/setBloqueoCaja', 'App\Http\Controllers\PosVentaController@setBloqueoCaja');
+Route::post('/posventa/procesarDatosArqueo', 'App\Http\Controllers\PosVentaController@procesaDatosArqueo');
+
+
