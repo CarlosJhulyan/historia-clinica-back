@@ -239,5 +239,15 @@ Route::post('/posventa/getSeriesFactura', 'App\Http\Controllers\PosVentaControll
 Route::post('/posventa/getMovApertura', 'App\Http\Controllers\PosVentaController@obtenerMovApertura');
 Route::post('/posventa/setBloqueoCaja', 'App\Http\Controllers\PosVentaController@setBloqueoCaja');
 Route::post('/posventa/procesarDatosArqueo', 'App\Http\Controllers\PosVentaController@procesaDatosArqueo');
+Route::post('/posventa/aceptarTransaccion', 'App\Http\Controllers\PosVentaController@aceptarTransaccion');
+Route::post('/posventa/updateNumera', 'App\Http\Controllers\PosVentaController@updateNumera');
+Route::post('/posventa/getTurnoActualCaja', 'App\Http\Controllers\PosVentaController@obtenerTurnoActualCaja');
+Route::post('/posventa/getFechaApertura', 'App\Http\Controllers\PosVentaController@obtenerFechaApertura');
+Route::post('/posventa/setRegistraMovimientoAper', 'App\Http\Controllers\PosVentaController@setRegistraMovimientoApertura');
+
+Route::post('/posventa/getValidoVerPrecioMinimo', 'App\Http\Controllers\PosVentaController@isValidoVerPrecioMinimo');
+Route::post('/posventa/getIndSolIdUsu', 'App\Http\Controllers\PosVentaController@obtenerIndSolIdUsu');
+Route::post('/posventa/getListaFracciones', 'App\Http\Controllers\PosVentaController@obtenerListaFracciones');
+Route::post('/posventa/getListaLoteProducto', 'App\Http\Controllers\PosVentaController@obtenerListaLoteProducto');
 
 
