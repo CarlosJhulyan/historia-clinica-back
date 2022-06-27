@@ -245,9 +245,13 @@ Route::post('/posventa/getTurnoActualCaja', 'App\Http\Controllers\PosVentaContro
 Route::post('/posventa/getFechaApertura', 'App\Http\Controllers\PosVentaController@obtenerFechaApertura');
 Route::post('/posventa/setRegistraMovimientoAper', 'App\Http\Controllers\PosVentaController@setRegistraMovimientoApertura');
 
+// Productos
 Route::post('/posventa/getValidoVerPrecioMinimo', 'App\Http\Controllers\PosVentaController@isValidoVerPrecioMinimo');
 Route::post('/posventa/getIndSolIdUsu', 'App\Http\Controllers\PosVentaController@obtenerIndSolIdUsu');
 Route::post('/posventa/getListaFracciones', 'App\Http\Controllers\PosVentaController@obtenerListaFracciones');
 Route::post('/posventa/getListaLoteProducto', 'App\Http\Controllers\PosVentaController@obtenerListaLoteProducto');
-
+Route::post('/posventa/getDetalleCompProducto', 'App\Http\Controllers\PosVentaController@obtenerInfoDetalleProducto');
+Route::post('/posventa/verificarProductoCamp', 'App\Http\Controllers\PosVentaController@verificaProdCamp');
+Route::post('/posventa/getNuevoPrecio', 'App\Http\Controllers\PosVentaController@obtenerNuevoPrecio');
+Route::post('/posventa/getPrecioRedondeado', 'App\Http\Controllers\PosVentaController@obtenerPrecioRedondeado');
 

@@ -83,7 +83,7 @@ class PosVentaController extends Controller
             oci_bind_by_name($stid, ':cCod_Local_in', $codLocal);
             oci_bind_by_name($stid, ':cSecUsu_in', $secUsu);
             oci_execute($stid);
-            error_log($codLocal);
+            oci_close($conn);
             return CustomResponse::success('Caja disponible', trim($result));
         } catch (\Throwable $th) {
             error_log($th);
@@ -125,6 +125,7 @@ class PosVentaController extends Controller
             oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
             oci_bind_by_name($stid, ':nNumCajaPago_in', $numCaja);
             oci_execute($stid);
+            oci_close($conn);
 
             return CustomResponse::success('Fecha movimiento de caja', trim($result));
         } catch (\Throwable $th) {
@@ -158,6 +159,7 @@ class PosVentaController extends Controller
             oci_bind_by_name($stid, ':cSecUsu_in', $secUsu);
             oci_bind_by_name($stid, ':cTipOp_in', $tipOp);
             oci_execute($stid);
+            oci_close($conn);
 
             return CustomResponse::success('Validada correctamente');
         } catch (\Throwable $th) {
@@ -403,6 +405,7 @@ class PosVentaController extends Controller
             oci_bind_by_name($stid, ':cCod_Local_in', $codLocal);
             oci_bind_by_name($stid, ':nNumCaj_in', $numCaja);
             oci_execute($stid);
+            oci_close($conn);
 
             return CustomResponse::success('Movimiento Apertura', $result);
         } catch (\Throwable $th) {
@@ -433,6 +436,7 @@ class PosVentaController extends Controller
             oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
             oci_bind_by_name($stid, ':cSecCaja_in', $secCaja);
             oci_execute($stid);
+            oci_close($conn);
 
             return CustomResponse::success('Caja desbloqueada');
         } catch (\Throwable $th) {
@@ -493,6 +497,7 @@ class PosVentaController extends Controller
             oci_bind_by_name($stid, ':cIpMovCaja_in', $ipMovCaja);
             oci_bind_by_name($stid, ':cTipOp_in', $tipOp);
             oci_execute($stid);
+            oci_close($conn);
 
             return CustomResponse::success('La operación de cierre de caja se realizó correctamente', $result);
         } catch (\Throwable $th) {
@@ -530,6 +535,7 @@ class PosVentaController extends Controller
             oci_bind_by_name($stid, ':cCodNumera_in', $codNumber);
             oci_bind_by_name($stid, ':vIdUsuario_in', $idUsu);
             oci_execute($stid);
+            oci_close($conn);
 
             return CustomResponse::success('Numera actualizado');
         } catch (\Throwable $th) {
@@ -543,6 +549,7 @@ class PosVentaController extends Controller
             $conn = OracleDB::getConnection();
             $stid = oci_parse($conn, 'begin FARMA_UTILITY.ACEPTAR_TRANSACCION; end;');
             oci_execute($stid);
+            oci_close($conn);
 
             return CustomResponse::success('Transaccion aceptada');
         } catch (\Throwable $th) {
@@ -575,6 +582,7 @@ class PosVentaController extends Controller
             oci_bind_by_name($stid, ':cCod_Local_in', $codLocal);
             oci_bind_by_name($stid, ':nNumCaj_in', $numCaja);
             oci_execute($stid);
+            oci_close($conn);
 
             return CustomResponse::success('Fecha de apertura', $result);
         } catch (\Throwable $th) {
@@ -607,6 +615,7 @@ class PosVentaController extends Controller
             oci_bind_by_name($stid, ':cCod_Local_in', $codLocal);
             oci_bind_by_name($stid, ':nNumCaj_in', $numCaja);
             oci_execute($stid);
+            oci_close($conn);
 
             return CustomResponse::success('Turno actual de caja', $result);
         } catch (\Throwable $th) {
@@ -651,6 +660,7 @@ class PosVentaController extends Controller
             oci_bind_by_name($stid, ':cCodUsu_in', $codUsu);
             oci_bind_by_name($stid, ':cIpMovCaja', $ipMovCaja);
             oci_execute($stid);
+            oci_close($conn);
 
             return CustomResponse::success('La operación de apertura de caja se realizó correctamente');
         } catch (\Throwable $th) {
@@ -740,6 +750,7 @@ class PosVentaController extends Controller
             oci_bind_by_name($stid, ':vCodLocal_in', $codLocal);
             oci_bind_by_name($stid, ':vSecUsu_local_in', $secUsu);
             oci_execute($stid);
+            oci_close($conn);
 
             return CustomResponse::success('Respuesta satisfactoria', $result);
         } catch (\Throwable $th) {
@@ -771,6 +782,7 @@ class PosVentaController extends Controller
             oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
             oci_bind_by_name($stid, ':cCodProd_in', $codProducto);
             oci_execute($stid);
+            oci_close($conn);
 
             return CustomResponse::success('Respuesta satisfactoria', $result);
         } catch (\Throwable $th) {
@@ -885,6 +897,179 @@ class PosVentaController extends Controller
             oci_close($conn);
 
             return CustomResponse::success('Lista de fracciones', $lista);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
+    function obtenerInfoDetalleProducto(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $codProducto = $request->input('codProducto');
+        $indVerifica = $request->input('indVerifica');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'codProducto'=> 'required',
+            'indVerifica' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_VTA.VTA_OBTIENE_INFO_COMPL_PROD(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cCodProd_in => :cCodProd_in,
+                cIndVerificaSug => :cIndVerificaSug);end;');
+            oci_bind_by_name($stid, ":result", $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodLocal_in", $codLocal);
+            oci_bind_by_name($stid, ":cCodProd_in", $codProducto);
+            oci_bind_by_name($stid, ":cIndVerificaSug", $indVerifica);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'STOCK_FISICO' => $datos[0],
+                                'FECHA' => $datos[2],
+                                'PRECIO_VENTA' => $datos[3],
+                                'UNIDAD' => $datos[4],
+                                'GUION' => $datos[5],
+                                'O' => $datos[6],
+                                'PRECIO_LISTA' => $datos[7],
+                                'PRECIO_VENTA_DSCTO' => $datos[8],
+                                'VAL_FRAC' => $datos[9],
+                                'IND_ZAN' => $datos[10],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success('Detalles completo de producto', $lista);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
+    function verificaProdCamp(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codCamp = $request->input('codCamp');
+        $codProducto = $request->input('codProducto');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codProducto'=> 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = '';
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_VTA.VERIFICA_CAMP_PROD(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodCamp_in => :cCodCamp_in,
+                cCodProd_in => :cCodProd_in);end;');
+            oci_bind_by_name($stid, ":result", $result, 20);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodCamp_in", $codCamp);
+            oci_bind_by_name($stid, ":cCodProd_in", $codProducto);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Producto verificado', $result);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
+    function obtenerNuevoPrecio(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $codCamp = $request->input('codCamp');
+        $codProducto = $request->input('codProducto');
+        $precioVenta = $request->input('precioVenta');
+        $numDoc = $request->input('numDoc');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'codProducto'=> 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = '';
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_FIDELIZACION.FID_F_VAR2_GET_PRECIO_PROD(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cCodCampana_in => :cCodCampana_in,
+                cCodProducto_in => :cCodProducto_in,
+                cPrecioVenta => :cPrecioVenta,
+                cNumDocId_in => :cNumDocId_in);end;');
+            oci_bind_by_name($stid, ":result", $result, 20);
+            oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+            oci_bind_by_name($stid, ":cCodLocal_in", $codLocal);
+            oci_bind_by_name($stid, ":cCodCampana_in", $codLocal);
+            oci_bind_by_name($stid, ":cCodProducto_in", $codProducto);
+            oci_bind_by_name($stid, ":cPrecioVenta", $codProducto);
+            oci_bind_by_name($stid, ":cNumDocId_in", $codProducto);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Nuevo precio de producto', $result);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
+    function obtenerPrecioRedondeado(Request $request) {
+        $valorPrecio = $request->input('valorPrecio');
+
+        $validator = Validator::make($request->all(), [
+            'valorPrecio' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = 0.0;
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_VTA.VTA_F_NUMBER_PREC_REDONDEADO(nValPrecVta_in => :nValPrecVta_in);end;');
+            oci_bind_by_name($stid, ":result", $result, 20);
+            oci_bind_by_name($stid, ":nValPrecVta_in", $valorPrecio);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Valor redondeado', $result);
         } catch (\Throwable $th) {
             error_log($th);
             return CustomResponse::failure();

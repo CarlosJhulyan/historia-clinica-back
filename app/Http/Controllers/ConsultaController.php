@@ -35,7 +35,7 @@ class ConsultaController extends Controller
 
     /**
      * Obtener la evolución del tratamiento odontológico
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/consulta/getEvolucionTratamientoOdonto",
      *     tags={"Consulta"},
@@ -71,7 +71,7 @@ class ConsultaController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -113,7 +113,7 @@ class ConsultaController extends Controller
 
     /**
      * Eliminar la evolución del tratamiento odontológico
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/consulta/deleteEvolucionTratamientoOdonto",
      *     tags={"Consulta"},
@@ -134,7 +134,7 @@ class ConsultaController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -159,7 +159,7 @@ class ConsultaController extends Controller
 
     /**
      * Guardar la evolución del tratamiento odontológico
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/consulta/setEvolucionTratamientoOdonto",
      *     tags={"Consulta"},
@@ -223,7 +223,7 @@ class ConsultaController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -252,7 +252,7 @@ class ConsultaController extends Controller
         } else {
             try {
 
-                //ELIMINAR  
+                //ELIMINAR
                 TratamientoOdonto::query()->where([
                     'COD_GRUPO_CIA' => $codGrupoCia,
                     'COD_PACIENTE' => $codPaciente,
@@ -283,7 +283,7 @@ class ConsultaController extends Controller
 
     /**
      * Obtener los tratamientos de un paciente
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/consulta/getEvolucionTratamiento",
      *     tags={"Consulta"},
@@ -319,7 +319,7 @@ class ConsultaController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -360,7 +360,7 @@ class ConsultaController extends Controller
 
     /**
      * Eliminar la evolución de un tratamiento
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/consulta/deleteEvolucionTratamiento",
      *     tags={"Consulta"},
@@ -384,7 +384,7 @@ class ConsultaController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -409,7 +409,7 @@ class ConsultaController extends Controller
 
     /**
      * Guardar la evolución de un tratamiento
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/consulta/setEvolucionTratamiento",
      *     tags={"Consulta"},
@@ -473,7 +473,7 @@ class ConsultaController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -502,7 +502,7 @@ class ConsultaController extends Controller
         } else {
             try {
 
-                //ELIMINAR  
+                //ELIMINAR
                 Tratamiento::query()->where([
                     'COD_GRUPO_CIA' => $codGrupoCia,
                     'COD_PACIENTE' => $codPaciente,
@@ -613,7 +613,7 @@ class ConsultaController extends Controller
 
     /**
      * Guardar la consulta
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/consulta/setConsulta",
      *     tags={"Consulta"},
@@ -971,13 +971,13 @@ class ConsultaController extends Controller
      *                     property="interconsultas",
      *                     type="string"
      *                 ),
-     *                 
+     *
      *             ),
      *         ),
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -1078,7 +1078,7 @@ class ConsultaController extends Controller
                 oci_close($conn);
                 return CustomResponse::failure("Error en Procedimientos");
             }
-            //GRABAR PROCEDIMIENTOS 
+            //GRABAR PROCEDIMIENTOS
             try {
 
                 if (count($consultasProcedimientos['dataProcedimiento']) > 0) {
@@ -1115,7 +1115,7 @@ class ConsultaController extends Controller
 
             try {
                 //ELIMINAR
-                /* 
+                /*
                 Interconsultas::query()->where([
                     'COD_GRUPO_CIA' => $codGrupoCia,
                     'COD_PACIENTE' => $codPaciente,
@@ -1220,7 +1220,7 @@ class ConsultaController extends Controller
             }
             // GRABAR EXAMEN CLINICO
             try {
-                //ELIMINAR  
+                //ELIMINAR
                 Estemat::query()->where([
                     'COD_GRUPO_CIA' => $codGrupoCia,
                     'COD_PACIENTE' => $codPaciente,
@@ -1423,7 +1423,7 @@ class ConsultaController extends Controller
                     $satoxigeno
                 ]);
             }
-            //GRABAR DIAGNOSTICO            
+            //GRABAR DIAGNOSTICO
             try {
                 $index = 1;
                 foreach ($diagnosticoData as $key => $value) {
@@ -1466,7 +1466,7 @@ class ConsultaController extends Controller
 
 
 
-                $stid = oci_parse($conn, "BEGIN CENTRO_MEDICO.P_GRABAR_AT_MED_EXAMEN_FISICO(:codgrupocia, :codlocal, :numatencion, :estadoGeneral, 
+                $stid = oci_parse($conn, "BEGIN CENTRO_MEDICO.P_GRABAR_AT_MED_EXAMEN_FISICO(:codgrupocia, :codlocal, :numatencion, :estadoGeneral,
                                                 :estadoConciencia, :exaFisicoDirigido, :usucrea, :imc, :medCintura); END;");
 
                 $imc = ($examenFisico['imc']);
@@ -1509,7 +1509,7 @@ class ConsultaController extends Controller
                     oci_close($conn);
                     return CustomResponse::failure("Error en cabecera receta");
                 }
-                // DETALLE RECETA 
+                // DETALLE RECETA
                 $ind = 1;
                 try {
                     foreach ($cabeceraDetalleData as $key => $value) {
@@ -1537,7 +1537,7 @@ class ConsultaController extends Controller
                         $ind = $ind + 1;
 
 
-                        // GUARDAR RECOMENDACION TRATAMIENTO                                              
+                        // GUARDAR RECOMENDACION TRATAMIENTO
 
 
                         $resultado = RecomendacionTratamiento::where('NRO_RECETA', $numreceta)
@@ -1613,7 +1613,7 @@ class ConsultaController extends Controller
                 return CustomResponse::failure("Error en detalle procedimientos");
             }
 
-            //ESTADO CONSULTA               
+            //ESTADO CONSULTA
             try {
                 $puntajes = DB::table('HCW_PESO_ESPECIALIDAD')->get();
                 $data = [
@@ -1872,7 +1872,7 @@ class ConsultaController extends Controller
                 } else {
                     // SI NO EXISTE EL DIAGNOSTICO LO CREAMOS
 
-                    // SETEAMOS EL DIAGNOSTICO                    
+                    // SETEAMOS EL DIAGNOSTICO
                     Sugerencia::insert([
                         'codDiagnostico' => $diagnostico['cie'],
                         'cod_medico' => $cod_medico,
@@ -2260,13 +2260,13 @@ class ConsultaController extends Controller
 
     public function getListaTriaje() {
         try {
-            $data = DB::select("SELECT t.*, a.estado FROM 
+            $data = DB::select("SELECT t.*, a.estado FROM
                                 HCW_DATOS_CLI_TICKET T,
                                 CME_ATENCION_MEDICA A,
-                                HCW_HOSPITALIZACION HOSP 
-                                WHERE T.NUM_ATEN_MED = A.NUM_ATEN_MED 
+                                HCW_HOSPITALIZACION HOSP
+                                WHERE T.NUM_ATEN_MED = A.NUM_ATEN_MED
                                 AND EXISTS (
-                                SELECT * FROM HCW_CAMAS CAM WHERE 
+                                SELECT * FROM HCW_CAMAS CAM WHERE
                                 T.COD_PACIENTE = CAM.PACIENTE
                                 AND HOSP.NUM_ATEN_MED = T.NUM_ATEN_MED
                                 AND HOSP.ASIGNADO = 1
@@ -2290,7 +2290,7 @@ class ConsultaController extends Controller
                     'ESTADO' => $key->estado
                 ]);
             }
-            
+
             return CustomResponse::success('Datos encontrados.', $lista);
         } catch (\Throwable $th) {
             error_log($th);
@@ -2403,10 +2403,37 @@ class ConsultaController extends Controller
         }
 
         try {
-            $data = PreTriaje::select('*')
-                ->whereBetween('FEC_TOMA', [$fechaInicio, $fechaFin])
-                ->orderBy('FEC_TOMA', 'DESC')
-                ->get();
+            if ($codPaciente) {
+                if ($cmp) {
+                    $data = PreTriaje::select('HCW_PRE_TRIAJE.*', DB::raw('concat(MAE_MEDICO.DES_NOM_MEDICO, concat(\' \', trim(MAE_MEDICO.DES_APE_MEDICO))) as MEDICO'))
+                        ->join('MAE_MEDICO', 'NUM_CMP', '=', 'COD_USU_CREA')
+                        ->where('COD_PACIENTE', '=', $codPaciente)
+                        ->where('COD_USU_CREA', '=', $cmp)
+                        ->whereBetween('FEC_TOMA', [$fechaInicio, $fechaFin])
+                        ->orderBy('FEC_TOMA', 'DESC')
+                        ->get();
+                } else {
+                    $data = PreTriaje::select('HCW_PRE_TRIAJE.*', DB::raw('concat(MAE_MEDICO.DES_NOM_MEDICO, concat(\' \', trim(MAE_MEDICO.DES_APE_MEDICO))) as MEDICO'))
+                        ->join('MAE_MEDICO', 'NUM_CMP', '=', 'COD_USU_CREA')
+                        ->where('COD_PACIENTE', '=', $codPaciente)
+                        ->whereBetween('FEC_TOMA', [$fechaInicio, $fechaFin])
+                        ->orderBy('FEC_TOMA', 'DESC')
+                        ->get();
+                }
+            } else if ($cmp) {
+                $data = PreTriaje::select('HCW_PRE_TRIAJE.*', DB::raw('concat(MAE_MEDICO.DES_NOM_MEDICO, concat(\' \', trim(MAE_MEDICO.DES_APE_MEDICO))) as MEDICO'))
+                    ->join('MAE_MEDICO', 'NUM_CMP', '=', 'COD_USU_CREA')
+                    ->whereBetween('FEC_TOMA', [$fechaInicio, $fechaFin])
+                    ->where('COD_USU_CREA', '=', $cmp)
+                    ->orderBy('FEC_TOMA', 'DESC')
+                    ->get();
+            } else {
+                $data = PreTriaje::select('HCW_PRE_TRIAJE.*', DB::raw('concat(MAE_MEDICO.DES_NOM_MEDICO, concat(\' \', trim(MAE_MEDICO.DES_APE_MEDICO))) as MEDICO'))
+                    ->join('MAE_MEDICO', 'NUM_CMP', '=', 'COD_USU_CREA')
+                    ->whereBetween('FEC_TOMA', [$fechaInicio, $fechaFin])
+                    ->orderBy('FEC_TOMA', 'DESC')
+                    ->get();
+            }
 
             return CustomResponse::success('Datos obtenidos', $data);
         } catch (\Throwable $th) {
@@ -2427,11 +2454,11 @@ class ConsultaController extends Controller
         }
 
         try {
-            $data = PreTriaje::select('PACIENTE', 'COD_PACIENTE as KEY', 'PACIENTE as VALUE')
+            $data = PreTriaje::select('PACIENTE', 'COD_PACIENTE as KEY', 'COD_PACIENTE as VALUE')
                 ->where('PACIENTE', 'like', '%'. strtoupper($nomPaciente) .'%')
                 ->limit(20)
                 ->get();
-            
+
             return CustomResponse::success('Pacientes encontrados.', $data);
         } catch (\Throwable $th) {
             return CustomResponse::failure('Error en los servidores.');
@@ -2450,12 +2477,12 @@ class ConsultaController extends Controller
         }
 
         try {
-            $data = PreTriaje::select(DB::raw('concat(MAE_MEDICO.DES_NOM_MEDICO, concat(\' \', trim(MAE_MEDICO.DES_APE_MEDICO))) as MEDICO'), 'COD_USU_CREA as KEY', DB::raw('concat(MAE_MEDICO.DES_NOM_MEDICO, concat(\' \', trim(MAE_MEDICO.DES_APE_MEDICO))) as VALUE'))
+            $data = PreTriaje::select(DB::raw('concat(MAE_MEDICO.DES_NOM_MEDICO, concat(\' \', trim(MAE_MEDICO.DES_APE_MEDICO))) as MEDICO'), 'COD_USU_CREA as KEY', DB::raw('COD_USU_CREA as VALUE'))
                 ->join('MAE_MEDICO', 'NUM_CMP', '=', 'COD_USU_CREA')
                 ->where('MAE_MEDICO.DES_NOM_MEDICO', 'like', '%'. strtoupper($nomMedico) .'%')
                 ->limit(20)
                 ->get();
-            
+
             return CustomResponse::success('Medicos encontrados.', $data);
         } catch (\Throwable $th) {
             error_log($th->getMessage());
@@ -2536,7 +2563,7 @@ class ConsultaController extends Controller
             if (count($lista) == 0) {
                 return CustomResponse::failure('No existen información con este número de pedido.');
             }
-            
+
             return CustomResponse::success('Cabecera pedido encontrado.', $lista);
         } catch (\Throwable $th) {
             error_log($th->getMessage());
@@ -2609,7 +2636,7 @@ class ConsultaController extends Controller
             if (count($lista) == 0) {
                 return CustomResponse::failure('No existen información con este número de pedido.');
             }
-            
+
             return CustomResponse::success('Detalles pedido encontrado.', $lista);
         } catch (\Throwable $th) {
             error_log($th->getMessage());
@@ -2688,7 +2715,7 @@ class ConsultaController extends Controller
             if (count($lista) == 0) {
                 return CustomResponse::failure('No existen información con este número de orden.');
             }
-            
+
             return CustomResponse::success('Cabecera orden encontrado.', $lista);
         } catch (\Throwable $th) {
             error_log($th->getMessage());
@@ -2759,7 +2786,7 @@ class ConsultaController extends Controller
             if (count($lista) == 0) {
                 return CustomResponse::failure('No existen información con este número de orden.');
             }
-            
+
             return CustomResponse::success('Cabecera orden encontrado.', $lista);
         } catch (\Throwable $th) {
             error_log($th->getMessage());
@@ -3113,7 +3140,7 @@ class ConsultaController extends Controller
                 oci_bind_by_name($stid, ":vIdConsultorio_in", $codConsultorio);
                 oci_bind_by_name($stid, ":vIdBus_in", $codBus);
                 oci_bind_by_name($stid, ":vOrdenMedica_in", $numOrden);
-    
+
                 oci_execute($stid);
             } else {
                 $stid = oci_parse($conn, "BEGIN :result := PTOVENTA_CME_ADM.CME_INSERT_ATENCION_HOSPI(
@@ -3149,10 +3176,10 @@ class ConsultaController extends Controller
                 oci_bind_by_name($stid, ":vIdConsultorio_in", $codConsultorio);
                 oci_bind_by_name($stid, ":vIdBus_in", $codBus);
                 oci_bind_by_name($stid, ":vOrdenMedica_in", $numOrden);
-    
+
                 oci_execute($stid);
             }
-            
+
             return CustomResponse::success('Atención médica registrada.', $result);
         } catch (\Throwable $th) {
             error_log($th->getMessage());
@@ -3174,7 +3201,7 @@ class ConsultaController extends Controller
     public function anularConsultaMedica(Request $request) {
         $numAtencion = $request->input('NUM_ATENCION');
         $usuCrea = $request->input('USU_CREA');
-        
+
         $codGrupoCia = '001';
         $cCodCia = '001';
         $cCodLocal = '001';
@@ -3233,7 +3260,7 @@ class ConsultaController extends Controller
         $nPeso = $request->input('PESO');
         $nTalla = $request->input('TALLA');
         $nSaturacion = $request->input('SATURACION');
-        
+
         $codGrupoCia = '001';
         $cCodCia = '001';
         $cCodLocal = '001';
@@ -3361,7 +3388,7 @@ function unique_multidim_array($array, $key)
 function setDatosSugerencias($imagenes, $laboratorios, $tratamientos, $interconsultas, $procedimientos, $idDiagnostico, $cod_medico)
 {
 
-    // SETEAMOS LAS IMAGENES                    
+    // SETEAMOS LAS IMAGENES
     foreach ($imagenes as $key => $imagen) {
 
         $existe = SugImagen::query()
