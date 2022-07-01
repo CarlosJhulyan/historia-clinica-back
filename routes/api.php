@@ -226,7 +226,6 @@ Route::post('/kardex/addInvacivos', 'App\Http\Controllers\KardexController@addIn
 Route::post('/kardex/getInvacivos', 'App\Http\Controllers\KardexController@getInvasivos');
 
 // Pos Venta
-Route::post('/posventa/getProductos', 'App\Http\Controllers\PosVentaController@obtenerListaProductos');
 Route::post('/posventa/getEspecialidades', 'App\Http\Controllers\PosVentaController@obtenerListaEspecialidades');
 Route::post('/posventa/getCajaDispoUsuario', 'App\Http\Controllers\PosVentaController@obtenerCajaDispoUsuario');
 Route::post('/posventa/getFechaMovCaja', 'App\Http\Controllers\PosVentaController@obtenerFechaMovCaja');
@@ -246,6 +245,7 @@ Route::post('/posventa/getFechaApertura', 'App\Http\Controllers\PosVentaControll
 Route::post('/posventa/setRegistraMovimientoAper', 'App\Http\Controllers\PosVentaController@setRegistraMovimientoApertura');
 
 // Productos
+Route::post('/posventa/getProductos', 'App\Http\Controllers\PosVentaController@obtenerListaProductos');
 Route::post('/posventa/getValidoVerPrecioMinimo', 'App\Http\Controllers\PosVentaController@isValidoVerPrecioMinimo');
 Route::post('/posventa/getIndSolIdUsu', 'App\Http\Controllers\PosVentaController@obtenerIndSolIdUsu');
 Route::post('/posventa/getListaFracciones', 'App\Http\Controllers\PosVentaController@obtenerListaFracciones');
@@ -255,3 +255,7 @@ Route::post('/posventa/verificarProductoCamp', 'App\Http\Controllers\PosVentaCon
 Route::post('/posventa/getNuevoPrecio', 'App\Http\Controllers\PosVentaController@obtenerNuevoPrecio');
 Route::post('/posventa/getPrecioRedondeado', 'App\Http\Controllers\PosVentaController@obtenerPrecioRedondeado');
 
+Route::get('/posventa/getMedicosPosVenta', 'App\Http\Controllers\PosVentaController@getMedicosPosVenta');
+Route::post('/posventa/getClientesNombrePosVenta', 'App\Http\Controllers\PosVentaController@getClientesNombrePosVenta');
+Route::post('/posventa/getClientesDocPosVenta', 'App\Http\Controllers\PosVentaController@getClientesDocPosVenta');
+Route::get('/posventa/getListaReferencias', 'App\Http\Controllers\PosVentaController@getListaReferencias');

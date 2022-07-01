@@ -12,22 +12,23 @@ class DatosFirmasController extends Controller
 {
     /**
      * Obtener Firmas
-     * 
+     *
      * @OA\Get(
      *     path="/historial-clinico-backend/public/api/firmas/getFirmas",
      *     tags={"Firmas"},
      *     operationId="getFirmas",
      *     @OA\Response(
      *         response=200,
-     *         description="Firmas Encontradas",     
+     *         description="Firmas Encontradas",
      *     )
      * )
      */
     public function getFirmas()
     {
         try {
-            $model = Firma::select("*")
+            $model = Firma::select("HCW_FIRMAS.*", "MAE_MEDICO.DES_NOM_MEDICO as NOMBRES", "MAE_MEDICO.DES_APE_MEDICO as APELLIDOS")
                 ->where(['ESTADO' => "1"])
+                ->join('MAE_MEDICO', 'COD_MEDICO', '=', 'COD_MED')
                 ->get();
             return CustomResponse::success("Firmas Encontradas", $model);
         } catch (\Throwable $th) {
@@ -37,7 +38,7 @@ class DatosFirmasController extends Controller
 
     /**
      * Obtener Firma de medico
-     * 
+     *
      * @OA\Get(
      *     path="/historial-clinico-backend/public/api/firmas/getFirma",
      *     tags={"Firmas"},
@@ -71,7 +72,7 @@ class DatosFirmasController extends Controller
 
     /**
      * Grabar una firma
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/firmas/createFirma",
      *     tags={"Firmas"},
@@ -98,7 +99,7 @@ class DatosFirmasController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Firma registrada",     
+     *         description="Firma registrada",
      *     )
      * )
      */
@@ -133,7 +134,7 @@ class DatosFirmasController extends Controller
 
     /**
      * Actualizar una firma
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/firmas/updateFirma",
      *     tags={"Firmas"},
@@ -160,7 +161,7 @@ class DatosFirmasController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Firma actualizada",     
+     *         description="Firma actualizada",
      *     )
      * )
      */
@@ -192,7 +193,7 @@ class DatosFirmasController extends Controller
 
     /**
      * Eliminar una firma
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/firmas/deleteFirma",
      *     tags={"Firmas"},
@@ -213,7 +214,7 @@ class DatosFirmasController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Firma eliminada",     
+     *         description="Firma eliminada",
      *     )
      * )
      */

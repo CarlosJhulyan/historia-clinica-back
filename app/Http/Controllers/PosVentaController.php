@@ -831,8 +831,10 @@ class PosVentaController extends Controller
                         array_push(
                             $lista,
                             [
-                                'DESCRIPCION' => $datos[0],
+                                'key' => $datos[0],
+                                'ABREVIATURA' => $datos[1],
                                 'PRECIO' => $datos[2],
+                                'PRECIO_MIN' => $datos[4],
                             ]
                         );
                     }
@@ -1073,6 +1075,213 @@ class PosVentaController extends Controller
         } catch (\Throwable $th) {
             error_log($th);
             return CustomResponse::failure();
+        }
+    }
+
+    public function getMedicosPosVenta() {
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_MEDICO.LISTA_TODOS_MEDICOS; end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'CMP' => $datos[0],
+                                'NOMBRE_COMPLETO' => $datos[1],
+                                'DESC_REFERENCIA' => $datos[2],
+                                'TIP_REFERENCIA' => $datos[3],
+                                'NOMBRE' => $datos[4],
+                                'APE_PAT' => $datos[5],
+                                'APE_MAT' => $datos[6]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success('Datos encontrados.', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    public function getClientesNombrePosVenta(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $palabra = $request->input('palabra');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_CLI.CLI_BUSCA_CLI_X_PALABRA(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cPalabra_in => :cPalabra_in);end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':cPalabra_in', $palabra);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[2],
+                                'TIPO_DOC_IDENT' => $datos[0],
+                                'NUM_DOCUMENTO' => $datos[2],
+                                'CLIENTE' => $datos[3],
+                                'TELEFONO' => $datos[4],
+                                'CORREO' => $datos[5],
+                                'DIRECCION' => $datos[6],
+                                'TIP_DOCUMENTO' => $datos[7],
+                                'NOMBRE' => $datos[8],
+                                'APE_PAT' => $datos[9],
+                                'APE_MAT' => $datos[10],
+                                'TIP_DOC_IDENT' => $datos[11],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success(count($lista) . ' registros encontrados', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    public function getClientesDocPosVenta(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $documento = $request->input('documento');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'documento' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_CLI.CLI_BUSCA_CLI_X_DOC(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cDocumento_in => :cDocumento_in);end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':cDocumento_in', $documento);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[2],
+                                'TIPO_DOC_IDENT' => $datos[0],
+                                'NUM_DOCUMENTO' => $datos[2],
+                                'CLIENTE' => $datos[3],
+                                'TELEFONO' => $datos[4],
+                                'CORREO' => $datos[5],
+                                'DIRECCION' => $datos[6],
+                                'TIP_DOCUMENTO' => $datos[7],
+                                'NOMBRE' => $datos[8],
+                                'APE_PAT' => $datos[9],
+                                'APE_MAT' => $datos[10],
+                                'TIP_DOC_IDENT' => $datos[11],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success(count($lista) . ' registros encontrados', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    public function getListaReferencias() {
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_MEDICO.get_lista_referencia;end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'TIPO_REFERENCIA' => $datos[0],
+                                'value' => $datos[1],
+                                'DESCRIPCION' => $datos[1]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success(count($lista) . ' registros encontrados', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
         }
     }
 }

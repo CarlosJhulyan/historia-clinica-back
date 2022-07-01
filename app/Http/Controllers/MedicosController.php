@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Core\CustomResponse;
+use App\Oracle\OracleDB;
 use Illuminate\Http\Request;
 use App\Models\DatosFirmas;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class MedicosController extends Controller
@@ -12,7 +14,7 @@ class MedicosController extends Controller
 
     /**
      * Grabar los datos de firma
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/medicos/DatosFirmas",
      *     tags={"Medicos"},
@@ -44,7 +46,7 @@ class MedicosController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -82,7 +84,7 @@ class MedicosController extends Controller
 
     /**
      * Obtener firma
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/medicos/getFirma",
      *     tags={"Medicos"},
@@ -104,7 +106,7 @@ class MedicosController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
