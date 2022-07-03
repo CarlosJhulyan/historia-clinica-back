@@ -1266,7 +1266,7 @@ class PosVentaController extends Controller
 						array_push(
 							$lista,
 							[
-								'key' => $datos[2],
+								'key' => $datos[1],
 								'TIPO_DOC_IDENT' => $datos[0],
 								'NUM_DOCUMENTO' => $datos[2],
 								'CLIENTE' => $datos[3],
@@ -1374,9 +1374,105 @@ class PosVentaController extends Controller
 			oci_execute($stid);
 			oci_close($conn);
 
-			return CustomResponse::success('registro registrado', $result);
+			return CustomResponse::success('medico registrado', $result);
 		} catch (\Throwable $th) {
 			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
+	function grabarCliente(Request $request)
+	{
+
+		$pNombre = $request->input('pNombre');
+		$pAPellidoPat = $request->input('pAPellidoPat');
+		$pApellidoMat = $request->input('pApellidoMat');
+		$pTipoDocIdent = $request->input('pTipoDocIdent');
+		$pDni = $request->input('pDni');
+		$pDirCliente = $request->input('pDirCliente');
+		$vRazonSocial = $request->input('vRazonSocial');
+		$vTelefono = $request->input('vTelefono');
+		$vCorreo = $request->input('vCorreo');
+		$idUsuarioLogueado = $request->input('idUsuarioLogueado');
+
+		$validator = Validator::make($request->all(), [
+			'pNombre' => 'required',
+			'pAPellidoPat' => 'required',
+			'pApellidoMat' => 'required',
+			'pTipoDocIdent' => 'required',
+			'pDni' => 'required',
+			'pDirCliente' => 'required',
+			'vRazonSocial' => 'required',
+			'vTelefono' => 'required',
+			'vCorreo' => 'required',
+			'idUsuarioLogueado' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
+
+		try {
+			$conn = OracleDB::getConnection();
+			$result = '';
+			$cCodGrupoCia_in = '001';
+			$cCodLocal_in = '001';
+			$cCodNumera_in = '012';
+
+			$stid = oci_parse($conn, 'begin :result := PTOVENTA_CLI.CLI_AGREGA_CLI_NATURAL(cCodGrupoCia_in => :cCodGrupoCia_in, cCodLocal_in => :cCodLocal_in, cCodNumera_in => :cCodNumera_in, cNombre_in => :cNombre_in, cApellido_Pat_in => :cApellido_Pat_in, cApellido_Mat_in => :cApellido_Mat_in, cTipDocIdent_in => :cTipDocIdent_in, cNumDocIdent_in => :cNumDocIdent_in, cDirCliLocal_in => :cDirCliLocal_in, cUsuCreaCliLocal_in => :cUsuCreaCliLocal_in, cRazonSocial_in => :cRazonSocial_in, cTelefono_in => :cTelefono_in, cCorreo_in => :cCorreo_in, cFechaNac_in => :cFechaNac_in, cAcompaniante_in => :cAcompaniante_in);end;');
+			oci_bind_by_name($stid, ":cCodGrupoCia_in", $cCodGrupoCia_in);
+			oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal_in);
+			oci_bind_by_name($stid, ":cCodNumera_in", $cCodNumera_in); //
+			oci_bind_by_name($stid, ":cNombre_in", $pNombre);
+			oci_bind_by_name($stid, ":cApellido_Pat_in", $pAPellidoPat);
+			oci_bind_by_name($stid, ":cApellido_Mat_in", $pApellidoMat);
+			oci_bind_by_name($stid, ":cTipDocIdent_in", $pTipoDocIdent);
+			oci_bind_by_name($stid, ":cNumDocIdent_in", $pDni);
+			oci_bind_by_name($stid, ":cDirCliLocal_in", $pDirCliente);
+			oci_bind_by_name($stid, ":cUsuCreaCliLocal_in", $idUsuarioLogueado); //
+			oci_bind_by_name($stid, ":cRazonSocial_in", $vRazonSocial);
+			oci_bind_by_name($stid, ":cTelefono_in", $vTelefono);
+			oci_bind_by_name($stid, ":cCorreo_in", $vCorreo);
+			oci_bind_by_name($stid, ":cFechaNac_in", $cFechaNac_in);
+			oci_bind_by_name($stid, ":cAcompaniante_in", $cAcompaniante_in);
+			oci_bind_by_name($stid, ":result", $result, 20);
+			oci_execute($stid);
+			oci_close($conn);
+
+			return CustomResponse::success('cliente registrado', $result);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
+	function modificarCliente(Request $request)
+	{
+
+		$pCodCliente = $request->input('pCodCliente');
+		$pNombreCliente = $request->input('pNombreCliente');
+		$pApellidoPat = $request->input('pApellidoPat');
+		$pApellidoMat = $request->input('pApellidoMat');
+		$pDni = $request->input('pDni');
+		$pDirCliente = $request->input('pDirCliente');
+		$pTipoDocIdent = $request->input('pTipoDocIdent');
+		$vRazonSocial = $request->input('vRazonSocial');
+		$vTelefono = $request->input('vTelefono');
+		$vCorreo = $request->input('vCorreo');
+
+		$validator = Validator::make($request->all(), [
+			'pCodCliente' => 'required',
+			'pNombreCliente' => 'required',
+			'pApellidoPat' => 'required',
+			'pApellidoMat' => 'required',
+			'pDni' => 'required',
+			'pDirCliente' => 'required',
+			'pTipoDocIdent' => 'required',
+			'vRazonSocial' => 'required',
+			'vTelefono' => 'required',
+			'vCorreo' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
 		}
 	}
 }
