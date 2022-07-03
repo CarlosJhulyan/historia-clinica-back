@@ -1475,4 +1475,99 @@ class PosVentaController extends Controller
 			return CustomResponse::failure('Datos faltantes');
 		}
 	}
+	
+	function ObtenerIndNuevoCobro()
+	{
+		try {
+			$conn = OracleDB::getConnection();
+			$result = '';
+			$stid = oci_parse($conn, 'begin :result := PTOVENTA_GRAL.GET_IND_NUEVO_COBRO;end;');
+			oci_bind_by_name($stid, ":result", $result, 20);
+			oci_execute($stid);
+			oci_close($conn);
+
+			return CustomResponse::success('Procedimiento satisfacotorio', $result);
+		} catch (\Throwable $th) {
+			error_log($th);
+			return CustomResponse::failure();
+		}
+	}
+
+	function obtenerNumeracion(Request $request)
+	{
+		$codGrupoCia = $request->input('codGrupoCia');
+		$codLocal = $request->input('codLocal');
+		$codNumera = $request->input('codNumera');
+
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'codNumera' => 'required'
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
+
+		try {
+			$conn = OracleDB::getConnection();
+			$result = '';
+			$stid = oci_parse($conn, 'begin :result := FARMA_UTILITY.OBTENER_NUMERACION(
+						cCodGrupoCia_in => :cCodGrupoCia_in,
+						cCodLocal_in => :cCodLocal_in,
+						cCodNumera_in => :cCodNumera_in);end;');
+			oci_bind_by_name($stid, ":result", $result, 20);
+			oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+			oci_bind_by_name($stid, ":cCodLocal_in", $codLocal);
+			oci_bind_by_name($stid, ":cCodNumera_in", $codNumera);
+			oci_execute($stid);
+			oci_close($conn);
+
+			return CustomResponse::success('Procedimiento satisfacotorio', $result);
+		} catch (\Throwable $th) {
+			error_log($th);
+			return CustomResponse::failure();
+		}
+	}
+
+	function obtenerFechaModNumeraPed(Request $request)
+	{
+		try {
+			$conn = OracleDB::getConnection();
+			$cursor = oci_new_cursor($conn);
+			$stid = oci_parse($conn, 'begin :result := PTOVENTA_VTA.VTA_OBTIENE_FEC_MOD_NUMERA_PED(
+						cCodGrupoCia_in => :cCodGrupoCia_in,
+						cCodLocal_in => :cCodLocal_in,
+						cCodNumera_in => :cCodNumera_in);end;');
+			oci_bind_by_name($stid, ":result", $cursor, -1, OCI_B_CURSOR);
+			oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+			oci_bind_by_name($stid, ":cCodLocal_in", $codLocal);
+			oci_bind_by_name($stid, ":cCodNumera_in", $codNumera);
+			oci_execute($stid);
+			oci_execute($cursor);
+			$lista = [];
+
+			if ($stid) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					foreach ($row as $key => $value) {
+						$datos = explode('Ã', $value);
+						array_push(
+							$lista,
+							[
+								'FECHA' => $datos[0],
+							]
+						);
+					}
+				}
+			}
+			oci_free_statement($stid);
+			oci_free_statement($cursor);
+			oci_close($conn);
+
+			return CustomResponse::success('Fecha de modificacion de pedido', $lista);
+		} catch (\Throwable $th) {
+			error_log($th);
+			return CustomResponse::failure();
+		}
+	}
 }

@@ -262,3 +262,6 @@ Route::get('/posventa/getListaReferencias', 'App\Http\Controllers\PosVentaContro
 
 Route::post('/posventa/grabarMedico', 'App\Http\Controllers\PosVentaController@grabarMedico');
 Route::post('/posventa/grabarCliente', 'App\Http\Controllers\PosVentaController@grabarCliente');
+Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');
+Route::post('/posventa/getNumeracion', 'App\Http\Controllers\PosVentaController@obtenerNumeracion');
+Route::post('/posventa/getFechaModNumeraPed', 'App\Http\Controllers\PosVentaController@obtenerFechaModNumeraPed');
