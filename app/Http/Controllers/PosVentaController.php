@@ -1457,6 +1457,7 @@ class PosVentaController extends Controller
 		$vRazonSocial = $request->input('vRazonSocial');
 		$vTelefono = $request->input('vTelefono');
 		$vCorreo = $request->input('vCorreo');
+		$idUsuarioLogueado = $request->input('idUsuarioLogueado');
 
 		$validator = Validator::make($request->all(), [
 			'pCodCliente' => 'required',
@@ -1469,13 +1470,46 @@ class PosVentaController extends Controller
 			'vRazonSocial' => 'required',
 			'vTelefono' => 'required',
 			'vCorreo' => 'required',
+			'idUsuarioLogueado' => 'required',
 		]);
 
 		if ($validator->fails()) {
 			return CustomResponse::failure('Datos faltantes');
 		}
+
+
+		try {
+
+			$conn = OracleDB::getConnection();
+			$result = '';
+			$cCodGrupoCia_in = '001';
+			$cCodLocal_in = '001';
+
+			$stid = oci_parse($conn, 'begin :result := PTOVENTA_CLI.CLI_ACTUALIZA_CLI_NATURAL(cCodGrupoCia_in=>:cCodGrupoCia_in,cCodLocal_in=>:cCodLocal_in,cCodCliLocal_in=>:cCodCliLocal_in,cNomCliNatural_in=>:cNomCliNatural_in,cApePatCliNatural_in=>:cApePatCliNatural_in,cAPeMatCliNatural_in=>:cAPeMatCliNatural_in,cNumDocIdent_in=>:cNumDocIdent_in,cDirCliLocal_in=>:cDirCliLocal_in,cUsuModCliLocal_in=>:cUsuModCliLocal_in,cTipoDoc_in=>:cTipoDoc_in,cRazSocial_in=>:cRazSocial_in,cTelefono_in=>:cTelefono_in,cCorreo_in=>:cCorreo_in); end;');
+			oci_bind_by_name($stid, ":cCodGrupoCia_in", $cCodGrupoCia_in);
+			oci_bind_by_name($stid, ":cCodLocal_in", $cCodLocal_in);
+			oci_bind_by_name($stid, ":cCodCliLocal_in", $pCodCliente);
+			oci_bind_by_name($stid, ":cNomCliNatural_in", $pNombreCliente);
+			oci_bind_by_name($stid, ":cApePatCliNatural_in", $pApellidoPat);
+			oci_bind_by_name($stid, ":cAPeMatCliNatural_in", $pApellidoMat);
+			oci_bind_by_name($stid, ":cNumDocIdent_in", $pDni);
+			oci_bind_by_name($stid, ":cDirCliLocal_in", $pDirCliente);
+			oci_bind_by_name($stid, ":cUsuModCliLocal_in", $idUsuarioLogueado);
+			oci_bind_by_name($stid, ":cTipoDoc_in", $pTipoDocIdent);
+			oci_bind_by_name($stid, ":cRazSocial_in", $vRazonSocial);
+			oci_bind_by_name($stid, ":cTelefono_in", $vTelefono);
+			oci_bind_by_name($stid, ":cCorreo_in", $vCorreo);
+			oci_bind_by_name($stid, ":result", $result, 1);
+			oci_execute($stid);
+			oci_close($conn);
+
+
+			return CustomResponse::success('cliente editado', $result);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
 	}
-	
+
 	function ObtenerIndNuevoCobro()
 	{
 		try {
@@ -1489,7 +1523,7 @@ class PosVentaController extends Controller
 			return CustomResponse::success('Procedimiento satisfacotorio', $result);
 		} catch (\Throwable $th) {
 			error_log($th);
-			return CustomResponse::failure();
+			return CustomResponse::failure($th->getMessage());
 		}
 	}
 
@@ -1568,6 +1602,185 @@ class PosVentaController extends Controller
 		} catch (\Throwable $th) {
 			error_log($th);
 			return CustomResponse::failure();
+		}
+	}
+
+
+
+	function grabarPedidoCabecera(Request $request)
+	{
+
+		$cCodGrupoCia_in = $request->input('cCodGrupoCia_in');
+		$cCodLocal_in = $request->input('cCodLocal_in');
+		$cNumPedVta_in = $request->input('cNumPedVta_in');
+		$cCodCliLocal_in = $request->input('cCodCliLocal_in');
+		$cSecMovCaja_in = $request->input('cSecMovCaja_in');
+		$nValBrutoPedVta_in = $request->input('nValBrutoPedVta_in');
+		$nValNetoPedVta_in = $request->input('nValNetoPedVta_in');
+		$nValRedondeoPedVta_in = $request->input('nValRedondeoPedVta_in');
+		$nValIgvPedVta_in = $request->input('nValIgvPedVta_in');
+		$nValDctoPedVta_in = $request->input('nValDctoPedVta_in');
+		$cTipPedVta_in = $request->input('cTipPedVta_in');
+		$nValTipCambioPedVta_in = $request->input('nValTipCambioPedVta_in');
+		$cNumPedDiario_in = $request->input('cNumPedDiario_in');
+		$nCantItemsPedVta_in = $request->input('nCantItemsPedVta_in');
+		$cEstPedVta_in = $request->input('cEstPedVta_in');
+		$cTipCompPago_in = $request->input('cTipCompPago_in');
+		$cNomCliPedVta_in = $request->input('cNomCliPedVta_in');
+		$cDirCliPedVta_in = $request->input('cDirCliPedVta_in');
+		$cRucCliPedVta_in = $request->input('cRucCliPedVta_in');
+		$cUsuCreaPedVtaCab_in = $request->input('cUsuCreaPedVtaCab_in');
+		$cIndDistrGratuita_in = $request->input('cIndDistrGratuita_in');
+		$cIndPedidoConvenio_in = $request->input('cIndPedidoConvenio_in');
+		$cCodConvenio_in = $request->input('cCodConvenio_in');
+		$cCodUsuLocal_in = $request->input('cCodUsuLocal_in');
+		$cIndUsoEfectivo_in = $request->input('cIndUsoEfectivo_in');
+		$cIndUsoTarjeta_in = $request->input('cIndUsoTarjeta_in');
+		$cCodForma_Tarjeta_in = $request->input('cCodForma_Tarjeta_in');
+		$cColegioMedico_in = $request->input('cColegioMedico_in');
+		$cCodCliente_in = $request->input('cCodCliente_in');
+		$cIndConvBTLMF = $request->input('cIndConvBTLMF');
+		$cCodSolicitud = $request->input('cCodSolicitud');
+		$cNumCmp = $request->input('cNumCmp');
+		$cNombreMedico = $request->input('cNombreMedico');
+		$cRecetaCodCia = $request->input('cRecetaCodCia');
+		$cRecetaCodLocal = $request->input('cRecetaCodLocal');
+		$cRecetaNumero = $request->input('cRecetaNumero');
+		$cIndSoat = $request->input('cIndSoat');
+		$cDNI_PACIENTE = $request->input('cDNI_PACIENTE');
+		$cNumCmp_asociado = $request->input('cNumCmp_asociado');
+		$cNombreMedico_asociado = $request->input('cNombreMedico_asociado');
+		$cCodPaciente = $request->input('cCodPaciente');
+		$cIDRef = $request->input('cIDRef');
+		$cDescRef = $request->input('cDescRef');
+		$cNumCmp_visitador = $request->input('cNumCmp_visitador');
+		$cNombreMedico_visitador = $request->input('cNombreMedico_visitador');
+		$cIndCotizacion = $request->input('cIndCotizacion');
+		$cIndReserva = $request->input('cIndReserva');
+		$cCodCiaReserva = $request->input('cCodCiaReserva');
+		$cCodLocalReserva = $request->input('cCodLocalReserva');
+		$cCodPedidoReserva = $request->input('cCodPedidoReserva');
+
+		$validartor = Validator::make($request->all(), [
+			'cCodGrupoCia_in' => 'required',
+			'cCodLocal_in' => 'required',
+			'cNumPedVta_in' => 'required',
+			'cCodCliLocal_in' => 'required',
+			'cSecMovCaja_in' => 'required',
+			'nValBrutoPedVta_in' => 'required',
+			'nValNetoPedVta_in' => 'required',
+			'nValRedondeoPedVta_in' => 'required',
+			'nValIgvPedVta_in' => 'required',
+			'nValDctoPedVta_in' => 'required',
+			'cTipPedVta_in' => 'required',
+			'nValTipCambioPedVta_in' => 'required',
+			'cNumPedDiario_in' => 'required',
+			'nCantItemsPedVta_in' => 'required',
+			'cEstPedVta_in' => 'required',
+			'cTipCompPago_in' => 'required',
+			'cNomCliPedVta_in' => 'required',
+			'cDirCliPedVta_in' => 'required',
+			'cRucCliPedVta_in' => 'required',
+			'cUsuCreaPedVtaCab_in' => 'required',
+			'cIndDistrGratuita_in' => 'required',
+			'cIndPedidoConvenio_in' => 'required',
+			'cCodConvenio_in' => 'required',
+			'cCodUsuLocal_in' => 'required',
+			'cIndUsoEfectivo_in' => 'required',
+			'cIndUsoTarjeta_in' => 'required',
+			'cCodForma_Tarjeta_in' => 'required',
+			'cColegioMedico_in' => 'required',
+			'cCodCliente_in' => 'required',
+			'cIndConvBTLMF' => 'required',
+			'cCodSolicitud' => 'required',
+			'cNumCmp' => 'required',
+			'cNombreMedico' => 'required',
+			'cRecetaCodCia' => 'required',
+			'cRecetaCodLocal' => 'required',
+			'cRecetaNumero' => 'required',
+			'cIndSoat' => 'required',
+			'cDNI_PACIENTE' => 'required',
+			'cNumCmp_asociado' => 'required',
+			'cNombreMedico_asociado' => 'required',
+			'cCodPaciente' => 'required',
+			'cIDRef' => 'required',
+			'cDescRef' => 'required',
+			'cNumCmp_visitador' => 'required',
+			'cNombreMedico_visitador' => 'required',
+			'cIndCotizacion' => 'required',
+			'cIndReserva' => 'required',
+			'cCodCiaReserva' => 'required',
+			'cCodLocalReserva' => 'required',
+			'cCodPedidoReserva' => 'required',
+		]);
+
+		if ($validartor->fails()) {
+			return response()->json(['error' => $validartor->errors()], 401);
+		}
+
+		try {
+			// PTOVENTA_VTA.VTA_GRABAR_PEDIDO_VTA_CAB
+			$conn = OracleDB::getConnection();
+			$stid = oci_parse($conn, 'begin PTOVENTA_VTA.VTA_GRABAR_PEDIDO_VTA_CAB(cCodGrupoCia_in=>:cCodGrupoCia_in,cCodLocal_in=>:cCodLocal_in,cNumPedVta_in=>:cNumPedVta_in,cCodCliLocal_in=>:cCodCliLocal_in,cSecMovCaja_in=>:cSecMovCaja_in,nValBrutoPedVta_in=>:nValBrutoPedVta_in,nValNetoPedVta_in=>:nValNetoPedVta_in,nValRedondeoPedVta_in=>:nValRedondeoPedVta_in,nValIgvPedVta_in=>:nValIgvPedVta_in,nValDctoPedVta_in=>:nValDctoPedVta_in,cTipPedVta_in=>:cTipPedVta_in,nValTipCambioPedVta_in=>:nValTipCambioPedVta_in,cNumPedDiario_in=>:cNumPedDiario_in,nCantItemsPedVta_in=>:nCantItemsPedVta_in,cEstPedVta_in=>:cEstPedVta_in,cTipCompPago_in=>:cTipCompPago_in,cNomCliPedVta_in=>:cNomCliPedVta_in,cDirCliPedVta_in=>:cDirCliPedVta_in,cRucCliPedVta_in=>:cRucCliPedVta_in,cUsuCreaPedVtaCab_in=>:cUsuCreaPedVtaCab_in,cIndDistrGratuita_in=>:cIndDistrGratuita_in,cIndPedidoConvenio_in=>:cIndPedidoConvenio_in,cCodConvenio_in=>:cCodConvenio_in,cCodUsuLocal_in=>:cCodUsuLocal_in,cIndUsoEfectivo_in=>:cIndUsoEfectivo_in,cIndUsoTarjeta_in=>:cIndUsoTarjeta_in, cCodForma_Tarjeta_in=>:cCodForma_Tarjeta_in,cColegioMedico_in=>:cColegioMedico_in,cCodCliente_in=>:cCodCliente_in,cIndConvBTLMF=>:cIndConvBTLMF,cCodSolicitud=>:cCodSolicitud,cNumCmp=>:cNumCmp,cNombreMedico=>:cNombreMedico,cRecetaCodCia=>:cRecetaCodCia,cRecetaCodLocal=>:cRecetaCodLocal,cRecetaNumero=>:cRecetaNumero,cIndSoat=>:cIndSoat,cDNI_PACIENTE=>:cDNI_PACIENTE,cNumCmp_asociado=>:cNumCmp_asociado,cNombreMedico_asociado=>:cNombreMedico_asociado,cCodPaciente=>:cCodPaciente,cIDRef=>:cIDRef,cDescRef=>:cDescRef,cNumCmp_visitador=>:cNumCmp_visitador,cNombreMedico_visitador=>:cNombreMedico_visitador,cIndCotizacion=>:cIndCotizacion,cIndReserva=>:cIndReserva,cCodCiaReserva=>:cCodCiaReserva,cCodLocalReserva=>:cCodLocalReserva,cCodPedidoReserva=>:cCodPedidoReserva); end;');
+			oci_bind_by_name($stid, ':cCodGrupoCia_in', $cCodGrupoCia_in);
+			oci_bind_by_name($stid, ':cCodLocal_in', $cCodLocal_in);
+			oci_bind_by_name($stid, ':cNumPedVta_in', $cNumPedVta_in);
+			oci_bind_by_name($stid, ':cCodCliLocal_in', $cCodCliLocal_in);
+			oci_bind_by_name($stid, ':cSecMovCaja_in', $cSecMovCaja_in);
+			oci_bind_by_name($stid, ':nValBrutoPedVta_in', $nValBrutoPedVta_in);
+			oci_bind_by_name($stid, ':nValNetoPedVta_in', $nValNetoPedVta_in);
+			oci_bind_by_name($stid, ':nValRedondeoPedVta_in', $nValRedondeoPedVta_in);
+			oci_bind_by_name($stid, ':nValIgvPedVta_in', $nValIgvPedVta_in);
+			oci_bind_by_name($stid, ':nValDctoPedVta_in', $nValDctoPedVta_in);
+			oci_bind_by_name($stid, ':cTipPedVta_in', $cTipPedVta_in);
+			oci_bind_by_name($stid, ':nValTipCambioPedVta_in', $nValTipCambioPedVta_in);
+			oci_bind_by_name($stid, ':cNumPedDiario_in', $cNumPedDiario_in);
+			oci_bind_by_name($stid, ':nCantItemsPedVta_in', $nCantItemsPedVta_in);
+			oci_bind_by_name($stid, ':cEstPedVta_in', $cEstPedVta_in);
+			oci_bind_by_name($stid, ':cTipCompPago_in', $cTipCompPago_in);
+			oci_bind_by_name($stid, ':cNomCliPedVta_in', $cNomCliPedVta_in);
+			oci_bind_by_name($stid, ':cNomCliLocal_in', $cNomCliLocal_in);
+			oci_bind_by_name($stid, ':cDirCliPedVta_in', $cDirCliPedVta_in);
+			oci_bind_by_name($stid, ':cRucCliPedVta_in', $cRucCliPedVta_in);
+			oci_bind_by_name($stid, ':cUsuCreaPedVtaCab_in', $cUsuCreaPedVtaCab_in);
+			oci_bind_by_name($stid, ':cIndDistrGratuita_in', $cIndDistrGratuita_in);
+			oci_bind_by_name($stid, ':cIndPedidoConvenio_in', $cIndPedidoConvenio_in);
+			oci_bind_by_name($stid, ':cCodConvenio_in', $cCodConvenio_in);
+			oci_bind_by_name($stid, ':cCodUsuLocal_in', $cCodUsuLocal_in);
+			oci_bind_by_name($stid, ':cIndUsoEfectivo_in', $cIndUsoEfectivo_in);
+			oci_bind_by_name($stid, ':cIndUsoTarjeta_in', $cIndUsoTarjeta_in);
+			oci_bind_by_name($stid, ':cCodForma_Tarjeta_in', $cCodForma_Tarjeta_in);
+			oci_bind_by_name($stid, ':cColegioMedico_in', $cColegioMedico_in);
+			oci_bind_by_name($stid, ':cCodCliente_in', $cCodCliente_in);
+			oci_bind_by_name($stid, ':cIndConvBTLMF', $cIndConvBTLMF);
+			oci_bind_by_name($stid, ':cCodSolicitud', $cCodSolicitud);
+			oci_bind_by_name($stid, ':cNumCmp', $cNumCmp);
+			oci_bind_by_name($stid, ':cNombreMedico', $cNombreMedico);
+			oci_bind_by_name($stid, ':cRecetaCodCia', $cRecetaCodCia);
+			oci_bind_by_name($stid, ':cRecetaCodLocal', $cRecetaCodLocal);
+			oci_bind_by_name($stid, ':cRecetaNumero', $cRecetaNumero);
+			oci_bind_by_name($stid, ':cIndSoat', $cIndSoat);
+			oci_bind_by_name($stid, ':cDNI_PACIENTE', $cDNI_PACIENTE);
+			oci_bind_by_name($stid, ':cNumCmp_asociado', $cNumCmp_asociado);
+			oci_bind_by_name($stid, ':cNombreMedico_asociado', $cNombreMedico_asociado);
+			oci_bind_by_name($stid, ':cCodPaciente', $cCodPaciente);
+			oci_bind_by_name($stid, ':cIDRef', $cIDRef);
+			oci_bind_by_name($stid, ':cDescRef', $cDescRef);
+			oci_bind_by_name($stid, ':cNumCmp_visitador', $cNumCmp_visitador);
+			oci_bind_by_name($stid, ':cNombreMedico_visitador', $cNombreMedico_visitador);
+			oci_bind_by_name($stid, ':cIndCotizacion', $cIndCotizacion);
+			oci_bind_by_name($stid, ':cIndReserva', $cIndReserva);
+			oci_bind_by_name($stid, ':cCodCiaReserva', $cCodCiaReserva);
+			oci_bind_by_name($stid, ':cCodLocalReserva', $cCodLocalReserva);
+			oci_bind_by_name($stid, ':cCodPedidoReserva', $cCodPedidoReserva);
+			oci_execute($stid);
+			oci_close($conn);
+
+			$result = '';
+
+			return CustomResponse::success('cabecera', $result);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
 		}
 	}
 }
