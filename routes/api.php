@@ -260,9 +260,15 @@ Route::post('/posventa/getClientesNombrePosVenta', 'App\Http\Controllers\PosVent
 Route::post('/posventa/getClientesDocPosVenta', 'App\Http\Controllers\PosVentaController@getClientesDocPosVenta');
 Route::get('/posventa/getListaReferencias', 'App\Http\Controllers\PosVentaController@getListaReferencias');
 
+// DAVID
 Route::post('/posventa/grabarMedico', 'App\Http\Controllers\PosVentaController@grabarMedico');
 Route::post('/posventa/grabarCliente', 'App\Http\Controllers\PosVentaController@grabarCliente');
 Route::post('/posventa/modificarCliente', 'App\Http\Controllers\PosVentaController@modificarCliente');
+
+// JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');
 Route::post('/posventa/getNumeracion', 'App\Http\Controllers\PosVentaController@obtenerNumeracion');
 Route::post('/posventa/getFechaModNumeraPed', 'App\Http\Controllers\PosVentaController@obtenerFechaModNumeraPed');
+
+// CABECERA
+Route::post('/posventa/grabarPedidoCabecera', 'App\Http\Controllers\PosVentaController@grabarPedidoCabecera');
