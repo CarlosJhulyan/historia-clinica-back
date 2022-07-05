@@ -273,4 +273,5 @@ Route::post('/posventa/getFechaModNumeraPed', 'App\Http\Controllers\PosVentaCont
 
 // CABECERA
 Route::post('/posventa/grabarPedidoCabecera', 'App\Http\Controllers\PosVentaController@grabarPedidoCabecera');
+Route::post('/posventa/grabarPedidoDetalle', 'App\Http\Controllers\PosVentaController@grabarPedidoDetalle');
 Route::post('/posventa/inicializaNumeracionSinCommit', 'App\Http\Controllers\PosVentaController@inicializaNumeracionSinCommit');
