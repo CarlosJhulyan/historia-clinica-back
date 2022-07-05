@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 //AUTH
 Route::post('/login', 'App\Http\Controllers\AuthController@login');
 Route::post('/getCMP', 'App\Http\Controllers\AuthController@getCMP');
+Route::post('/loginUsuLocal', 'App\Http\Controllers\AuthController@loginUsuLocal');
 Route::post('/login-admin', 'App\Http\Controllers\AuthController@loginAdministrador');
 Route::post('/login/getUsuario', 'App\Http\Controllers\AuthController@getUsuarioInfoToToken');
 
@@ -272,3 +273,4 @@ Route::post('/posventa/getFechaModNumeraPed', 'App\Http\Controllers\PosVentaCont
 
 // CABECERA
 Route::post('/posventa/grabarPedidoCabecera', 'App\Http\Controllers\PosVentaController@grabarPedidoCabecera');
+Route::post('/posventa/inicializaNumeracionSinCommit', 'App\Http\Controllers\PosVentaController@inicializaNumeracionSinCommit');
