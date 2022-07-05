@@ -6,6 +6,7 @@ use App\Core\CustomResponse;
 use App\Oracle\OracleDB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class PosVentaController extends Controller
@@ -1201,6 +1202,7 @@ class PosVentaController extends Controller
 							$lista,
 							[
 								'key' => $datos[2],
+                                'COD_CLI' => $datos[1],
 								'TIPO_DOC_IDENT' => $datos[0],
 								'NUM_DOCUMENTO' => $datos[2],
 								'CLIENTE' => $datos[3],
@@ -1266,7 +1268,8 @@ class PosVentaController extends Controller
 						array_push(
 							$lista,
 							[
-								'key' => $datos[1],
+								'key' => $datos[2],
+                                'COD_CLI' => $datos[1],
 								'TIPO_DOC_IDENT' => $datos[0],
 								'NUM_DOCUMENTO' => $datos[2],
 								'CLIENTE' => $datos[3],
@@ -1564,16 +1567,31 @@ class PosVentaController extends Controller
 		}
 	}
 
+    // TODO: ERROR PARA TRAER LA FECHA MOD NUMERA
 	function obtenerFechaModNumeraPed(Request $request)
 	{
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $codNumera = $request->input('codNumera');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'codNumera' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
 		try {
 			$conn = OracleDB::getConnection();
 			$cursor = oci_new_cursor($conn);
 			$stid = oci_parse($conn, 'begin :result := PTOVENTA_VTA.VTA_OBTIENE_FEC_MOD_NUMERA_PED(
-						cCodGrupoCia_in => :cCodGrupoCia_in,
-						cCodLocal_in => :cCodLocal_in,
-						cCodNumera_in => :cCodNumera_in);end;');
-			oci_bind_by_name($stid, ":result", $cursor, -1, OCI_B_CURSOR);
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cCodNumera_in => :cCodNumera_in);end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
 			oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
 			oci_bind_by_name($stid, ":cCodLocal_in", $codLocal);
 			oci_bind_by_name($stid, ":cCodNumera_in", $codNumera);
@@ -1581,19 +1599,21 @@ class PosVentaController extends Controller
 			oci_execute($cursor);
 			$lista = [];
 
-			if ($stid) {
-				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
-					foreach ($row as $key => $value) {
-						$datos = explode('Ã', $value);
-						array_push(
-							$lista,
-							[
-								'FECHA' => $datos[0],
-							]
-						);
-					}
-				}
-			}
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'value' => $datos[1],
+                                'ESPECIALIDAD' => $datos[1]
+                            ]
+                        );
+                    }
+                }
+            }
 			oci_free_statement($stid);
 			oci_free_statement($cursor);
 			oci_close($conn);
