@@ -275,3 +275,12 @@ Route::post('/posventa/getFechaModNumeraPed', 'App\Http\Controllers\PosVentaCont
 Route::post('/posventa/grabarPedidoCabecera', 'App\Http\Controllers\PosVentaController@grabarPedidoCabecera');
 Route::post('/posventa/grabarPedidoDetalle', 'App\Http\Controllers\PosVentaController@grabarPedidoDetalle');
 Route::post('/posventa/inicializaNumeracionSinCommit', 'App\Http\Controllers\PosVentaController@inicializaNumeracionSinCommit');
+
+Route::post('/posventa/getFormasPagoSinConvenio', 'App\Http\Controllers\PosVentaController@obtieneFormasPagoSinConvenio');
+Route::post('/posventa/updateNumeracionSinCommit', 'App\Http\Controllers\PosVentaController@setNuSecNumeracionNoCommit');
+Route::post('/posventa/validarValorVentaNeto', 'App\Http\Controllers\PosVentaController@validarValorVentaNeto');
+Route::post('/posventa/procesaPedidoEspecialidad', 'App\Http\Controllers\PosVentaController@procesaPedidoEspecialidad');
+Route::post('/posventa/cargaListaCajaEspecialidad', 'App\Http\Controllers\PosVentaController@cargaListaCajaEspecialidad');
+Route::post('/posventa/cargaListaCajaDetEspecialidad', 'App\Http\Controllers\PosVentaController@cargaListaCajaDetEspecialidad');
+Route::post('/posventa/getPermiteCobrarPedido', 'App\Http\Controllers\PosVentaController@getPermiteCobrarPedido');
+Route::post('/posventa/grabaInicioFinProcesoCobroPedido', 'App\Http\Controllers\PosVentaController@grabaInicioFinProcesoCobroPedido');
