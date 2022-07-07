@@ -266,6 +266,9 @@ Route::post('/posventa/grabarMedico', 'App\Http\Controllers\PosVentaController@g
 Route::post('/posventa/grabarCliente', 'App\Http\Controllers\PosVentaController@grabarCliente');
 Route::post('/posventa/modificarCliente', 'App\Http\Controllers\PosVentaController@modificarCliente');
 Route::post('/posventa/cajCobraPedido', 'App\Http\Controllers\PosVentaController@cajCobraPedido');
+Route::post('/posventa/getSecuenciaMovCaja', 'App\Http\Controllers\PosVentaController@getSecuenciaMovCaja');
+Route::post('/posventa/cajGrabNewFormPagoPedio', 'App\Http\Controllers\PosVentaController@cajGrabNewFormPagoPedio');
+Route::post('/posventa/cajFVerificaPedForPag', 'App\Http\Controllers\PosVentaController@cajFVerificaPedForPag');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');
