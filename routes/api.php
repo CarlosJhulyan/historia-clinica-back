@@ -284,3 +284,9 @@ Route::post('/posventa/cargaListaCajaEspecialidad', 'App\Http\Controllers\PosVen
 Route::post('/posventa/cargaListaCajaDetEspecialidad', 'App\Http\Controllers\PosVentaController@cargaListaCajaDetEspecialidad');
 Route::post('/posventa/getPermiteCobrarPedido', 'App\Http\Controllers\PosVentaController@getPermiteCobrarPedido');
 Route::post('/posventa/grabaInicioFinProcesoCobroPedido', 'App\Http\Controllers\PosVentaController@grabaInicioFinProcesoCobroPedido');
+
+// Jhulyan
+Route::post('/posventa/validaStockPedido', 'App\Http\Controllers\PosVentaController@validaStockPedido');
+Route::post('/posventa/grabaInicioCobro', 'App\Http\Controllers\PosVentaController@grabaInicioCobro');
+Route::post('/posventa/validaSiFacturaElectronica', 'App\Http\Controllers\PosVentaController@validaSiFacturaElectronica');
+Route::post('/posventa/verificaEstadoPedido', 'App\Http\Controllers\PosVentaController@verificaEstadoPedido');
