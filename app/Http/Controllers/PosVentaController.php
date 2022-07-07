@@ -2132,7 +2132,9 @@ class PosVentaController extends Controller
 
 		try {
 			$conn = OracleDB::getConnection();
-			$stid = oci_parse($conn, 'begin :result := FARMA_UTILITY.ACTUALIZAR_NUMERA_SIN_COMMIT(
+			//Correccion Procedure
+			//$stid = oci_parse($conn, 'begin :result := FARMA_UTILITY.ACTUALIZAR_NUMERA_SIN_COMMIT(
+			$stid = oci_parse($conn, 'begin FARMA_UTILITY.ACTUALIZAR_NUMERA_SIN_COMMIT(
 						cCodGrupoCia_in => :cCodGrupoCia_in,
 						cCodLocal_in => :cCodLocal_in,
 						cCodNumera_in => :cCodNumera_in,
@@ -2172,23 +2174,27 @@ class PosVentaController extends Controller
 		try {
 
 			$conn = OracleDB::getConnection();
-			if ($is_cotizacion) {
-				$stid = oci_parse($conn, 'begin :result := PTOVENTA_VTA.VTA_P_VALIDAR_VALOR_COTI(
+			if (filter_var($is_cotizacion, FILTER_VALIDATE_BOOLEAN)) { // Arreglar Booleano
+				//Mejora Cobro
+				//$stid = oci_parse($conn, 'begin :result := PTOVENTA_VTA.VTA_P_VALIDAR_VALOR_COTI(
+				$stid = oci_parse($conn, 'begin PTOVENTA_VTA.VTA_P_VALIDAR_VALOR_COTI(
 						cCodGrupoCia_in => :cCodGrupoCia_in,
 						cCodLocal_in => :cCodLocal_in,
 						cNumPedVta_in => :cNumPedVta_in);end;');
 				oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
 				oci_bind_by_name($stid, ":cCodLocal_in", $codLocal);
-				oci_bind_by_name($stid, ":cCodNumera_in", $cNumPedVta_in);
+				oci_bind_by_name($stid, ":cNumPedVta_in", $cNumPedVta_in);
 				oci_execute($stid);
 			} else {
-				$stid = oci_parse($conn, 'begin :result := PTOVENTA_VTA.VTA_P_VALIDAR_VALOR_VTA(
+				//Mejora Cobro
+				//$stid = oci_parse($conn, 'begin :result := PTOVENTA_VTA.VTA_P_VALIDAR_VALOR_VTA(
+				$stid = oci_parse($conn, 'begin PTOVENTA_VTA.VTA_P_VALIDAR_VALOR_VTA(
 							cCodGrupoCia_in => :cCodGrupoCia_in,
 							cCodLocal_in => :cCodLocal_in,
 							cNumPedVta_in => :cNumPedVta_in);end;');
 				oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
 				oci_bind_by_name($stid, ":cCodLocal_in", $codLocal);
-				oci_bind_by_name($stid, ":cCodNumera_in", $cNumPedVta_in);
+				oci_bind_by_name($stid, ":cNumPedVta_in", $cNumPedVta_in);
 				oci_execute($stid);
 			}
 			oci_close($conn);
@@ -2219,7 +2225,9 @@ class PosVentaController extends Controller
 		try {
 
 			$conn = OracleDB::getConnection();
-			$stid = oci_parse($conn, 'begin :result := HHC_CAJA_HHSUR.P_PROCESA_PEDIDO(
+			//Mejora Cobro
+			//$stid = oci_parse($conn, 'begin :result := HHC_CAJA_HHSUR.P_PROCESA_PEDIDO(
+			$stid = oci_parse($conn, 'begin HHC_CAJA_HHSUR.P_PROCESA_PEDIDO(
 						cCodGrupoCia_in => :cCodGrupoCia_in,
 						cCodLocal_in => :cCodLocal_in,
 						cNumPedVta_in => :cNumPedVta_in);end;');
@@ -2292,7 +2300,7 @@ class PosVentaController extends Controller
 			oci_free_statement($cursor);
 			oci_close($conn);
 
-			return CustomResponse::success('Procedimiento satisfactorio');
+			return CustomResponse::success('Procedimiento satisfactorio', $lista); //devolver lista
 		} catch (\Throwable $th) {
 			error_log($th);
 			return CustomResponse::failure($th->getMessage());
@@ -2356,7 +2364,7 @@ class PosVentaController extends Controller
 			oci_free_statement($cursor);
 			oci_close($conn);
 
-			return CustomResponse::success('Procedimiento satisfactorio');
+			return CustomResponse::success('Procedimiento satisfactorio', $lista); //devolver lista
 		} catch (\Throwable $th) {
 			error_log($th);
 			return CustomResponse::failure($th->getMessage());
@@ -2521,148 +2529,240 @@ class PosVentaController extends Controller
 		}
 	}
 
-    // Jhulyan
+	// Jhulyan
 
-    function validaStockPedido(Request $request) {
-        $codGrupoCia = $request->input('codGrupoCia');
-        $codLocal = $request->input('codLocal');
-        $numPedido = $request->input('numPedido');
+	function validaStockPedido(Request $request)
+	{
+		$codGrupoCia = $request->input('codGrupoCia');
+		$codLocal = $request->input('codLocal');
+		$numPedido = $request->input('numPedido');
 
-        $validator = Validator::make($request->all(), [
-            'codGrupoCia' => 'required',
-            'codLocal' => 'required',
-            'numPedido' => 'required'
-        ]);
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'numPedido' => 'required'
+		]);
 
-        if ($validator->fails()) {
-            return CustomResponse::failure('Datos faltantes');
-        }
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
 
-        try {
-            $conn = OracleDB::getConnection();
-            $result = '';
-            $stid = oci_parse($conn, 'begin :result := PTOVTA_RESPALDO_STK.F_EXISTE_STOCK_PEDIDO(
+		try {
+			$conn = OracleDB::getConnection();
+			$result = '';
+			$stid = oci_parse($conn, 'begin :result := PTOVTA_RESPALDO_STK.F_EXISTE_STOCK_PEDIDO(
                 cCodGrupoCia_in => :cCodGrupoCia_in,
                 cCodLocal_in => :cCodLocal_in,
                 cNumPedVta_in => :cNumPedVta_in);end;');
-            oci_bind_by_name($stid, ':result', $result, 50);
-            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
-            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
-            oci_bind_by_name($stid, ':cNumPedVta_in', $numPedido);
-            oci_execute($stid);
-            oci_close($conn);
+			oci_bind_by_name($stid, ':result', $result, 50);
+			oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+			oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+			oci_bind_by_name($stid, ':cNumPedVta_in', $numPedido);
+			oci_execute($stid);
+			oci_close($conn);
 
-            return CustomResponse::success('Proceso de validación correcto', $result);
-        } catch (\Throwable $th) {
-            error_log($th);
-            return CustomResponse::failure($th->getMessage());
-        }
-    }
+			return CustomResponse::success('Proceso de validación correcto', $result);
+		} catch (\Throwable $th) {
+			error_log($th);
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
 
-    function grabaInicioCobro(Request $request) {
-        $codGrupoCia = $request->input('codGrupoCia');
-        $codLocal = $request->input('codLocal');
-        $numPedido = $request->input('numPedido');
-        $tipoTmp = $request->input('tipoTmp');
+	function grabaInicioCobro(Request $request)
+	{
+		$codGrupoCia = $request->input('codGrupoCia');
+		$codLocal = $request->input('codLocal');
+		$numPedido = $request->input('numPedido');
+		$tipoTmp = $request->input('tipoTmp');
 
-        $validator = Validator::make($request->all(), [
-            'codGrupoCia' => 'required',
-            'codLocal' => 'required',
-            'correlativo' => 'required',
-            'tipoTmp' => 'required'
-        ]);
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'correlativo' => 'required',
+			'tipoTmp' => 'required'
+		]);
 
-        if ($validator->fails()) {
-            return CustomResponse::failure('Datos faltantes');
-        }
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
 
-        try {
-            $conn = OracleDB::getConnection();
-            $stid = oci_parse($conn, 'begin FARMA_GRAL.CAJ_REGISTRA_TMP_INI_FIN_COBRO(
+		try {
+			$conn = OracleDB::getConnection();
+			$stid = oci_parse($conn, 'begin FARMA_GRAL.CAJ_REGISTRA_TMP_INI_FIN_COBRO(
                 cCodGrupoCia_in => :cCodGrupoCia_in,
                 cCod_Local_in => :cCod_Local_in,
                 cNum_ped_Vta_in => :cNum_ped_Vta_in,
                 cTmpTipo_in => :cTmpTipo_in);end;');
-            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
-            oci_bind_by_name($stid, ':cCod_Local_in', $codLocal);
-            oci_bind_by_name($stid, ':cNum_ped_Vta_in', $numPedido);
-            oci_bind_by_name($stid, ':cTmpTipo_in', $tipoTmp);
-            oci_execute($stid);
-            oci_close($conn);
+			oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+			oci_bind_by_name($stid, ':cCod_Local_in', $codLocal);
+			oci_bind_by_name($stid, ':cNum_ped_Vta_in', $numPedido);
+			oci_bind_by_name($stid, ':cTmpTipo_in', $tipoTmp);
+			oci_execute($stid);
+			oci_close($conn);
 
-            return CustomResponse::success('Grabado inicio correcto');
-        } catch (\Throwable $th) {
-            error_log($th);
-            return CustomResponse::failure($th->getMessage());
-        }
-    }
+			return CustomResponse::success('Grabado inicio correcto');
+		} catch (\Throwable $th) {
+			error_log($th);
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
 
-    function validaSiFacturaElectronica(Request $request) {
-        $codGrupoCia = $request->input('codGrupoCia');
-        $codLocal = $request->input('codLocal');
+	function validaSiFacturaElectronica(Request $request)
+	{
+		$codGrupoCia = $request->input('codGrupoCia');
+		$codLocal = $request->input('codLocal');
 
-        $validator = Validator::make($request->all(), [
-            'codGrupoCia' => 'required',
-            'codLocal' => 'required',
-        ]);
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+		]);
 
-        if ($validator->fails()) {
-            return CustomResponse::failure('Datos faltantes');
-        }
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
 
-        try {
-            $conn = OracleDB::getConnection();
-            $result = '';
-            $stid = oci_parse($conn, 'begin :result := SVB_FE_COBRO.IS_FACT_ELECTRONICO_LOCAL(
+		try {
+			$conn = OracleDB::getConnection();
+			$result = '';
+			$stid = oci_parse($conn, 'begin :result := SVB_FE_COBRO.IS_FACT_ELECTRONICO_LOCAL(
                 cCodGrupoCia_in => :cCodGrupoCia_in,
                 cCodLocal_in => :cCodLocal_in);end;');
-            oci_bind_by_name($stid, ':result', $result, 20);
-            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
-            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
-            oci_execute($stid);
-            oci_close($conn);
+			oci_bind_by_name($stid, ':result', $result, 20);
+			oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+			oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+			oci_execute($stid);
+			oci_close($conn);
 
-            return CustomResponse::success('Proceso de validación de factura correcto', $result);
-        } catch (\Throwable $th) {
-            error_log($th);
-            return CustomResponse::failure($th->getMessage());
-        }
-    }
+			return CustomResponse::success('Proceso de validación de factura correcto', $result);
+		} catch (\Throwable $th) {
+			error_log($th);
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
 
-    function verificaEstadoPedido(Request $request) {
-        $codGrupoCia = $request->input('codGrupoCia');
-        $codLocal = $request->input('codLocal');
-        $numPedido = $request->input('numPedido');
+	function verificaEstadoPedido(Request $request)
+	{
+		$codGrupoCia = $request->input('codGrupoCia');
+		$codLocal = $request->input('codLocal');
+		$numPedido = $request->input('numPedido');
 
-        $validator = Validator::make($request->all(), [
-            'codGrupoCia' => 'required',
-            'codLocal' => 'required',
-            'numPedido' => 'required'
-        ]);
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'numPedido' => 'required'
+		]);
 
-        if ($validator->fails()) {
-            return CustomResponse::failure('Datos faltantes');
-        }
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
 
-        try {
-            $conn = OracleDB::getConnection();
-            $result = '';
-            $stid = oci_parse($conn, 'begin :result := PTOVENTA_CAJ.CAJ_OBTIENE_ESTADO_PEDIDO(
+		try {
+			$conn = OracleDB::getConnection();
+			$result = '';
+			$stid = oci_parse($conn, 'begin :result := PTOVENTA_CAJ.CAJ_OBTIENE_ESTADO_PEDIDO(
                 cCodGrupoCia_in => :cCodGrupoCia_in,
                 cCodLocal_in => :cCodLocal_in,
                 cNumPedVta_in => :cNumPedVta_in);end;');
-            oci_bind_by_name($stid, ':result', $result, 50);
-            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
-            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
-            oci_bind_by_name($stid, ':cNumPedVta_in', $numPedido);
-            oci_execute($stid);
-            oci_close($conn);
+			oci_bind_by_name($stid, ':result', $result, 50);
+			oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+			oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+			oci_bind_by_name($stid, ':cNumPedVta_in', $numPedido);
+			oci_execute($stid);
+			oci_close($conn);
 
-            return CustomResponse::success('Estado de pedido verificado correctamente', $result);
-        } catch (\Throwable $th) {
-            error_log($th);
-            return CustomResponse::failure($th->getMessage());
-        }
-    }
+			return CustomResponse::success('Estado de pedido verificado correctamente', $result);
+		} catch (\Throwable $th) {
+			error_log($th);
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
 
+	function cajCobraPedido(Request $request)
+	{
+
+		$codGrupoCia = $request->input('codGrupoCia');
+		$codLocal = $request->input('codLocal');
+		$numPedido = $request->input('numPedido');
+		$secMovCaja = $request->input('secMovCaja');
+		$codNumera = $request->input('codNumera');
+		$tipCompPago = $request->input('tipCompPago');
+		$codMotKardex = $request->input('codMotKardex');
+		$tipDocKardex = $request->input('tipDocKardex');
+		$codNumeraKardex = $request->input('codNumeraKardex');
+		$usuCreaCompPago = $request->input('usuCreaCompPago');
+		$descDetalleForPago = $request->input('descDetalleForPago');
+		$permiteCampana = $request->input('permiteCampana');
+		$dni = $request->input('dni');
+		$numCompPagoImpr = $request->input('numCompPagoImpr');
+
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'numPedido' => 'required',
+			'secMovCaja' => 'required',
+			'codNumera' => 'required',
+			'tipCompPago' => 'required',
+			'codMotKardex' => 'required',
+			'tipDocKardex' => 'required',
+			'codNumeraKardex' => 'required',
+			'usuCreaCompPago' => 'required',
+			'descDetalleForPago' => 'required',
+			'permiteCampana' => 'required',
+			'dni' => 'required',
+			'numCompPagoImpr' => 'required'
+		]);
+
+
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
+
+
+		try {
+
+			$conn = OracleDB::getConnection();
+			$result = '';
+
+			$stid = oci_parse($conn, 'begin :result := PTOVENTA_CAJ.CAJ_COBRA_PEDIDO(
+								cCodGrupoCia_in => :cCodGrupoCia_in,
+								cCodLocal_in => :cCodLocal_in,
+								cNumPedVta_in => :cNumPedVta_in,
+								cSecMovCaja_in => :cSecMovCaja_in,
+								cCodNumera_in => :cCodNumera_in,
+								cTipCompPago_in => :cTipCompPago_in,
+								cCodMotKardex_in => :cCodMotKardex_in,
+								cTipDocKardex_in => :cTipDocKardex_in,
+								cCodNumeraKardex_in => :cCodNumeraKardex_in,
+								cUsuCreaCompPago_in => :cUsuCreaCompPago_in,
+								cDescDetalleForPago_in => :cDescDetalleForPago_in,
+								cPermiteCampana_in => :cPermiteCampana_in,
+								cDni_in => :cDni_in,
+								cNumCompPagoImpr_in => :cNumCompPagoImpr_in);end;');
+
+			oci_bind_by_name($stid, ':result', $result, 50);
+			oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+			oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+			oci_bind_by_name($stid, ':cNumPedVta_in', $numPedido);
+			oci_bind_by_name($stid, ':cSecMovCaja_in', $secMovCaja);
+			oci_bind_by_name($stid, ':cCodNumera_in', $codNumera);
+			oci_bind_by_name($stid, ':cTipCompPago_in', $tipCompPago);
+			oci_bind_by_name($stid, ':cCodMotKardex_in', $codMotKardex);
+			oci_bind_by_name($stid, ':cTipDocKardex_in', $tipDocKardex);
+			oci_bind_by_name($stid, ':cCodNumeraKardex_in', $codNumeraKardex);
+			oci_bind_by_name($stid, ':cUsuCreaCompPago_in', $usuCreaCompPago);
+			oci_bind_by_name($stid, ':cDescDetalleForPago_in', $descDetalleForPago);
+			oci_bind_by_name($stid, ':cPermiteCampana_in', $permiteCampana);
+			oci_bind_by_name($stid, ':cDni_in', $dni);
+			oci_bind_by_name($stid, ':cNumCompPagoImpr_in', $numCompPagoImpr);
+
+			oci_execute($stid);
+			oci_free_statement($stid);
+			oci_close($conn);
+
+			return CustomResponse::success('Cobrar Pedido Exitoso', $result);
+		} catch (\Throwable $th) {
+			error_log($th);
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
 }
