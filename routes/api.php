@@ -297,4 +297,5 @@ Route::post('/posventa/verificaEstadoPedido', 'App\Http\Controllers\PosVentaCont
 Route::post('/posventa/anulaPedidoPendiente', 'App\Http\Controllers\PosVentaController@anulaPedidoPendiente');
 Route::post('/posventa/actualizaCliPedido', 'App\Http\Controllers\PosVentaController@actualizaCliPedido');
 Route::post('/posventa/obtenerInfoPedido', 'App\Http\Controllers\PosVentaController@obtenerInfoPedido');
+Route::get('/posventa/getTiposMoneda', 'App\Http\Controllers\PosVentaController@getTiposDeMoneda');
 

@@ -2861,8 +2861,6 @@ class PosVentaController extends Controller
 		try {
 
 			$conn = OracleDB::getConnection();
-			$result = '';
-
 			$stid = oci_parse($conn, 'begin PTOVENTA_CAJ.CAJ_GRAB_NEW_FORM_PAGO_PEDIDO(
 								cCodGrupoCia_in => :cCodGrupoCia_in,
 								cCodLocal_in => :cCodLocal_in,
@@ -2955,6 +2953,7 @@ class PosVentaController extends Controller
 
 			return CustomResponse::success('CAJA VERIFICADA', $result);
 		} catch (\Exception $e) {
+            error_log($e);
 			return CustomResponse::failure($e->getMessage());
 		}
 	}
@@ -3112,4 +3111,18 @@ class PosVentaController extends Controller
 			return CustomResponse::failure($e->getMessage());
 		}
 	}
+
+    function getTiposDeMoneda() {
+        try {
+            $data = DB::table('MAE_MONEDA')
+                ->select('*')
+                ->where('FLG_ACTIVO', '=', '1')
+                ->get();
+
+            return CustomResponse::success('Tipos de moneda listado', $data);
+        }  catch (\Exception $e) {
+            error_log($e);
+            return CustomResponse::failure($e->getMessage());
+        }
+    }
 }
