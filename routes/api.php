@@ -287,10 +287,14 @@ Route::post('/posventa/procesaPedidoEspecialidad', 'App\Http\Controllers\PosVent
 Route::post('/posventa/cargaListaCajaEspecialidad', 'App\Http\Controllers\PosVentaController@cargaListaCajaEspecialidad');
 Route::post('/posventa/cargaListaCajaDetEspecialidad', 'App\Http\Controllers\PosVentaController@cargaListaCajaDetEspecialidad');
 Route::post('/posventa/getPermiteCobrarPedido', 'App\Http\Controllers\PosVentaController@getPermiteCobrarPedido');
-Route::post('/posventa/grabaInicioFinProcesoCobroPedido', 'App\Http\Controllers\PosVentaController@grabaInicioFinProcesoCobroPedido');
+//Route::post('/posventa/grabaInicioFinProcesoCobroPedido', 'App\Http\Controllers\PosVentaController@grabaInicioFinProcesoCobroPedido');
 
 // Jhulyan
 Route::post('/posventa/validaStockPedido', 'App\Http\Controllers\PosVentaController@validaStockPedido');
-Route::post('/posventa/grabaInicioCobro', 'App\Http\Controllers\PosVentaController@grabaInicioCobro');
+Route::post('/posventa/grabaInicioFinCobro', 'App\Http\Controllers\PosVentaController@grabaInicioFinCobro');
 Route::post('/posventa/validaSiFacturaElectronica', 'App\Http\Controllers\PosVentaController@validaSiFacturaElectronica');
 Route::post('/posventa/verificaEstadoPedido', 'App\Http\Controllers\PosVentaController@verificaEstadoPedido');
+Route::post('/posventa/anulaPedidoPendiente', 'App\Http\Controllers\PosVentaController@anulaPedidoPendiente');
+Route::post('/posventa/actualizaCliPedido', 'App\Http\Controllers\PosVentaController@actualizaCliPedido');
+Route::post('/posventa/obtenerInfoPedido', 'App\Http\Controllers\PosVentaController@obtenerInfoPedido');
+

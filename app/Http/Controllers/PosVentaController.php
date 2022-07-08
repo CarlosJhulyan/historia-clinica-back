@@ -2568,7 +2568,7 @@ class PosVentaController extends Controller
 		}
 	}
 
-	function grabaInicioCobro(Request $request)
+	function grabaInicioFinCobro(Request $request)
 	{
 		$codGrupoCia = $request->input('codGrupoCia');
 		$codLocal = $request->input('codLocal');
@@ -2578,7 +2578,7 @@ class PosVentaController extends Controller
 		$validator = Validator::make($request->all(), [
 			'codGrupoCia' => 'required',
 			'codLocal' => 'required',
-			'correlativo' => 'required',
+			'numPedido' => 'required',
 			'tipoTmp' => 'required'
 		]);
 
@@ -2709,7 +2709,7 @@ class PosVentaController extends Controller
 			'descDetalleForPago' => 'required',
 			'permiteCampana' => 'required',
 			'dni' => 'required',
-			'numCompPagoImpr' => 'required'
+//			'numCompPagoImpr' => 'required'
 		]);
 
 
@@ -2840,15 +2840,15 @@ class PosVentaController extends Controller
 			'valTipCambio' => 'required',
 			'valVuelto' => 'required',
 			'imTotalPago' => 'required',
-			'numTarj' => 'required',
-			'fecVencTarj' => 'required',
-			'nomTarj' => 'required',
+//			'numTarj' => 'required',
+//			'fecVencTarj' => 'required',
+//			'nomTarj' => 'required',
 			'canCupon' => 'required',
 			'usuCreaFormaPagoPed' => 'required',
 			'dni' => 'required',
-			'codAtori' => 'required',
+//			'codAtori' => 'required',
 			'lote' => 'required',
-			'numOperacion' => 'required',
+//			'numOperacion' => 'required',
 			'secFormaPago' => 'required'
 		]);
 
@@ -2917,13 +2917,13 @@ class PosVentaController extends Controller
 
 	function cajFVerificaPedForPag(Request $request)
 	{
-		$codGrupoCia = $request->input('cCodGrupoCia');
-		$codLocal = $request->input('cCodLocal');
+		$codGrupoCia = $request->input('codGrupoCia');
+		$codLocal = $request->input('codLocal');
 		$numPedido = $request->input('cNumPedVta');
 
 		$validator = Validator::make($request->all(), [
-			'cCodGrupoCia' => 'required',
-			'cCodLocal' => 'required',
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
 			'cNumPedVta' => 'required'
 		]);
 
@@ -2939,7 +2939,7 @@ class PosVentaController extends Controller
 			$stid = oci_parse($conn, 'begin :result := PTOVENTA_CAJ.CAJ_F_VERIFICA_PED_FOR_PAG(
 								cCodGrupoCia_in => :cCodGrupoCia_in,
 								cCodLocal_in => :cCodLocal_in,
-								cNumPedVta_in => :cNumPedVta_in								
+								cNumPedVta_in => :cNumPedVta_in
 								); end;');
 
 			oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
@@ -2956,4 +2956,155 @@ class PosVentaController extends Controller
 			return CustomResponse::failure($e->getMessage());
 		}
 	}
+
+    function anulaPedidoPendiente(Request $request) {
+        $cCodGrupoCia_in = $request->input('codGrupoCia');
+        $cCodLocal_in = $request->input('codLocal');
+        $cNumPedVta_in = $request->input('cNumPedVta');
+        $vIdUsu_in = $request->input('vIdUsu_in');
+        $cModulo_in = $request->input('cModulo_in');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'cNumPedVta' => 'required',
+            'vIdUsu_in' => 'required',
+            'cModulo_in' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, 'begin PTOVENTA_CAJ_ANUL.CAJ_ANULAR_PEDIDO_PENDIENTE(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumPedVta_in => :cNumPedVta_in,
+                vIdUsu_in => :vIdUsu_in,
+                cModulo_in => :cModulo_in);end;');
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $cCodGrupoCia_in);
+            oci_bind_by_name($stid, ':cCodLocal_in', $cCodLocal_in);
+            oci_bind_by_name($stid, ':cNumPedVta_in', $cNumPedVta_in);
+            oci_bind_by_name($stid, ':vIdUsu_in', $vIdUsu_in);
+            oci_bind_by_name($stid, ':cModulo_in', $cModulo_in);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Pedido pendiente anulado', null);
+        } catch (\Exception $e) {
+            return CustomResponse::failure($e->getMessage());
+        }
+    }
+
+    function actualizaCliPedido(Request $request) {
+        $cCodGrupoCia_in = $request->input('codGrupoCia');
+        $cCodLocal_in = $request->input('codLocal');
+        $cNumPedVta_in = $request->input('cNumPedVta_in');
+        $cCodCliLocal_in = $request->input('cCodCliLocal_in');
+        $cNomCliPed_in = $request->input('cNomCliPed_in');
+        $cDirCliLocal_in = $request->input('cDirCliLocal_in');
+        $cRucCliPed_in = $request->input('cRucCliPed_in');
+        $cUsuModPedVtaCab_in = $request->input('cUsuModPedVtaCab_in');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'cNumPedVta_in' => 'required',
+            'cCodCliLocal_in' => 'required',
+            'cNomCliPed_in' => 'required',
+            'cDirCliLocal_in' => 'required',
+            'cRucCliPed_in' => 'required',
+            'cUsuModPedVtaCab_in' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, 'begin PTOVENTA_CAJ.CAJ_ACTUALIZA_CLI_PEDIDO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumPedVta_in => :cNumPedVta_in,
+                cCodCliLocal_in => :cCodCliLocal_in,
+                cNomCliPed_in => :cNomCliPed_in,
+                cDirCliLocal_in => :cDirCliLocal_in,
+                cRucCliPed_in => :cRucCliPed_in,
+                cUsuModPedVtaCab_in => :cUsuModPedVtaCab_in);end;');
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $cCodGrupoCia_in);
+            oci_bind_by_name($stid, ':cCodLocal_in', $cCodLocal_in);
+            oci_bind_by_name($stid, ':cNumPedVta_in', $cNumPedVta_in);
+            oci_bind_by_name($stid, ':cCodCliLocal_in', $cCodCliLocal_in);
+            oci_bind_by_name($stid, ':cNomCliPed_in', $cNomCliPed_in);
+            oci_bind_by_name($stid, ':cDirCliLocal_in', $cDirCliLocal_in);
+            oci_bind_by_name($stid, ':cRucCliPed_in', $cRucCliPed_in);
+            oci_bind_by_name($stid, ':cUsuModPedVtaCab_in', $cUsuModPedVtaCab_in);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Datos de cliente pedido actualizado', null);
+        } catch (\Exception $e) {
+            return CustomResponse::failure($e->getMessage());
+        }
+    }
+
+    function obtenerInfoPedido(Request $request) {
+        $cCodGrupoCia_in = $request->input('codGrupoCia');
+        $cCodLocal_in = $request->input('codLocal');
+        $cNumPedDiario_in = $request->input('cNumPedDiario_in');
+        $cFecPedVta_in = $request->input('cFecPedVta_in');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'cNumPedDiario_in' => 'required',
+//            'cFecPedVta_in' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_CAJ.CAJ_OBTIENE_INFO_PEDIDO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumPedDiario_in => :cNumPedDiario_in,
+                cFecPedVta_in => :cFecPedVta_in);end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $cCodGrupoCia_in);
+            oci_bind_by_name($stid, ':cCodLocal_in', $cCodLocal_in);
+            oci_bind_by_name($stid, ':cNumPedDiario_in', $cNumPedDiario_in);
+            oci_bind_by_name($stid, ':cFecPedVta_in', $cFecPedVta_in);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'NUM_PED_VTA' => $datos[0],
+                                'VAL_NETO_PED' => $datos[1],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success('Informacion de pedido', $lista);
+        } catch (\Exception $e) {
+            return CustomResponse::failure($e->getMessage());
+        }
+    }
 }
