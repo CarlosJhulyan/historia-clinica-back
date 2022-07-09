@@ -269,6 +269,17 @@ Route::post('/posventa/cajCobraPedido', 'App\Http\Controllers\PosVentaController
 Route::post('/posventa/getSecuenciaMovCaja', 'App\Http\Controllers\PosVentaController@getSecuenciaMovCaja');
 Route::post('/posventa/cajGrabNewFormPagoPedido', 'App\Http\Controllers\PosVentaController@cajGrabNewFormPagoPedido');
 Route::post('/posventa/cajFVerificaPedForPag', 'App\Http\Controllers\PosVentaController@cajFVerificaPedForPag');
+Route::post('/posventa/setDatosCompElectronico', 'App\Http\Controllers\PosVentaController@setDatosCompElectronico');
+Route::post('/posventa/asignarHoraSugerida', 'App\Http\Controllers\PosVentaController@asignarHoraSugerida');
+Route::post('/posventa/getPrincActProd', 'App\Http\Controllers\PosVentaController@getPrincActProd');
+Route::post('/posventa/getInfoComplProd', 'App\Http\Controllers\PosVentaController@getInfoComplProd');
+Route::post('/posventa/impCompElectWS', 'App\Http\Controllers\PosVentaController@impCompElectWS');
+Route::post('/posventa/obtieneNumCompPagoImpr', 'App\Http\Controllers\PosVentaController@obtieneNumCompPagoImpr');
+Route::post('/posventa/actualizaEstadoPedido', 'App\Http\Controllers\PosVentaController@actualizaEstadoPedido');
+Route::post('/posventa/infoDetalleAgrupacion', 'App\Http\Controllers\PosVentaController@infoDetalleAgrupacion');
+Route::post('/posventa/obtieneDocImprimirWs', 'App\Http\Controllers\PosVentaController@obtieneDocImprimirWs');
+Route::post('/posventa/clearCacheImprimirWs', 'App\Http\Controllers\PosVentaController@clearCacheImprimirWs');
+Route::post('/posventa/imprimirDetalle', 'App\Http\Controllers\PosVentaController@imprimirDetalle');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');
@@ -298,4 +309,3 @@ Route::post('/posventa/anulaPedidoPendiente', 'App\Http\Controllers\PosVentaCont
 Route::post('/posventa/actualizaCliPedido', 'App\Http\Controllers\PosVentaController@actualizaCliPedido');
 Route::post('/posventa/obtenerInfoPedido', 'App\Http\Controllers\PosVentaController@obtenerInfoPedido');
 Route::get('/posventa/getTiposMoneda', 'App\Http\Controllers\PosVentaController@getTiposDeMoneda');
-
