@@ -207,6 +207,14 @@ Route::post('/auditoria/getAuditoriaxEspecialidad', 'App\Http\Controllers\Report
 Route::post('/auditoria/getPesoEspecialidades', 'App\Http\Controllers\ReportController@obtenerPesoEspecialidades');
 Route::post('/auditoria/getEspecialidades', 'App\Http\Controllers\ReportController@getEspecialidades');
 
+// REPORTES
+Route::post('/reportes/getReporte1', 'App\Http\Controllers\ReportController@getReporte1');
+Route::post('/reportes/getReporte2', 'App\Http\Controllers\ReportController@getReporte2');
+Route::post('/reportes/getReporte3', 'App\Http\Controllers\ReportController@getReporte3');
+Route::post('/reportes/getReporte4', 'App\Http\Controllers\ReportController@getReporte4');
+Route::post('/reportes/getTablasPrimarias', 'App\Http\Controllers\ReportController@getTablasPrimarias');
+Route::post('/reportes/getReporte4Detalle', 'App\Http\Controllers\ReportController@getReporte4Detalle');
+
 // EVOLUCION DE ENFERMERIA
 Route::post('/evolucionEnfermeria/setData', 'App\Http\Controllers\EvolucionEnfermeriaController@agregarEvolucionEnfermeria');
 Route::post('/evolucionEnfermeria/getByFecha', 'App\Http\Controllers\EvolucionEnfermeriaController@filtrarEEPorFecha');
@@ -309,3 +317,4 @@ Route::post('/posventa/anulaPedidoPendiente', 'App\Http\Controllers\PosVentaCont
 Route::post('/posventa/actualizaCliPedido', 'App\Http\Controllers\PosVentaController@actualizaCliPedido');
 Route::post('/posventa/obtenerInfoPedido', 'App\Http\Controllers\PosVentaController@obtenerInfoPedido');
 Route::get('/posventa/getTiposMoneda', 'App\Http\Controllers\PosVentaController@getTiposDeMoneda');
+Route::post('/posventa/getMetodosPagoImprimir', 'App\Http\Controllers\PosVentaController@getMetodosPagoImprimir');

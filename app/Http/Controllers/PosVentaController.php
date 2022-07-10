@@ -3688,10 +3688,10 @@ class PosVentaController extends Controller
 								'DESCRIPCION' => $datos[1],
 								'UNID' => $datos[2],
 								'LAB' => $datos[3],
-								'CANT' => $datos[4],								
+								'CANT' => $datos[4],
 								'PREC_UNIT' => $datos[5],
 								'DESCTO' => $datos[6],
-								'SUBTOTAL' => $datos[7],								
+								'SUBTOTAL' => $datos[7],
 							]
 						);
 					}
@@ -3705,4 +3705,65 @@ class PosVentaController extends Controller
 			return CustomResponse::failure($th->getMessage());
 		}
 	}
+
+    function getMetodosPagoImprimir(Request $request) {
+        $CodGrupoCia_in = $request->input('codGrupoCia');
+        $CodLocal_in = $request->input('codLocal');
+        $NumPedVta_in = $request->input('numPedVta');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'numPedVta' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+            $stid = oci_parse($conn, 'begin :result := FARMA_EPOS.METODO_PAGO_IMPRIMIR_WS(
+                vNumPedVta_in => :vNumPedVta_in,
+                vCodGrupoCia_in => :vCodGrupoCia_in,
+                vCodLocal_in => :vCodLocal_in);end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ':vNumPedVta_in', $NumPedVta_in);
+            oci_bind_by_name($stid, ':vCodGrupoCia_in', $CodGrupoCia_in);
+            oci_bind_by_name($stid, ':vCodLocal_in', $CodLocal_in);
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+
+                        array_push(
+                            $lista,
+                            [
+                                'COD_FORMA_PAGO' => $datos[0],
+                                'COD_TIPO_MONEDA' => $datos[1],
+                                'IMP_PAGO' => $datos[2],
+                                'VUELTO' => $datos[3],
+                                'VAL_TIP_CAMBIO' => $datos[4],
+                                'DESC_FORMA_PAGO' => $datos[5],
+                                'IMP_TOTAL_PAGO' => $datos[6],
+                            ]
+                        );
+                    }
+                }
+            }
+
+            oci_close($conn);
+
+            return CustomResponse::success('Metodos de pago para imprimir', $lista);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
 }
