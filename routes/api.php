@@ -282,6 +282,7 @@ Route::post('/posventa/asignarHoraSugerida', 'App\Http\Controllers\PosVentaContr
 Route::post('/posventa/getPrincActProd', 'App\Http\Controllers\PosVentaController@getPrincActProd');
 Route::post('/posventa/getInfoComplProd', 'App\Http\Controllers\PosVentaController@getInfoComplProd');
 Route::post('/posventa/impCompElectWS', 'App\Http\Controllers\PosVentaController@impCompElectWS');
+Route::post('/posventa/impCompElect', 'App\Http\Controllers\PosVentaController@impCompElect');
 Route::post('/posventa/obtieneNumCompPagoImpr', 'App\Http\Controllers\PosVentaController@obtieneNumCompPagoImpr');
 Route::post('/posventa/actualizaEstadoPedido', 'App\Http\Controllers\PosVentaController@actualizaEstadoPedido');
 Route::post('/posventa/infoDetalleAgrupacion', 'App\Http\Controllers\PosVentaController@infoDetalleAgrupacion');
@@ -318,3 +319,4 @@ Route::post('/posventa/actualizaCliPedido', 'App\Http\Controllers\PosVentaContro
 Route::post('/posventa/obtenerInfoPedido', 'App\Http\Controllers\PosVentaController@obtenerInfoPedido');
 Route::get('/posventa/getTiposMoneda', 'App\Http\Controllers\PosVentaController@getTiposDeMoneda');
 Route::post('/posventa/getMetodosPagoImprimir', 'App\Http\Controllers\PosVentaController@getMetodosPagoImprimir');
+Route::post('/posventa/getnumOrdenVta', 'App\Http\Controllers\PosVentaController@getnumOrdenVta');

@@ -3365,7 +3365,7 @@ class PosVentaController extends Controller
 			$conn = OracleDB::getConnection();
 			$cursor = '';
 
-			$stid = oci_parse($conn, 'begin :result := FARMA_EPOS.IMP_COMP_ELECT_WS(
+			$stid = oci_parse($conn, 'begin :result := HHC_IMP_ELECTRONICO.IMP_COMP_ELECT_WS(
 								vCodGrupoCia_in => :vCodGrupoCia_in,
 								vCodLocal_in => :vCodLocal_in,
 								vNumPedVta_in => :vNumPedVta_in,
@@ -3390,6 +3390,8 @@ class PosVentaController extends Controller
 
 			return CustomResponse::success('Peticion exitosa', $cursor);
 		} catch (\Throwable $th) {
+            if (str_contains($th->getMessage(), '20989'))
+                return CustomResponse::failure('COMPROBANTE ELECTRONICO NO CUENTA CON NRO DE CORRELATIVO. COMUNIQUESE CON MESA DE AYUDA.');
 			return CustomResponse::failure($th->getMessage());
 		}
 	}
@@ -3411,7 +3413,7 @@ class PosVentaController extends Controller
 			$conn = OracleDB::getConnection();
 			$cursor = oci_new_cursor($conn);
 
-			$stid = oci_parse($conn, 'begin :result := FARMA_EPOS.OBTIENE_DOC_IMPRIMIR_WS(
+			$stid = oci_parse($conn, 'begin :result := HHC_IMP_ELECTRONICO.OBTIENE_DOC_IMPRIMIR_WS(
 								IdDocumento => :IdDocumento);end;');
 
 			oci_bind_by_name($stid, ':IdDocumento', $IdDocumento);
@@ -3471,7 +3473,7 @@ class PosVentaController extends Controller
 
 			$conn = OracleDB::getConnection();
 
-			$stid = oci_parse($conn, 'begin FARMA_EPOS.ClearCacheIMPRIMIR_WS(
+			$stid = oci_parse($conn, 'begin HHC_IMP_ELECTRONICO.ClearCacheIMPRIMIR_WS(
 								IdDocumento => :IdDocumento);end;');
 
 			oci_bind_by_name($stid, ':IdDocumento', $IdDocumento);
@@ -3660,7 +3662,7 @@ class PosVentaController extends Controller
 			$conn = OracleDB::getConnection();
 			$cursor = oci_new_cursor($conn);
 
-			$stid = oci_parse($conn, 'begin :result := FARMA_EPOS.IMPRIMIR_DETALLE_WS(
+			$stid = oci_parse($conn, 'begin :result := HHC_IMP_ELECTRONICO.IMPRIMIR_DETALLE_WS(
 								vCodGrupoCia_in => :vCodGrupoCia_in,
 								vCodLocal_in => :vCodLocal_in,
 								vNumPedVta_in => :vNumPedVta_in,
@@ -3724,7 +3726,7 @@ class PosVentaController extends Controller
         try {
             $conn = OracleDB::getConnection();
             $cursor = oci_new_cursor($conn);
-            $stid = oci_parse($conn, 'begin :result := FARMA_EPOS.METODO_PAGO_IMPRIMIR_WS(
+            $stid = oci_parse($conn, 'begin :result := HHC_IMP_ELECTRONICO.METODO_PAGO_IMPRIMIR_WS(
                 vNumPedVta_in => :vNumPedVta_in,
                 vCodGrupoCia_in => :vCodGrupoCia_in,
                 vCodLocal_in => :vCodLocal_in);end;');
@@ -3761,6 +3763,125 @@ class PosVentaController extends Controller
             oci_close($conn);
 
             return CustomResponse::success('Metodos de pago para imprimir', $lista);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    function impCompElect(Request $request) {
+        $vCodGrupoCia_in = $request->input('codGrupoCia');
+        $vCodLocal_in = $request->input('codLocal');
+        $vNumPedVta_in = $request->input('numPedVta');
+        $vSecCompPago_in = $request->input('secCompPago');
+        $vVersion_in = $request->input('version');
+        $vReimpresion = $request->input('reimpresion');
+        $valorAhorro_in = $request->input('valorAhorro');
+        $cDocTarjetaPtos_in = $request->input('docTarjetaPtos');
+        $cNumOrdenVta_in = $request->input('numOrden');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'numPedVta' => 'required',
+            'secCompPago' => 'required',
+            'version' => 'required',
+            'reimpresion' => 'required',
+            'numOrden' => 'required',
+            // 'valorAhorro' => 'required',
+            // 'docTarjetaPtos' => 'required',
+        ]);
+
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+
+            $conn = OracleDB::getConnection();
+            $cursor = '';
+
+            $stid = oci_parse($conn, 'begin :result := HHC_IMP_ELECTRONICO.IMP_COMP_LABORATORIO_WS(
+                    vCodGrupoCia_in => :vCodGrupoCia_in,
+                    vCodLocal_in => :vCodLocal_in,
+                    vNumPedVta_in => :vNumPedVta_in,
+                    vSecCompPago_in => :vSecCompPago_in,
+                    vVersion_in => :vVersion_in,
+                    vReimpresion => :vReimpresion,
+                    valorAhorro_in => :valorAhorro_in,
+                    cDocTarjetaPtos_in => :cDocTarjetaPtos_in,
+                    cNumOrdenVta_in => :cNumOrdenVta_in);end;');
+
+            oci_bind_by_name($stid, ':vCodGrupoCia_in', $vCodGrupoCia_in);
+            oci_bind_by_name($stid, ':vCodLocal_in', $vCodLocal_in);
+            oci_bind_by_name($stid, ':vNumPedVta_in', $vNumPedVta_in);
+            oci_bind_by_name($stid, ':vSecCompPago_in', $vSecCompPago_in);
+            oci_bind_by_name($stid, ':vVersion_in', $vVersion_in);
+            oci_bind_by_name($stid, ':vReimpresion', $vReimpresion);
+            oci_bind_by_name($stid, ':valorAhorro_in', $valorAhorro_in);
+            oci_bind_by_name($stid, ':cDocTarjetaPtos_in', $cDocTarjetaPtos_in);
+            oci_bind_by_name($stid, ':cNumOrdenVta_in', $cNumOrdenVta_in);
+            oci_bind_by_name($stid, ':result', $cursor, 50);
+            oci_execute($stid);
+
+            return CustomResponse::success('Peticion exitosa', $cursor);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    function getnumOrdenVta(Request $request) {
+        $vCodGrupoCia_in = $request->input('codGrupoCia');
+        $vCodLocal_in = $request->input('codLocal');
+        $vNumPedVta_in = $request->input('numPedVta');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'numPedVta' => 'required',
+        ]);
+
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+            $stid = oci_parse($conn, 'begin :result := HHC_IMP_ELECTRONICO.GET_LISTA_ORDEN_VTA(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumPedVta_in => :cNumPedVta_in);end;');
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $vCodGrupoCia_in);
+            oci_bind_by_name($stid, ':cCodLocal_in', $vCodLocal_in);
+            oci_bind_by_name($stid, ':cNumPedVta_in', $vNumPedVta_in);
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+
+                        array_push(
+                            $lista,
+                            [
+                                'NUM_ORDEN' => $datos[0]
+                            ]
+                        );
+                    }
+                }
+            }
+
+            oci_close($conn);
+
+            return CustomResponse::success('Numero de orden', $lista[0]);
         } catch (\Throwable $th) {
             error_log($th);
             return CustomResponse::failure($th->getMessage());
