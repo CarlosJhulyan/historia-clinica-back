@@ -322,3 +322,9 @@ Route::post('/posventa/obtenerInfoPedido', 'App\Http\Controllers\PosVentaControl
 Route::get('/posventa/getTiposMoneda', 'App\Http\Controllers\PosVentaController@getTiposDeMoneda');
 Route::post('/posventa/getMetodosPagoImprimir', 'App\Http\Controllers\PosVentaController@getMetodosPagoImprimir');
 Route::post('/posventa/getnumOrdenVta', 'App\Http\Controllers\PosVentaController@getnumOrdenVta');
+
+
+// Firestore Telemedicina Jisla
+Route::post('/sync/firestore', 'App\Http\Controllers\FirestoreController@syncFirestore');
+Route::post('/sync/patient', 'App\Http\Controllers\FirestoreController@syncPatient');
+Route::post('/sync/doctor', 'App\Http\Controllers\FirestoreController@syncDoctor');

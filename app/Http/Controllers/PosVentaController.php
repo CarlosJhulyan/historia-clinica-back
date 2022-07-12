@@ -3866,22 +3866,13 @@ class PosVentaController extends Controller
 
             if ($stid) {
                 while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
-                    foreach ($row as $key => $value) {
-                        $datos = explode('Ã', $value);
-
-                        array_push(
-                            $lista,
-                            [
-                                'NUM_ORDEN' => $datos[0]
-                            ]
-                        );
-                    }
+                    array_push($lista, $row);
                 }
             }
 
             oci_close($conn);
 
-            return CustomResponse::success('Numero de orden', $lista[0]);
+            return CustomResponse::success('Numero de orden', $lista);
         } catch (\Throwable $th) {
             error_log($th);
             return CustomResponse::failure($th->getMessage());
