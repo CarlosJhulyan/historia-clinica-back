@@ -289,6 +289,8 @@ Route::post('/posventa/infoDetalleAgrupacion', 'App\Http\Controllers\PosVentaCon
 Route::post('/posventa/obtieneDocImprimirWs', 'App\Http\Controllers\PosVentaController@obtieneDocImprimirWs');
 Route::post('/posventa/clearCacheImprimirWs', 'App\Http\Controllers\PosVentaController@clearCacheImprimirWs');
 Route::post('/posventa/imprimirDetalle', 'App\Http\Controllers\PosVentaController@imprimirDetalle');
+Route::post('/horarios/setHorario', 'App\Http\Controllers\HorariosController@setHorario');
+Route::post('/horarios/getHorarioFecha', 'App\Http\Controllers\HorariosController@getHorarioFecha');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');
