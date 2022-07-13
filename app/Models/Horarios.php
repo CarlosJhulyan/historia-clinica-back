@@ -17,6 +17,7 @@ class Horarios extends Model
 		'HORA_INICIO',
 		'HORA_FIN',
 		'ESPECIALIDAD',
+		'ID_ESPECIALIDAD',
 	];
 
 	protected $primaryKey = 'ID_HORARIO';

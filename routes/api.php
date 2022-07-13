@@ -291,6 +291,8 @@ Route::post('/posventa/clearCacheImprimirWs', 'App\Http\Controllers\PosVentaCont
 Route::post('/posventa/imprimirDetalle', 'App\Http\Controllers\PosVentaController@imprimirDetalle');
 Route::post('/horarios/setHorario', 'App\Http\Controllers\HorariosController@setHorario');
 Route::post('/horarios/getHorarioFecha', 'App\Http\Controllers\HorariosController@getHorarioFecha');
+Route::post('/horarios/obtenerEspecialidad', 'App\Http\Controllers\HorariosController@obtenerEspecialidad');
+Route::post('/horarios/getMedicoByEspecialidad', 'App\Http\Controllers\HorariosController@getMedicoByEspecialidad');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');

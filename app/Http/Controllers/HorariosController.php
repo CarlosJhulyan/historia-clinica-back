@@ -15,6 +15,76 @@ use Illuminate\Support\Facades\DB;
 class HorariosController extends Controller
 {
 
+	public function getMedicoByEspecialidad()
+	{
+		$especialidad_id = request()->input('especialidad_id');
+
+		$validator = Validator::make(request()->all(), [
+			'especialidad_id' => 'required|numeric',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure("Faltan Datos");
+		}
+
+		try {
+			$medicos = DB::select('select * from mae_medico mm inner join cc_medico_x_bus mb on mm.num_cmp = mb.num_cmp inner join cc_consultorio cc on mb.id_consultorio = cc.id_consultorio where cc.id_consultorio = ?', [$especialidad_id]);
+
+			return CustomResponse::success('Medicos', $medicos);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
+
+	public function obtenerEspecialidad()
+	{
+		$codGrupoCia = '001';
+		$cCodLocal = '001';
+		$usuLocal = '';
+
+		try {
+			$conn = OracleDB::getConnection();
+			$cursor = oci_new_cursor($conn);
+			$stid = oci_parse($conn, "BEGIN :result :=HHC_LABORATORIO.GET_ESPECIALIDAD(
+						cCodGrupoCia_in => :cCodGrupoCia_in,
+						cCod_Local_in => :cCod_Local_in,
+						cSecUsu_local_in => :cSecUsu_local_in);
+				END;");
+			oci_bind_by_name($stid, ":result", $cursor, -1, OCI_B_CURSOR);
+			oci_bind_by_name($stid, ":cCodGrupoCia_in", $codGrupoCia);
+			oci_bind_by_name($stid, ":cCod_Local_in", $cCodLocal);
+			oci_bind_by_name($stid, ":cSecUsu_local_in", $usuLocal);
+			oci_execute($stid);
+			oci_execute($cursor);
+
+			$lista = [];
+			if ($stid) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					foreach ($row as $key => $value) {
+						$datos = explode('Ã', $value);
+						array_push(
+							$lista,
+							[
+								'key' => $datos[0],
+								'value' => $datos[0],
+								'descripcion' => $datos[1]
+							]
+						);
+					}
+				}
+			}
+			oci_free_statement($stid);
+			oci_free_statement($cursor);
+			oci_close($conn);
+
+			return CustomResponse::success('Lista de especialidades encontrada.', $lista);
+		} catch (\Throwable $th) {
+			error_log($th->getMessage());
+			return CustomResponse::failure('Error en los servidores.');
+		}
+	}
+
 	function setHorario(Request $request)
 	{
 		$cmp = $request->input('cmp');
@@ -22,7 +92,8 @@ class HorariosController extends Controller
 		$fecha = $request->input('fecha');
 		$horaInicio = $request->input('horaInicio');
 		$horaFin = $request->input('horaFin');
-		// $especialidad = $request->input('especialidad');
+		$especialidad = $request->input('especialidad');
+		$idEspecialidad = $request->input('idEspecialidad');
 
 
 		$validator = Validator::make($request->all(), [
@@ -31,7 +102,8 @@ class HorariosController extends Controller
 			'fecha' => 'required',
 			'horaInicio' => 'required',
 			'horaFin' => 'required',
-			// 'especialidad' => 'required',
+			'especialidad' => 'required',
+			'idEspecialidad' => 'required',
 		]);
 
 		if ($validator->fails()) {
@@ -39,18 +111,20 @@ class HorariosController extends Controller
 		}
 		try {
 
-			// $data1 = DB::select("select * from cc_medico_x_bus where num_cmp = ?", [$cmp]);
-			// $data2 = DB::select("select * from cc_consultorio where ID_CONSULTORIO =?", [$data1[0]->id_consultorio]);
+			$horario = DB::select("select * from HCW_HORARIOS where CMP = ? and to_char(FECHA,'YYYY-MM-DD') = ? and ID_ESPECIALIDAD = ?", [$cmp, explode('T', $fecha)[0], $idEspecialidad]);
+			if (count($horario) > 0) {
+				return CustomResponse::failure('Horario ya existe');
+			}
 
-			$data = DB::insert('INSERT INTO HCW_HORARIOS (ID_HORARIO,CMP,NOMBRE_MEDICO,FECHA,HORA_INICIO,HORA_FIN,ESPECIALIDAD) VALUES(?,?,?,?,?,?,?)', [
+			$data = DB::insert('INSERT INTO HCW_HORARIOS (ID_HORARIO,CMP,NOMBRE_MEDICO,FECHA,HORA_INICIO,HORA_FIN,ESPECIALIDAD,ID_ESPECIALIDAD) VALUES(?,?,?,?,?,?,?,?)', [
 				round(((microtime(true)) * 1000)) . 'DT' . uniqid(),
 				$cmp,
 				$nombreMedico,
 				new DateTime($fecha),
 				$horaInicio,
 				$horaFin,
-				'',
-				// $data2[0]->descripcion,
+				$especialidad,
+				$idEspecialidad
 			]);
 			return CustomResponse::success('Horario Agregado', $data);
 		} catch (\Throwable $th) {
