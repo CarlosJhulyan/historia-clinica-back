@@ -126,26 +126,26 @@ class PacientesController extends Controller
                             'COD_GRUPO_CIA' => $codGrupoCia,
                             'COD_MEDICO' => $codMedico,
                         ])->first();
-                    $hospitalizacion = Hospitalizaciones::select('*')
-                        ->where([
-                            'COD_PACIENTE' => $row['COD_PACIENTE'],
-                            'COD_GRUPO_CIA' => $codGrupoCia,
-                        ])
-                        ->first();
-                    
+                    // $hospitalizacion = Hospitalizaciones::select('*')
+                    //     ->where([
+                    //         'COD_PACIENTE' => $row['COD_PACIENTE'],
+                    //         'COD_GRUPO_CIA' => $codGrupoCia,
+                    //     ])
+                    //     ->first();
+
                     $especialidad = DB::select("SELECT * FROM CC_CONSULTORIO C, CC_MEDICO_X_BUS M WHERE C.Id_Consultorio = M.Id_Consultorio AND M.Cod_Medico =?", [$atencionMedica['cod_medico']]);
                     $lista[$key]['ESPECIALIDAD'] = $especialidad[0]->descripcion;
-                    
+
                     $lista[$key]['COD_CIA'] = $atencionMedica['cod_cia'];
-                    if ($hospitalizacion) {
-                        $lista[$key]['ASIGNADO'] = $hospitalizacion['asignado'];
-                        $lista[$key]['MOTIVO_BAJA'] = $hospitalizacion['motivo_baja'];
-                        if (!$hospitalizacion['motivo_baja']) {
-                            array_push($filtroAlta, $lista[$key]);
-                        }
-                    } else {
-                        array_push($filtroAlta, $lista[$key]);
-                    }
+                    // if ($hospitalizacion) {
+                    //     $lista[$key]['ASIGNADO'] = $hospitalizacion['asignado'];
+                    //     $lista[$key]['MOTIVO_BAJA'] = $hospitalizacion['motivo_baja'];
+                    // if (!$hospitalizacion['motivo_baja']) {
+                    array_push($filtroAlta, $lista[$key]);
+                    // }
+                    // } else {
+                    //     array_push($filtroAlta, $lista[$key]);
+                    // }
                 }
 
                 return response()->json(
@@ -977,10 +977,11 @@ class PacientesController extends Controller
      *     )
      * )
      */
-    public function upsertPaciente(Request $request) {
+    public function upsertPaciente(Request $request)
+    {
         //$edad = $request->input('EDAD_CLI');
         $messageResponse = "";
-        
+
         $ccodgrupocia_in = "001";
         $ccodlocal_in = "001";
         $vtipoddm = "";
@@ -1025,7 +1026,7 @@ class PacientesController extends Controller
         } else {
             $vtipoddm = "U";
         }
-        
+
         $validator = Validator::make($request->all(), [
             'COD_PACIENTE' => 'required',
             'DEP_UBIGEO' => 'required',
@@ -1089,7 +1090,7 @@ class PacientesController extends Controller
                     vcorreo_in => :vcorreo_in,
                     vtelfijo_in => :vtelfijo_in,
                     vtelcel_in => :vtelcel_in); END;");
-                
+
                 oci_bind_by_name($stid, ":result", $result, 20);
                 oci_bind_by_name($stid, ":ccodgrupocia_in", $ccodgrupocia_in);
                 oci_bind_by_name($stid, ":ccodlocal_in", $ccodlocal_in);
@@ -1133,7 +1134,7 @@ class PacientesController extends Controller
                 oci_close($conn);
 
                 if ($request->input('COD_PACIENTE') == '0') {
-                    $messageResponse = 'El paciente '.$vnombrepac_in.' '.$vapepatpac_in.' '.$vapematpac_in.' se registro con número de Historia Clinica '.$result;
+                    $messageResponse = 'El paciente ' . $vnombrepac_in . ' ' . $vapepatpac_in . ' ' . $vapematpac_in . ' se registro con número de Historia Clinica ' . $result;
                 } else {
                     $messageResponse = 'Paciente modificado correctamente';
                 }
@@ -1180,7 +1181,8 @@ class PacientesController extends Controller
      *     )
      * )
      */
-    public function searchPacientes(Request $request) {
+    public function searchPacientes(Request $request)
+    {
         $apePaterno = $request->input('APE_PATERNO');
         $apeMaterno = $request->input('APE_MATERNO');
         $nombres = $request->input('NOMBRE');
@@ -1250,8 +1252,8 @@ class PacientesController extends Controller
                 oci_free_statement($stid);
                 oci_free_statement($cursor);
                 oci_close($conn);
-    
-                if(count($lista) <= 0) {
+
+                if (count($lista) <= 0) {
                     return CustomResponse::success('Pacientes no encontrados', $lista);
                 } else {
                     return CustomResponse::success(count($lista) . ' Pacientes encontrados', $lista);
@@ -1402,7 +1404,8 @@ class PacientesController extends Controller
         }
     }
 
-    public function obtenerAtencionPaciente(Request $request) {
+    public function obtenerAtencionPaciente(Request $request)
+    {
         $nroAtencion = $request->input('nroAtencion');
         $codPaciente = $request->input('codPaciente');
 
@@ -1456,9 +1459,9 @@ class PacientesController extends Controller
             oci_bind_by_name($stid, ":codPaciente", $codPaciente);
             oci_bind_by_name($stid, ":nroAtencion", $nroAtencion);
             oci_execute($stid);
-            
+
             $lista = [];
-            while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
+            while ($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) {
                 array_push($lista, $row);
             }
 
