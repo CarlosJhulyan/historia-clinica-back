@@ -227,8 +227,9 @@ Route::post('/preTriaje/searchPreTriaje', 'App\Http\Controllers\ConsultaControll
 Route::post('/preTriaje/searchPacientes', 'App\Http\Controllers\ConsultaController@busquedaPreTriajePacientes');
 Route::post('/preTriaje/searchMedicos', 'App\Http\Controllers\ConsultaController@busquedaPreTriajeMedicos');
 
-// VERSION SISTEMA
+// SISTEMA
 Route::post('/sistema/getVersion', 'App\Http\Controllers\AdminController@obtenerVersionSistemaWeb');
+Route::get('/sistema/getThemeDesign', 'App\Http\Controllers\AnexoController@getThemeDesign');
 
 // kardex hospitalario
 Route::post('/kardex/addInvacivos', 'App\Http\Controllers\KardexController@addInvasivos');
@@ -335,3 +336,4 @@ Route::post('/posventa/getnumOrdenVta', 'App\Http\Controllers\PosVentaController
 Route::post('/sync/firestore', 'App\Http\Controllers\FirestoreController@syncFirestore');
 Route::post('/sync/patient', 'App\Http\Controllers\FirestoreController@syncPatient');
 Route::post('/sync/doctor', 'App\Http\Controllers\FirestoreController@syncDoctor');
+

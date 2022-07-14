@@ -13,7 +13,7 @@ class AnexoController extends Controller
 {
     /**
      * Grabar los Anexos
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/grabarAnexos/GrabarAnexos",
      *     tags={"Anexos"},
@@ -64,7 +64,7 @@ class AnexoController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -117,7 +117,7 @@ class AnexoController extends Controller
 
     /**
      * Obtener los Anexos
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/anexos/getAnexos",
      *     tags={"Anexos"},
@@ -141,7 +141,7 @@ class AnexoController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -170,7 +170,7 @@ class AnexoController extends Controller
 
     /**
      * Obtener los Anexos por rango de fechas
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/anexos/getAnexosFecha",
      *     tags={"Anexos"},
@@ -204,7 +204,7 @@ class AnexoController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -236,7 +236,7 @@ class AnexoController extends Controller
 
     /**
      * Borrar Anexo
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/anexos/deleteAnexos",
      *     tags={"Anexos"},
@@ -260,7 +260,7 @@ class AnexoController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -282,20 +282,64 @@ class AnexoController extends Controller
     }
 /**
      * Obtener los tipos de anexos
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/tipoAnexos",
      *     tags={"Anexos"},
      *     operationId="tipoAnexos",
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
     public function TipoAnexos(Request $request)
     {
-        $anexos = DB::select("select * from pbl_tab_gral where ID_TAB_GRAL = '1001'");
-        return CustomResponse::success('Datos encontrados', $anexos);
+        try {
+            $anexos = DB::select("select * from pbl_tab_gral where ID_TAB_GRAL = '1001'");
+            return CustomResponse::success('Datos encontrados', $anexos);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
+    public function getThemeDesign() {
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+            $stid = oci_parse($conn, 'begin :result := HHC_LOOK_AND_FEEL.F_GET_DESIGN_HHC;end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+
+                        array_push(
+                            $lista,
+                            [
+                                'ID_TAB_GRAL' => $datos[0],
+                                'COMPANIA' => $datos[1],
+                                'LOGO' => $datos[2],
+                                'COD_COLOR_1' => $datos[3],
+                                'COD_COLOR_2' => $datos[4],
+                                'COD_COLOR_3' => $datos[5],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_close($conn);
+            if (count($lista) > 1) return CustomResponse::failure('El sistema detectó más de un tema habilitado');
+            return CustomResponse::success('Datos encontrados', $lista[0]);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
     }
 }
