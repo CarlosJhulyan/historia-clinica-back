@@ -5,8 +5,8 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', 'App\Http\Controllers\AuthController@login');
 Route::post('/getCMP', 'App\Http\Controllers\AuthController@getCMP');
 Route::post('/loginUsuLocal', 'App\Http\Controllers\AuthController@loginUsuLocal');
+Route::post('/loginPersonal', 'App\Http\Controllers\AuthController@loginPersonal');
 Route::post('/login-admin', 'App\Http\Controllers\AuthController@loginAdministrador');
-Route::post('/login/getUsuario', 'App\Http\Controllers\AuthController@getUsuarioInfoToToken');
 
 //PACIENTES
 Route::post('/pacientes', 'App\Http\Controllers\PacientesController@listaEspera');
