@@ -7,7 +7,9 @@ use App\Oracle\OracleDB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use PHPJasper\PHPJasper;
 
 class PosVentaController extends Controller
 {
@@ -3390,8 +3392,8 @@ class PosVentaController extends Controller
 
 			return CustomResponse::success('Peticion exitosa', $cursor);
 		} catch (\Throwable $th) {
-            if (str_contains($th->getMessage(), '20989'))
-                return CustomResponse::failure('COMPROBANTE ELECTRONICO NO CUENTA CON NRO DE CORRELATIVO. COMUNIQUESE CON MESA DE AYUDA.');
+			if (str_contains($th->getMessage(), '20989'))
+				return CustomResponse::failure('COMPROBANTE ELECTRONICO NO CUENTA CON NRO DE CORRELATIVO. COMUNIQUESE CON MESA DE AYUDA.');
 			return CustomResponse::failure($th->getMessage());
 		}
 	}
@@ -3708,101 +3710,103 @@ class PosVentaController extends Controller
 		}
 	}
 
-    function getMetodosPagoImprimir(Request $request) {
-        $CodGrupoCia_in = $request->input('codGrupoCia');
-        $CodLocal_in = $request->input('codLocal');
-        $NumPedVta_in = $request->input('numPedVta');
+	function getMetodosPagoImprimir(Request $request)
+	{
+		$CodGrupoCia_in = $request->input('codGrupoCia');
+		$CodLocal_in = $request->input('codLocal');
+		$NumPedVta_in = $request->input('numPedVta');
 
-        $validator = Validator::make($request->all(), [
-            'codGrupoCia' => 'required',
-            'codLocal' => 'required',
-            'numPedVta' => 'required',
-        ]);
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'numPedVta' => 'required',
+		]);
 
-        if ($validator->fails()) {
-            return CustomResponse::failure('Datos faltantes');
-        }
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
 
-        try {
-            $conn = OracleDB::getConnection();
-            $cursor = oci_new_cursor($conn);
-            $stid = oci_parse($conn, 'begin :result := HHC_IMP_ELECTRONICO.METODO_PAGO_IMPRIMIR_WS(
+		try {
+			$conn = OracleDB::getConnection();
+			$cursor = oci_new_cursor($conn);
+			$stid = oci_parse($conn, 'begin :result := HHC_IMP_ELECTRONICO.METODO_PAGO_IMPRIMIR_WS(
                 vNumPedVta_in => :vNumPedVta_in,
                 vCodGrupoCia_in => :vCodGrupoCia_in,
                 vCodLocal_in => :vCodLocal_in);end;');
-            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
-            oci_bind_by_name($stid, ':vNumPedVta_in', $NumPedVta_in);
-            oci_bind_by_name($stid, ':vCodGrupoCia_in', $CodGrupoCia_in);
-            oci_bind_by_name($stid, ':vCodLocal_in', $CodLocal_in);
-            oci_execute($stid);
-            oci_execute($cursor);
+			oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+			oci_bind_by_name($stid, ':vNumPedVta_in', $NumPedVta_in);
+			oci_bind_by_name($stid, ':vCodGrupoCia_in', $CodGrupoCia_in);
+			oci_bind_by_name($stid, ':vCodLocal_in', $CodLocal_in);
+			oci_execute($stid);
+			oci_execute($cursor);
 
-            $lista = [];
+			$lista = [];
 
-            if ($stid) {
-                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
-                    foreach ($row as $key => $value) {
-                        $datos = explode('Ã', $value);
+			if ($stid) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					foreach ($row as $key => $value) {
+						$datos = explode('Ã', $value);
 
-                        array_push(
-                            $lista,
-                            [
-                                'COD_FORMA_PAGO' => $datos[0],
-                                'COD_TIPO_MONEDA' => $datos[1],
-                                'IMP_PAGO' => $datos[2],
-                                'VUELTO' => $datos[3],
-                                'VAL_TIP_CAMBIO' => $datos[4],
-                                'DESC_FORMA_PAGO' => $datos[5],
-                                'IMP_TOTAL_PAGO' => $datos[6],
-                            ]
-                        );
-                    }
-                }
-            }
+						array_push(
+							$lista,
+							[
+								'COD_FORMA_PAGO' => $datos[0],
+								'COD_TIPO_MONEDA' => $datos[1],
+								'IMP_PAGO' => $datos[2],
+								'VUELTO' => $datos[3],
+								'VAL_TIP_CAMBIO' => $datos[4],
+								'DESC_FORMA_PAGO' => $datos[5],
+								'IMP_TOTAL_PAGO' => $datos[6],
+							]
+						);
+					}
+				}
+			}
 
-            oci_close($conn);
+			oci_close($conn);
 
-            return CustomResponse::success('Metodos de pago para imprimir', $lista);
-        } catch (\Throwable $th) {
-            error_log($th);
-            return CustomResponse::failure($th->getMessage());
-        }
-    }
+			return CustomResponse::success('Metodos de pago para imprimir', $lista);
+		} catch (\Throwable $th) {
+			error_log($th);
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
 
-    function impCompElect(Request $request) {
-        $vCodGrupoCia_in = $request->input('codGrupoCia');
-        $vCodLocal_in = $request->input('codLocal');
-        $vNumPedVta_in = $request->input('numPedVta');
-        $vSecCompPago_in = $request->input('secCompPago');
-        $vVersion_in = $request->input('version');
-        $vReimpresion = $request->input('reimpresion');
-        $valorAhorro_in = $request->input('valorAhorro');
-        $cDocTarjetaPtos_in = $request->input('docTarjetaPtos');
-        $cNumOrdenVta_in = $request->input('numOrden');
+	function impCompElect(Request $request)
+	{
+		$vCodGrupoCia_in = $request->input('codGrupoCia');
+		$vCodLocal_in = $request->input('codLocal');
+		$vNumPedVta_in = $request->input('numPedVta');
+		$vSecCompPago_in = $request->input('secCompPago');
+		$vVersion_in = $request->input('version');
+		$vReimpresion = $request->input('reimpresion');
+		$valorAhorro_in = $request->input('valorAhorro');
+		$cDocTarjetaPtos_in = $request->input('docTarjetaPtos');
+		$cNumOrdenVta_in = $request->input('numOrden');
 
-        $validator = Validator::make($request->all(), [
-            'codGrupoCia' => 'required',
-            'codLocal' => 'required',
-            'numPedVta' => 'required',
-            'secCompPago' => 'required',
-            'version' => 'required',
-            'reimpresion' => 'required',
-            'numOrden' => 'required',
-            // 'valorAhorro' => 'required',
-            // 'docTarjetaPtos' => 'required',
-        ]);
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'numPedVta' => 'required',
+			'secCompPago' => 'required',
+			'version' => 'required',
+			'reimpresion' => 'required',
+			'numOrden' => 'required',
+			// 'valorAhorro' => 'required',
+			// 'docTarjetaPtos' => 'required',
+		]);
 
 
-        if ($validator->fails()) {
-            return CustomResponse::failure('Datos faltantes');
-        }
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
 
-        try {
+		try {
 
-            $conn = OracleDB::getConnection();
-            $cursor = '';
+			$conn = OracleDB::getConnection();
+			$cursor = '';
 
-            $stid = oci_parse($conn, 'begin :result := HHC_IMP_ELECTRONICO.IMP_COMP_LABORATORIO_WS(
+			$stid = oci_parse($conn, 'begin :result := HHC_IMP_ELECTRONICO.IMP_COMP_LABORATORIO_WS(
                     vCodGrupoCia_in => :vCodGrupoCia_in,
                     vCodLocal_in => :vCodLocal_in,
                     vNumPedVta_in => :vNumPedVta_in,
@@ -3813,69 +3817,289 @@ class PosVentaController extends Controller
                     cDocTarjetaPtos_in => :cDocTarjetaPtos_in,
                     cNumOrdenVta_in => :cNumOrdenVta_in);end;');
 
-            oci_bind_by_name($stid, ':vCodGrupoCia_in', $vCodGrupoCia_in);
-            oci_bind_by_name($stid, ':vCodLocal_in', $vCodLocal_in);
-            oci_bind_by_name($stid, ':vNumPedVta_in', $vNumPedVta_in);
-            oci_bind_by_name($stid, ':vSecCompPago_in', $vSecCompPago_in);
-            oci_bind_by_name($stid, ':vVersion_in', $vVersion_in);
-            oci_bind_by_name($stid, ':vReimpresion', $vReimpresion);
-            oci_bind_by_name($stid, ':valorAhorro_in', $valorAhorro_in);
-            oci_bind_by_name($stid, ':cDocTarjetaPtos_in', $cDocTarjetaPtos_in);
-            oci_bind_by_name($stid, ':cNumOrdenVta_in', $cNumOrdenVta_in);
-            oci_bind_by_name($stid, ':result', $cursor, 50);
-            oci_execute($stid);
+			oci_bind_by_name($stid, ':vCodGrupoCia_in', $vCodGrupoCia_in);
+			oci_bind_by_name($stid, ':vCodLocal_in', $vCodLocal_in);
+			oci_bind_by_name($stid, ':vNumPedVta_in', $vNumPedVta_in);
+			oci_bind_by_name($stid, ':vSecCompPago_in', $vSecCompPago_in);
+			oci_bind_by_name($stid, ':vVersion_in', $vVersion_in);
+			oci_bind_by_name($stid, ':vReimpresion', $vReimpresion);
+			oci_bind_by_name($stid, ':valorAhorro_in', $valorAhorro_in);
+			oci_bind_by_name($stid, ':cDocTarjetaPtos_in', $cDocTarjetaPtos_in);
+			oci_bind_by_name($stid, ':cNumOrdenVta_in', $cNumOrdenVta_in);
+			oci_bind_by_name($stid, ':result', $cursor, 50);
+			oci_execute($stid);
 
-            return CustomResponse::success('Peticion exitosa', $cursor);
-        } catch (\Throwable $th) {
-            error_log($th);
-            return CustomResponse::failure($th->getMessage());
-        }
-    }
+			return CustomResponse::success('Peticion exitosa', $cursor);
+		} catch (\Throwable $th) {
+			error_log($th);
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
 
-    function getnumOrdenVta(Request $request) {
-        $vCodGrupoCia_in = $request->input('codGrupoCia');
-        $vCodLocal_in = $request->input('codLocal');
-        $vNumPedVta_in = $request->input('numPedVta');
+	function getnumOrdenVta(Request $request)
+	{
+		$vCodGrupoCia_in = $request->input('codGrupoCia');
+		$vCodLocal_in = $request->input('codLocal');
+		$vNumPedVta_in = $request->input('numPedVta');
 
-        $validator = Validator::make($request->all(), [
-            'codGrupoCia' => 'required',
-            'codLocal' => 'required',
-            'numPedVta' => 'required',
-        ]);
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'numPedVta' => 'required',
+		]);
 
 
-        if ($validator->fails()) {
-            return CustomResponse::failure('Datos faltantes');
-        }
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
 
-        try {
-            $conn = OracleDB::getConnection();
-            $cursor = oci_new_cursor($conn);
-            $stid = oci_parse($conn, 'begin :result := HHC_IMP_ELECTRONICO.GET_LISTA_ORDEN_VTA(
+		try {
+			$conn = OracleDB::getConnection();
+			$cursor = oci_new_cursor($conn);
+			$stid = oci_parse($conn, 'begin :result := HHC_IMP_ELECTRONICO.GET_LISTA_ORDEN_VTA(
                 cCodGrupoCia_in => :cCodGrupoCia_in,
                 cCodLocal_in => :cCodLocal_in,
                 cNumPedVta_in => :cNumPedVta_in);end;');
-            oci_bind_by_name($stid, ':cCodGrupoCia_in', $vCodGrupoCia_in);
-            oci_bind_by_name($stid, ':cCodLocal_in', $vCodLocal_in);
-            oci_bind_by_name($stid, ':cNumPedVta_in', $vNumPedVta_in);
-            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
-            oci_execute($stid);
-            oci_execute($cursor);
+			oci_bind_by_name($stid, ':cCodGrupoCia_in', $vCodGrupoCia_in);
+			oci_bind_by_name($stid, ':cCodLocal_in', $vCodLocal_in);
+			oci_bind_by_name($stid, ':cNumPedVta_in', $vNumPedVta_in);
+			oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+			oci_execute($stid);
+			oci_execute($cursor);
 
-            $lista = [];
+			$lista = [];
 
-            if ($stid) {
-                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
-                    array_push($lista, $row);
-                }
-            }
+			if ($stid) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					array_push($lista, $row);
+				}
+			}
 
-            oci_close($conn);
+			oci_close($conn);
 
-            return CustomResponse::success('Numero de orden', $lista);
-        } catch (\Throwable $th) {
-            error_log($th);
-            return CustomResponse::failure($th->getMessage());
-        }
-    }
+			return CustomResponse::success('Numero de orden', $lista);
+		} catch (\Throwable $th) {
+			error_log($th);
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
+
+	function impCabecera(Request $request)
+	{
+		$vCodGrupoCia_in = $request->input('codGrupoCia');
+		$vCodLocal_in = $request->input('codLocal');
+		$vNumPedVta_in = $request->input('numPedVta');
+
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'numPedVta' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
+
+		try {
+
+			$conn = OracleDB::getConnection();
+
+			$cursor = oci_new_cursor($conn);
+
+			$stid = oci_parse($conn, 'begin PTOVENTA_JASPER_ELECTRONICO.SP_DATA_DOCUMENTO_CAB_FB(
+								cCodGrupoCia_in => :cCodGrupoCia_in,
+								cCodLocal_in => :cCodLocal_in,
+								cNumPedVta_in => :cNumPedVta_in,
+							  datosCabecera => :datosCabecera);end;');
+			oci_bind_by_name($stid, ':cCodGrupoCia_in', $vCodGrupoCia_in);
+			oci_bind_by_name($stid, ':cCodLocal_in', $vCodLocal_in);
+			oci_bind_by_name($stid, ':cNumPedVta_in', $vNumPedVta_in);
+			oci_bind_by_name($stid, ':datosCabecera', $cursor, -1, OCI_B_CURSOR);
+			oci_execute($stid);
+			oci_execute($cursor);
+
+			$lista = [];
+
+			if ($stid) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					array_push($lista, $row);
+				}
+			}
+
+			oci_close($conn);
+
+			return CustomResponse::success('Cabecera', $lista);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
+	function impDetalle(Request $request)
+	{
+		$vCodGrupoCia_in = $request->input('codGrupoCia');
+		$vCodLocal_in = $request->input('codLocal');
+		$vNumPedVta_in = $request->input('numPedVta');
+
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'numPedVta' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
+
+		try {
+
+			$conn = OracleDB::getConnection();
+
+			$cursor = oci_new_cursor($conn);
+
+			$stid = oci_parse($conn, 'begin PTOVENTA_JASPER_ELECTRONICO.SP_DATA_DOCUMENTO_DET_FB(
+								cCodGrupoCia_in => :cCodGrupoCia_in,
+								cCodLocal_in => :cCodLocal_in,
+								cNumPedVta_in => :cNumPedVta_in,
+							  datosDetalleItem => :datosDetalleItem);end;');
+			oci_bind_by_name($stid, ':cCodGrupoCia_in', $vCodGrupoCia_in);
+			oci_bind_by_name($stid, ':cCodLocal_in', $vCodLocal_in);
+			oci_bind_by_name($stid, ':cNumPedVta_in', $vNumPedVta_in);
+			oci_bind_by_name($stid, ':datosDetalleItem', $cursor, -1, OCI_B_CURSOR);
+			oci_execute($stid);
+			oci_execute($cursor);
+
+			$lista = [];
+
+			if ($stid) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					array_push($lista, $row);
+				}
+			}
+
+			oci_close($conn);
+
+			return CustomResponse::success('Cabecera', $lista);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
+
+	function generarReporte(Request $request)
+	{
+
+		$vCodGrupoCia_in = $request->input('codGrupoCia');
+		$vCodLocal_in = $request->input('codLocal');
+		$vNumPedVta_in = $request->input('numPedVta');
+
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'numPedVta' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
+
+		try {
+			// $input = __DIR__ . '/reportes/documentElectronicFB.jrxml';
+
+			// $jasper = new PHPJasper;
+			// $x= $jasper->compile($input)->output();
+
+			/**
+			 * 
+			 */
+
+			$conn = OracleDB::getConnection();
+
+			$cursor = oci_new_cursor($conn);
+
+			$stid = oci_parse($conn, 'begin PTOVENTA_JASPER_ELECTRONICO.SP_DATA_DOCUMENTO_CAB_FB(
+								cCodGrupoCia_in => :cCodGrupoCia_in,
+								cCodLocal_in => :cCodLocal_in,
+								cNumPedVta_in => :cNumPedVta_in,
+							  datosCabecera => :datosCabecera);end;');
+			oci_bind_by_name($stid, ':cCodGrupoCia_in', $vCodGrupoCia_in);
+			oci_bind_by_name($stid, ':cCodLocal_in', $vCodLocal_in);
+			oci_bind_by_name($stid, ':cNumPedVta_in', $vNumPedVta_in);
+			oci_bind_by_name($stid, ':datosCabecera', $cursor, -1, OCI_B_CURSOR);
+			oci_execute($stid);
+			oci_execute($cursor);
+
+			$lista = [];
+
+			if ($stid) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					foreach ($row as $key => $value) {
+						array_push($lista, $value);
+					}
+				}
+			}
+
+			oci_close($conn);
+
+			/**
+			 * 
+			 */
+
+			$RUC_EMISOR = 20555875828;
+
+			$data = $RUC_EMISOR . '|' . $lista[0] . '|' . str_replace('-', '|', $lista[2]) . '|' . $lista[14] . '|' . $lista[15] . '|' . $lista[8] . '|' . $lista[5] . '|' . $lista[6];
+
+			$url = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . $data;
+
+			Storage::put('qr.png', file_get_contents($url));
+
+			$input = __DIR__ . '\\reportes\\documentElectronicFB.jasper';
+			$output = __DIR__ . '\\reportes';
+			$imagen = __DIR__ . '\\reportes\\IconBiensalud.jpg';
+
+			$options = [
+				'format' => ['pdf'],
+				'params' => [
+					'RUTA_IMAGEN' => $imagen,
+					'RAZON_SOCIAL_EMISOR' => 'CONSORCIO SALUD LIMA SUR',
+					'DIRECCION_EMISOR' => 'PR GRAL MIGUEL IGLESIAS NRO. 997',
+					'DEP_PROV_DIST_EMISOR' => 'LIMA - LIMA - SAN JUAN DE MIRAFLORES',
+					'TELEFONO_EMISOR' => 7178060,
+					'FAX_EMISOR' => '-',
+					'WEB_EMISOR' => '-',
+					'CORREO_EMISOR' => 'consorciohumanidadlimasur@gmail.com',
+					'RUC_EMISOR' => $RUC_EMISOR,
+					'TITULO_DOCUMENTO' => $lista[1],
+					'NUMERO_DOCUMENTO' => $lista[2],
+					'RAZON_SOCIAL_CLIENTE' => $lista[3],
+					'DIRECCION_CLIENTE' => $lista[4],
+					'RUC_CLIENTE' => $lista[6],
+					'MONEDA_PAGO_DOCUMENTO' => $lista[7],
+					'FECHA_EMISION_DOCUMENTO' => $lista[8],
+					'CONDICION_PAGO_DOCUMENTO' => $lista[9],
+					'MONTO_EXONERADO' => $lista[10],
+					'MONTO_INAFECTO'	=> $lista[11],
+					'MONTO_GRATUITO' => $lista[12],
+					'MONTO_GRAVADO' => $lista[13],
+					'MONTO_IGV' => $lista[14],
+					'MONTO_TOTAL' => $lista[15],
+					'MONTO_TOTAL_LETRAS' => $lista[17],
+					'PORTALFE' => 'http://www.factelectronica.consorciosaludlimasur.com',
+					'CODEQR' => storage_path('app/qr.png'),
+				]
+			];
+
+			$jasper = new PHPJasper;
+
+			$jasper->process(
+				$input,
+				$output,
+				$options
+			)->execute();
+
+			return CustomResponse::success('PDF GENERADO', true);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure([$th->getMessage(), '$x']);
+		}
+	}
 }
