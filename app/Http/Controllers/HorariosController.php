@@ -43,11 +43,13 @@ class HorariosController extends Controller
 			]);
 			return CustomResponse::success('Horario editado correctamente');
 		} catch (\Throwable $th) {
-			return CustomResponse::failure([$th->getMessage(),
-			$fecha,
-			$horaInicio,
-			$horaFin,
-			$id]);
+			return CustomResponse::failure([
+				$th->getMessage(),
+				$fecha,
+				$horaInicio,
+				$horaFin,
+				$id
+			]);
 		}
 	}
 
@@ -62,9 +64,10 @@ class HorariosController extends Controller
 		if ($validator->fails()) {
 			return CustomResponse::failure("Faltan Datos");
 		}
+		$activo = 1;
 
 		try {
-			$medicos = DB::select('select * from mae_medico mm inner join cc_medico_x_bus mb on mm.num_cmp = mb.num_cmp inner join cc_consultorio cc on mb.id_consultorio = cc.id_consultorio where cc.id_consultorio = ?', [$especialidad_id]);
+			$medicos = DB::select('select * from mae_medico mm inner join cc_medico_x_bus mb on mm.num_cmp = mb.num_cmp inner join cc_consultorio cc on mb.id_consultorio = cc.id_consultorio where cc.id_consultorio = ? and mm.flag_activo=?', [$especialidad_id, $activo]);
 
 			return CustomResponse::success('Medicos', $medicos);
 		} catch (\Throwable $th) {
