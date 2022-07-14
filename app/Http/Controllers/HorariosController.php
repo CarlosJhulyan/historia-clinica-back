@@ -53,6 +53,28 @@ class HorariosController extends Controller
 		}
 	}
 
+	public function eliminarHorario()
+	{
+		$id = request()->input('id');
+
+		$validator = Validator::make(request()->all(), [
+			'id' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure($validator->errors()->first());
+		}
+
+		try {
+			DB::delete('DELETE HCW_HORARIOS WHERE ID_HORARIO = :id', [
+				'id' => $id,
+			]);
+			return CustomResponse::success('Horario editado correctamente');
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
 	public function getMedicoByEspecialidad()
 	{
 		$especialidad_id = request()->input('especialidad_id');

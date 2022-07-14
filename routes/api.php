@@ -5,8 +5,8 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', 'App\Http\Controllers\AuthController@login');
 Route::post('/getCMP', 'App\Http\Controllers\AuthController@getCMP');
 Route::post('/loginUsuLocal', 'App\Http\Controllers\AuthController@loginUsuLocal');
+Route::post('/loginPersonal', 'App\Http\Controllers\AuthController@loginPersonal');
 Route::post('/login-admin', 'App\Http\Controllers\AuthController@loginAdministrador');
-Route::post('/login/getUsuario', 'App\Http\Controllers\AuthController@getUsuarioInfoToToken');
 
 //PACIENTES
 Route::post('/pacientes', 'App\Http\Controllers\PacientesController@listaEspera');
@@ -294,6 +294,7 @@ Route::post('/horarios/getHorarioFecha', 'App\Http\Controllers\HorariosControlle
 Route::post('/horarios/obtenerEspecialidad', 'App\Http\Controllers\HorariosController@obtenerEspecialidad');
 Route::post('/horarios/getMedicoByEspecialidad', 'App\Http\Controllers\HorariosController@getMedicoByEspecialidad');
 Route::post('/horarios/editarHorario', 'App\Http\Controllers\HorariosController@editarHorario');
+Route::post('/horarios/eliminarHorario', 'App\Http\Controllers\HorariosController@eliminarHorario');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');
