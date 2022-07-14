@@ -294,6 +294,7 @@ Route::post('/horarios/getHorarioFecha', 'App\Http\Controllers\HorariosControlle
 Route::post('/horarios/obtenerEspecialidad', 'App\Http\Controllers\HorariosController@obtenerEspecialidad');
 Route::post('/horarios/getMedicoByEspecialidad', 'App\Http\Controllers\HorariosController@getMedicoByEspecialidad');
 Route::post('/horarios/editarHorario', 'App\Http\Controllers\HorariosController@editarHorario');
+Route::post('/horarios/eliminarHorario', 'App\Http\Controllers\HorariosController@eliminarHorario');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');
