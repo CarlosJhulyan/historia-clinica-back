@@ -4053,8 +4053,12 @@ class PosVentaController extends Controller
 
 			Storage::put('qr.png', file_get_contents($url));
 
+			$fechaDocumento = $lista[8];
+			$fechaDocumento = str_replace('-', '', $fechaDocumento);
+			$HHmmssFechaActual = date('His');
+			$nameDir = $RUC_EMISOR . '_' . $lista[2] . '_' . $fechaDocumento  . '_' . $HHmmssFechaActual;
 			$input = __DIR__ . '\\reportes\\documentElectronicFB.jasper';
-			$output = __DIR__ . '\\reportes';
+			$output = public_path() . '\\documentos\\' . $nameDir;
 			$imagen = __DIR__ . '\\reportes\\IconBiensalud.jpg';
 
 			$options = [
@@ -4097,9 +4101,9 @@ class PosVentaController extends Controller
 				$options
 			)->execute();
 
-			return CustomResponse::success('PDF GENERADO', true);
+			return CustomResponse::success('PDF GENERADO', $nameDir . '.pdf');
 		} catch (\Throwable $th) {
-			return CustomResponse::failure([$th->getMessage(), '$x']);
+			return CustomResponse::failure($th->getMessage());
 		}
 	}
 }
