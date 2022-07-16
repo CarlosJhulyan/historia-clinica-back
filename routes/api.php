@@ -307,6 +307,7 @@ Route::post('/posventa/impDetalle', 'App\Http\Controllers\PosVentaController@imp
 Route::post('/posventa/subirComprobante', 'App\Http\Controllers\PosVentaController@subirComprobante');
 Route::post('/posventa/getCorrelativoMontoNeto', 'App\Http\Controllers\PosVentaController@getCorrelativoMontoNeto');
 Route::post('/posventa/cajVerificaProdVirtuales', 'App\Http\Controllers\PosVentaController@cajVerificaProdVirtuales');
+Route::get('/posventa/downloadComprobante', 'App\Http\Controllers\PosVentaController@downloadComprobante');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');

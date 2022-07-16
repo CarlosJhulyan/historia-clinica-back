@@ -4224,4 +4224,11 @@ class PosVentaController extends Controller
 			return CustomResponse::failure($th->getMessage());
 		}
 	}
+
+	function downloadComprobante(Request $request)
+	{
+		$nombreArchivo = $request->input('nombreArchivo');
+		$file = public_path('documentos/' . $nombreArchivo);
+		return response()->download($file);
+	}
 }
