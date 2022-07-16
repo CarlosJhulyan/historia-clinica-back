@@ -302,6 +302,7 @@ Route::post('/horarios/eliminarHorario', 'App\Http\Controllers\HorariosControlle
 Route::post('/posventa/generarReporte', 'App\Http\Controllers\PosVentaController@generarReporte');
 Route::post('/posventa/impCabecera', 'App\Http\Controllers\PosVentaController@impCabecera');
 Route::post('/posventa/impDetalle', 'App\Http\Controllers\PosVentaController@impDetalle');
+Route::post('/posventa/subirComprobante', 'App\Http\Controllers\PosVentaController@subirComprobante');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');

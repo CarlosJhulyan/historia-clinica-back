@@ -3973,13 +3973,17 @@ class PosVentaController extends Controller
 
 			if ($stid) {
 				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
-					array_push($lista, $row);
+					$item = [];
+					foreach ($row as $key => $value) {
+						array_push($item, $value);
+					}
+					array_push($lista, $item);
 				}
 			}
 
 			oci_close($conn);
 
-			return CustomResponse::success('Cabecera', $lista);
+			return CustomResponse::success('Detalles', $lista);
 		} catch (\Throwable $th) {
 			return CustomResponse::failure($th->getMessage());
 		}
@@ -4102,6 +4106,28 @@ class PosVentaController extends Controller
 			)->execute();
 
 			return CustomResponse::success('PDF GENERADO', $nameDir . '.pdf');
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
+	function subirComprobante(Request $request)
+	{
+		$nombreComprobante = $request->input('nombreComprobante');
+
+		$validator = Validator::make($request->all(), [
+			'nombreComprobante' => 'required',
+			'pdf' => 'required|mimes:pdf',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure($validator->errors()->first());
+		}
+
+		try {
+			// $imagenFirma = $codMedi . '.' . $request->imagen->extension();
+			$request->pdf->move(public_path('documentos/'), $nombreComprobante);
+			return CustomResponse::success('COMPROBANTE SUBIDO');
 		} catch (\Throwable $th) {
 			return CustomResponse::failure($th->getMessage());
 		}
