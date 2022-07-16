@@ -27,7 +27,6 @@ class DatosFirmasController extends Controller
     {
         try {
             $model = Firma::select("HCW_FIRMAS.*", "MAE_MEDICO.DES_NOM_MEDICO as NOMBRES", "MAE_MEDICO.DES_APE_MEDICO as APELLIDOS")
-                ->where(['ESTADO' => "1"])
                 ->join('MAE_MEDICO', 'COD_MEDICO', '=', 'COD_MED')
                 ->get();
             return CustomResponse::success("Firmas Encontradas", $model);
@@ -113,6 +112,10 @@ class DatosFirmasController extends Controller
         if ($validator->fails()) {
             return CustomResponse::failure('Datos faltantes');
         } else {
+            $firmaFound = Firma::select("*")
+                ->where(['cod_med' => $cod_med])
+                ->first();
+            if ($firmaFound) return CustomResponse::failure('Ya se asignó una firma para este médico');
             try {
                 $fechaFirma = new \DateTime();
                 $fechaFirma->format('Y-m-d');
@@ -228,9 +231,9 @@ class DatosFirmasController extends Controller
             return CustomResponse::failure('Datos faltantes');
         } else {
             try {
-                DB::update(
-                    "UPDATE HCW_FIRMAS SET ESTADO = ? WHERE COD_MED = ?",
-                    ['0', $cod_med]
+                DB::delete(
+                    "DELETE FROM HCW_FIRMAS WHERE COD_MED = ?",
+                    [$cod_med]
                 );
                 return CustomResponse::success('Firma eliminada');
             } catch (\Throwable $th) {

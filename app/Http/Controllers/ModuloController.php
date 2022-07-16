@@ -202,7 +202,7 @@ class ModuloController extends Controller
 
 	/**
 	 * Búsqueda de medicos
-	 * 
+	 *
 	 * @OA\Post(
 	 *     path="/historial-clinico-backend/public/api/modulos/getDataMedicos",
 	 *     tags={"Modulo"},
@@ -225,7 +225,7 @@ class ModuloController extends Controller
 	 *     ),
 	 *     @OA\Response(
 	 *         response=200,
-	 *         description="Medicos",     
+	 *         description="Medicos",
 	 *     )
 	 * )
 	 */
@@ -237,17 +237,17 @@ class ModuloController extends Controller
 			if ($num_cmp == "" && $des_nom_medico == "") {
 				return CustomResponse::failure("Datos Faltantes");
 			} elseif ($num_cmp == "" && $des_nom_medico !== "") {
-				$model = Medico::select(['num_cmp', 'des_nom_medico', 'des_ape_medico', 'cod_medico'])
+				$model = Medico::select(['num_cmp', 'des_nom_medico', 'des_ape_medico', 'cod_medico', 'num_doc_iden'])
 					->orWhere(DB::raw("concat(lower(trim(des_nom_medico)), concat(' ' , lower(trim(des_ape_medico))))"), 'like', ['%' . strtolower($des_nom_medico) . '%'])
 					// ->whereRaw('lower(des_nom_medico) like (?) ', [strtolower($des_nom_medico) . '%'])
 					->limit(20)
 					->get();
 			} elseif ($des_nom_medico == "" && $num_cmp !== "") {
-				$model = Medico::select(['num_cmp', 'des_nom_medico', 'des_ape_medico', 'cod_medico'])
+				$model = Medico::select(['num_cmp', 'des_nom_medico', 'des_ape_medico', 'cod_medico', 'num_doc_iden'])
 					->where('num_cmp', 'like', "{$num_cmp}%")->limit(20)
 					->get();
 			} else {
-				$model = Medico::select(['num_cmp', 'des_nom_medico', 'des_ape_medico', 'cod_medico'])
+				$model = Medico::select(['num_cmp', 'des_nom_medico', 'des_ape_medico', 'cod_medico', 'num_doc_iden'])
 					->orWhere(DB::raw("concat(lower(trim(des_nom_medico)), concat(' ' , lower(trim(des_ape_medico))))"), 'like', ['%' . strtolower($des_nom_medico) . '%'])
 					// ->whereRaw('lower(des_nom_medico) like (?) ', [strtolower($des_nom_medico) . '%'])
 					->orWhere('num_cmp', 'like', "{$num_cmp}%")->limit(20)

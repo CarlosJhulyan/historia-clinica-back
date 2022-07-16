@@ -13,7 +13,7 @@ class AdminController extends Controller
 {
     /**
      * Obtener las Especialidades
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/admin/getEspecialidades",
      *     tags={"Administrador"},
@@ -40,7 +40,7 @@ class AdminController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -104,7 +104,7 @@ class AdminController extends Controller
 
     /**
      * Obtener lista de Atenciones
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/admin/getListaAtenciones",
      *     tags={"Administrador"},
@@ -135,7 +135,7 @@ class AdminController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -227,7 +227,7 @@ class AdminController extends Controller
 
      /**
      * Obtener lista de Liberados
-     * 
+     *
      * @OA\Post(
      *     path="/historial-clinico-backend/public/api/admin/getListaLiberados",
      *     tags={"Administrador"},
@@ -254,7 +254,7 @@ class AdminController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Datos Encontrados",     
+     *         description="Datos Encontrados",
      *     )
      * )
      */
@@ -345,6 +345,190 @@ class AdminController extends Controller
             return CustomResponse::success('Nueva version encontrada.', $data[0]);
         } catch (\Throwable $th) {
             return CustomResponse::failure('Error en los servidores');
+        }
+    }
+
+    public function getMedicos()
+    {
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := HHC_PTOVENTA_MEDICO.HHC_LISTA_TODOS_MEDICOS; end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'CMP' => $datos[0],
+                                'ESTADO' => $datos[1],
+                                'EQUIV_ESTADO' => $datos[2],
+                                'TIPO_COLEGIO' => $datos[3],
+                                'CORR_MEDICO' => $datos[4],
+                                'NOMBRES' => $datos[5],
+                                'APELLIDOS' => $datos[6],
+                                'ESPECIALIDAD' => $datos[7]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success('Datos encontrados.', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    public function getTipoColegios()
+    {
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := HHC_PTOVENTA_MEDICO.HHC_TIPO_COLEGIO; end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'value' => $datos[0],
+                                'descripcion' => $datos[1]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success('Datos encontrados.', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    public function getEspecialidadesMedico()
+    {
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := HHC_PTOVENTA_MEDICO.HHC_GET_ESPECIALIDAD; end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        array_push(
+                            $lista,
+                            [
+                                'value' => $value,
+                                'descripcion' => $value
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success('Datos encontrados.', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    function createMedico(Request $request) {
+        $cNumCMP_in = $request->input('cmp');
+        $cTipoColegio = $request->input('tipoColegio');
+        $cNombre_in = $request->input('nombre');
+        $cApellidos_in = $request->input('apellidos');
+        $cNumDoc = $request->input('numDoc');
+        $cDireccion = $request->input('direccion');
+        $cSexo = $request->input('sexo');
+        $cFecNac = $request->input('fecNac');
+        $cCodUsu = $request->input('codUsu');
+        $cEspecialidad = $request->input('especialidad');
+
+        $validator = Validator::make($request->all(), [
+            'cNumCMP_in' => 'required',
+            'cTipoColegio' => 'required',
+            'cNombre_in' => 'required',
+            'cApellidos_in' => 'required',
+            'cNumDoc' => 'required',
+            'cDireccion' => 'required',
+            'cSexo' => 'required',
+            'cFecNac' => 'required',
+            'cCodUsu' => 'required',
+            'cEspecialidad' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, 'begin HHC_PTOVENTA_MEDICO.HHC_GRABA_MEDICO(
+                cNumCMP_in => :cNumCMP_in,
+                cTipoColegio => :cTipoColegio,
+                cNombre_in => :cNombre_in,
+                cApellidos_in => :cApellidos_in,
+                cNumDoc => :cNumDoc,
+                cDireccion => :cDireccion,
+                cSexo => :cSexo,
+                cFecNac => :cFecNac,
+                cCodUsu => :cCodUsu,
+                cEspecialidad => :cEspecialidad);end;');
+            oci_bind_by_name($stid, ':cNumCMP_in', $cNumCMP_in);
+            oci_bind_by_name($stid, ':cTipoColegio', $cTipoColegio);
+            oci_bind_by_name($stid, ':cNombre_in', $cNombre_in);
+            oci_bind_by_name($stid, ':cApellidos_in', $cApellidos_in);
+            oci_bind_by_name($stid, ':cNumDoc', $cNumDoc);
+            oci_bind_by_name($stid, ':cDireccion', $cDireccion);
+            oci_bind_by_name($stid, ':cSexo', $cSexo);
+            oci_bind_by_name($stid, ':cFecNac', $cFecNac);
+            oci_bind_by_name($stid, ':cCodUsu', $cCodUsu);
+            oci_bind_by_name($stid, ':cEspecialidad', $cEspecialidad);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Medico creado correctamente');
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    function changeStatusMedico(Request $request) {
+        try {
+
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
         }
     }
 }

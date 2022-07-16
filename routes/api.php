@@ -132,7 +132,10 @@ Route::post('atencionMedica/updateAtencion', 'App\Http\Controllers\ConsultaContr
 Route::post('/admin/getEspecialidades', 'App\Http\Controllers\AdminController@getEspecialidades');
 Route::post('/admin/getListaAtenciones', 'App\Http\Controllers\AdminController@getListaAtenciones');
 Route::post('/admin/getListaLiberados', 'App\Http\Controllers\AdminController@getListaLiberados');
-
+Route::get('/admin/getMedicos', 'App\Http\Controllers\AdminController@getMedicos');
+Route::post('/admin/createMedico', 'App\Http\Controllers\AdminController@createMedico');
+Route::get('/admin/getTipoColegios', 'App\Http\Controllers\AdminController@getTipoColegios');
+Route::get('/admin/getEspecialidadesMedico', 'App\Http\Controllers\AdminController@getEspecialidadesMedico');
 // REPORTES
 Route::post('/reportes/getReporte1', 'App\Http\Controllers\ReportesController@getReporte1');
 Route::post('/reportes/getReporte2', 'App\Http\Controllers\ReportesController@getReporte2');

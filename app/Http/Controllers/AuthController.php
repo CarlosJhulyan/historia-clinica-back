@@ -115,6 +115,9 @@ class AuthController extends Controller
 					return $errorResponse;
 				}
 			} catch (\Throwable $e) {
+                if (str_contains($e->getMessage(), 'ORA-20510')) return CustomResponse::failure('NO SE ENCONTRO NUMERO DE CMP');
+                if (str_contains($e->getMessage(), 'ORA-20511')) return CustomResponse::failure('SE HA ENCONTRADO MAS DE UN REGISTRO CON EL MISMO CMP');
+                if (str_contains($e->getMessage(), 'ORA-20514')) return CustomResponse::failure('CLAVE NO COINCIDE');
 				return CustomResponse::failure($e->getMessage());
 			}
 		}
