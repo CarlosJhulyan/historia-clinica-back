@@ -348,14 +348,24 @@ class AdminController extends Controller
         }
     }
 
-    public function getMedicos()
+    public function getMedicos(Request $request)
     {
+        $valor = $request->input('valor');
+
+        $validator = Validator::make($request->all(), [
+            'valor' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
         try {
             $conn = OracleDB::getConnection();
             $cursor = oci_new_cursor($conn);
 
-            $stid = oci_parse($conn, 'begin :result := HHC_PTOVENTA_MEDICO.HHC_LISTA_TODOS_MEDICOS; end;');
+            $stid = oci_parse($conn, 'begin :result := HHC_PTOVENTA_MEDICO.HHC_LISTA_MEDICO(cValor => :cValor);end;');
             oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ':cValor', $valor);
             oci_execute($stid);
             oci_execute($cursor);
             $lista = [];
@@ -372,10 +382,17 @@ class AdminController extends Controller
                                 'ESTADO' => $datos[1],
                                 'EQUIV_ESTADO' => $datos[2],
                                 'TIPO_COLEGIO' => $datos[3],
-                                'CORR_MEDICO' => $datos[4],
+                                'COD_MEDICO' => $datos[4],
                                 'NOMBRES' => $datos[5],
                                 'APELLIDOS' => $datos[6],
-                                'ESPECIALIDAD' => $datos[7]
+                                'ESPECIALIDAD' => $datos[7],
+                                'NUM_DOC' => $datos[8],
+                                'DIRECCION' => $datos[9],
+                                'USUARIO' => $datos[10],
+                                'COD_SEXO' => $datos[11],
+                                'SEXO' => $datos[12],
+                                'FEC_NAC' => $datos[13],
+                                'COD_TIPO_COLEGIO' => $datos[14],
                             ]
                         );
                     }
@@ -385,6 +402,7 @@ class AdminController extends Controller
             oci_free_statement($cursor);
             oci_close($conn);
 
+            if (count($lista) <= 0) return  CustomResponse::failure('No existen coincidencias');
             return CustomResponse::success('Datos encontrados.', $lista);
         } catch (\Throwable $th) {
             return CustomResponse::failure($th->getMessage());
@@ -476,16 +494,16 @@ class AdminController extends Controller
         $cEspecialidad = $request->input('especialidad');
 
         $validator = Validator::make($request->all(), [
-            'cNumCMP_in' => 'required',
-            'cTipoColegio' => 'required',
-            'cNombre_in' => 'required',
-            'cApellidos_in' => 'required',
-            'cNumDoc' => 'required',
-            'cDireccion' => 'required',
-            'cSexo' => 'required',
-            'cFecNac' => 'required',
-            'cCodUsu' => 'required',
-            'cEspecialidad' => 'required',
+            'cmp' => 'required',
+            'tipoColegio' => 'required',
+            'nombre' => 'required',
+            'apellidos' => 'required',
+            'numDoc' => 'required',
+            'direccion' => 'required',
+            'sexo' => 'required',
+            'fecNac' => 'required',
+            'codUsu' => 'required',
+            'especialidad' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -518,15 +536,40 @@ class AdminController extends Controller
             oci_execute($stid);
             oci_close($conn);
 
-            return CustomResponse::success('Medico creado correctamente');
+            return CustomResponse::success('Procedimiento completado');
         } catch (\Throwable $th) {
             return CustomResponse::failure($th->getMessage());
         }
     }
 
-    function changeStatusMedico(Request $request) {
-        try {
+    function updateStatusMedico(Request $request) {
+        $cNumCMP_in = $request->input('cmp');
+        $cValor = $request->input('valor');
+        $cCodUsu = $request->input('codUsu');
 
+        $validator = Validator::make($request->all(), [
+            'cmp' => 'required',
+            'valor' => 'required',
+            'codUsu' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, 'begin HHC_PTOVENTA_MEDICO.HHC_UPDATE_MEDICO(
+                cNumCMP_in => :cNumCMP_in,
+                cValor => :cValor,
+                cCodUsu => :cCodUsu);end;');
+            oci_bind_by_name($stid, ':cNumCMP_in', $cNumCMP_in);
+            oci_bind_by_name($stid, ':cValor', $cValor);
+            oci_bind_by_name($stid, ':cCodUsu', $cCodUsu);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Estado de médico actualizado');
         } catch (\Throwable $th) {
             return CustomResponse::failure($th->getMessage());
         }
