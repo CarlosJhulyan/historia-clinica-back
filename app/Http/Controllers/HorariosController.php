@@ -213,6 +213,8 @@ class HorariosController extends Controller
 	function getHorarioFecha(Request $request)
 	{
 		$mes = $request->input('mes');
+		$especialidad = $request->input('especialidad');
+		$medico = $request->input('medico');
 
 		$validator = Validator::make($request->all(), [
 			'mes' => 'required',
@@ -223,7 +225,16 @@ class HorariosController extends Controller
 		}
 
 		try {
-			$data = DB::select("select * from HCW_HORARIOS where to_char(FECHA,'MM') = ?", [$mes]);
+
+
+			if ($medico !== null) {
+				$data = DB::select("select * from HCW_HORARIOS where to_char(FECHA,'MM') = ? and CMP = ?", [$mes, $medico]);
+			} else if ($especialidad !== null) {
+				$data = DB::select("select * from HCW_HORARIOS where to_char(FECHA,'MM') = ? and ID_ESPECIALIDAD = ?", [$mes, $especialidad]);
+			} else {
+				$data = DB::select("select * from HCW_HORARIOS where to_char(FECHA,'MM') = ?", [$mes]);
+			}
+
 
 			foreach ($data as $key => $value) {
 				// convertir zona horaria utc a zona America/Lima
