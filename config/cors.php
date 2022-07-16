@@ -14,6 +14,8 @@ return [
     |
     */
 
+		// DESACTIVAR CORS
+		
     'paths' => ['*'],
 
     'allowed_methods' => ['*'],

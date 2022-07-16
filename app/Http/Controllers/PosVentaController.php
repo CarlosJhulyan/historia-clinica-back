@@ -4132,4 +4132,96 @@ class PosVentaController extends Controller
 			return CustomResponse::failure($th->getMessage());
 		}
 	}
+
+
+	function getCorrelativoMontoNeto(Request $request)
+	{
+
+		$cCodGrupoCia = $request->input('cCodGrupoCia_in');
+		$cCodLocal = $request->input('cCod_Local_in');
+		$cTipoComp = $request->input('cTipo_Comp_in');
+		$cMontoNeto = $request->input('cMonto_Neto_in');
+		$cNumCompPago = $request->input('cNum_Comp_Pago_in');
+
+		$validator = Validator::make($request->all(), [
+			'cCodGrupoCia_in' => 'required',
+			'cCod_Local_in' => 'required',
+			'cTipo_Comp_in' => 'required',
+			'cMonto_Neto_in' => 'required',
+			'cNum_Comp_Pago_in' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure($validator->errors()->first());
+		}
+
+		try {
+
+			$conn =  OracleDB::getConnection();
+			$result = '';
+
+			$stmt = ociparse($conn, "BEGIN :result := PTOVENTA_VTA.F_GET_CORRELATIVO_MONTO_NETO( 
+				cCodGrupoCia_in=> :cCodGrupoCia_in, 
+				cCod_Local_in=> :cCod_Local_in, 
+				cTipo_Comp_in=> :cTipo_Comp_in, 
+				cMonto_Neto_in=> :cMonto_Neto_in, 
+				cNum_Comp_Pago_in=> :cNum_Comp_Pago_in); END;");
+
+			oci_bind_by_name($stmt, ":cCodGrupoCia_in", $cCodGrupoCia);
+			oci_bind_by_name($stmt, ":cCod_Local_in", $cCodLocal);
+			oci_bind_by_name($stmt, ":cTipo_Comp_in", $cTipoComp);
+			oci_bind_by_name($stmt, ":cMonto_Neto_in", $cMontoNeto);
+			oci_bind_by_name($stmt, ":cNum_Comp_Pago_in", $cNumCompPago);
+			oci_bind_by_name($stmt, ":result", $result, 100);
+			oci_execute($stmt);
+			oci_free_statement($stmt);
+			oci_close($conn);
+
+
+			return CustomResponse::success('CORRELATIVO OBTENIDO', $result);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
+
+	function cajVerificaProdVirtuales(Request $request)
+	{
+		$cCodGrupoCia = $request->input('cCodGrupoCia_in');
+		$cCodLocal = $request->input('cCodLocal_in');
+		$cNumPedVta = $request->input('cNumPedVta_in');
+
+		$validator = Validator::make($request->all(), [
+			'cCodGrupoCia_in' => 'required',
+			'cCodLocal_in' => 'required',
+			'cNumPedVta_in' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure($validator->errors()->first());
+		}
+
+		try {
+			$conn =  OracleDB::getConnection();
+			$result = '';
+
+			$stmt = ociparse($conn, "BEGIN :result := PTOVENTA_CAJ.CAJ_VERIFICA_PROD_VIRTUALES( 
+			cCodGrupoCia_in=> :cCodGrupoCia_in, 
+			cCodLocal_in=> :cCodLocal_in, 
+			cNumPedVta_in=> :cNumPedVta_in); END;");
+
+			oci_bind_by_name($stmt, ":cCodGrupoCia_in", $cCodGrupoCia);
+			oci_bind_by_name($stmt, ":cCodLocal_in", $cCodLocal);
+			oci_bind_by_name($stmt, ":cNumPedVta_in", $cNumPedVta);
+			oci_bind_by_name($stmt, ":result", $result, 100);
+
+			oci_execute($stmt);
+			oci_free_statement($stmt);
+			oci_close($conn);
+
+			return CustomResponse::success('PRODUCTOS VIRTUALES VERIFICADOS', $result);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
 }

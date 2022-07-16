@@ -303,6 +303,8 @@ Route::post('/posventa/generarReporte', 'App\Http\Controllers\PosVentaController
 Route::post('/posventa/impCabecera', 'App\Http\Controllers\PosVentaController@impCabecera');
 Route::post('/posventa/impDetalle', 'App\Http\Controllers\PosVentaController@impDetalle');
 Route::post('/posventa/subirComprobante', 'App\Http\Controllers\PosVentaController@subirComprobante');
+Route::post('/posventa/getCorrelativoMontoNeto', 'App\Http\Controllers\PosVentaController@getCorrelativoMontoNeto');
+Route::post('/posventa/cajVerificaProdVirtuales', 'App\Http\Controllers\PosVentaController@cajVerificaProdVirtuales');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');
