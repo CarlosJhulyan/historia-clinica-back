@@ -269,6 +269,8 @@ Route::post('/posventa/getDetalleCompProducto', 'App\Http\Controllers\PosVentaCo
 Route::post('/posventa/verificarProductoCamp', 'App\Http\Controllers\PosVentaController@verificaProdCamp');
 Route::post('/posventa/getNuevoPrecio', 'App\Http\Controllers\PosVentaController@obtenerNuevoPrecio');
 Route::post('/posventa/getPrecioRedondeado', 'App\Http\Controllers\PosVentaController@obtenerPrecioRedondeado');
+Route::post('/posventa/validaCambioPrecio', 'App\Http\Controllers\PosVentaController@validaCambioPrecio');
+Route::post('/posventa/existeCliente', 'App\Http\Controllers\PosVentaController@existeCliente');
 
 Route::get('/posventa/getMedicosPosVenta', 'App\Http\Controllers\PosVentaController@getMedicosPosVenta');
 Route::post('/posventa/getClientesNombrePosVenta', 'App\Http\Controllers\PosVentaController@getClientesNombrePosVenta');

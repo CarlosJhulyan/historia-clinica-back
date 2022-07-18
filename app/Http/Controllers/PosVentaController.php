@@ -1407,9 +1407,9 @@ class PosVentaController extends Controller
 			'pTipoDocIdent' => 'required',
 			'pDni' => 'required',
 			'pDirCliente' => 'required',
-			'vRazonSocial' => 'required',
+//			'vRazonSocial' => 'required',
 			'vTelefono' => 'required',
-			'vCorreo' => 'required',
+//			'vCorreo' => 'required',
 			'idUsuarioLogueado' => 'required',
 		]);
 
@@ -4014,7 +4014,7 @@ class PosVentaController extends Controller
 			// $x= $jasper->compile($input)->output();
 
 			/**
-			 * 
+			 *
 			 */
 
 			$conn = OracleDB::getConnection();
@@ -4046,7 +4046,7 @@ class PosVentaController extends Controller
 			oci_close($conn);
 
 			/**
-			 * 
+			 *
 			 */
 
 			$RUC_EMISOR = 20555875828;
@@ -4160,11 +4160,11 @@ class PosVentaController extends Controller
 			$conn =  OracleDB::getConnection();
 			$result = '';
 
-			$stmt = ociparse($conn, "BEGIN :result := PTOVENTA_VTA.F_GET_CORRELATIVO_MONTO_NETO( 
-				cCodGrupoCia_in=> :cCodGrupoCia_in, 
-				cCod_Local_in=> :cCod_Local_in, 
-				cTipo_Comp_in=> :cTipo_Comp_in, 
-				cMonto_Neto_in=> :cMonto_Neto_in, 
+			$stmt = ociparse($conn, "BEGIN :result := PTOVENTA_VTA.F_GET_CORRELATIVO_MONTO_NETO(
+				cCodGrupoCia_in=> :cCodGrupoCia_in,
+				cCod_Local_in=> :cCod_Local_in,
+				cTipo_Comp_in=> :cTipo_Comp_in,
+				cMonto_Neto_in=> :cMonto_Neto_in,
 				cNum_Comp_Pago_in=> :cNum_Comp_Pago_in); END;");
 
 			oci_bind_by_name($stmt, ":cCodGrupoCia_in", $cCodGrupoCia);
@@ -4205,9 +4205,9 @@ class PosVentaController extends Controller
 			$conn =  OracleDB::getConnection();
 			$result = '';
 
-			$stmt = ociparse($conn, "BEGIN :result := PTOVENTA_CAJ.CAJ_VERIFICA_PROD_VIRTUALES( 
-			cCodGrupoCia_in=> :cCodGrupoCia_in, 
-			cCodLocal_in=> :cCodLocal_in, 
+			$stmt = ociparse($conn, "BEGIN :result := PTOVENTA_CAJ.CAJ_VERIFICA_PROD_VIRTUALES(
+			cCodGrupoCia_in=> :cCodGrupoCia_in,
+			cCodLocal_in=> :cCodLocal_in,
 			cNumPedVta_in=> :cNumPedVta_in); END;");
 
 			oci_bind_by_name($stmt, ":cCodGrupoCia_in", $cCodGrupoCia);
@@ -4224,6 +4224,71 @@ class PosVentaController extends Controller
 			return CustomResponse::failure($th->getMessage());
 		}
 	}
+
+    function validaCambioPrecio(Request  $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $secUsu = $request->input('secUsu');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'secUsu' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = '';
+            $stid = oci_parse($conn, 'begin :result := FARMA_UTILITY.IS_VALIDA_CAMBIO_PRECIO(
+                vCodGrupoCia_in => :vCodGrupoCia_in,
+                vCodLocal_in => :vCodLocal_in,
+                vSecUsu_local_in => :vSecUsu_local_in);end;');
+            oci_bind_by_name($stid, ':result', $result, 5);
+            oci_bind_by_name($stid, ':vCodGrupoCia_in', $cNumCMP_in);
+            oci_bind_by_name($stid, ':vCodLocal_in', $cValor);
+            oci_bind_by_name($stid, ':vSecUsu_local_in', $cCodUsu);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Respuesta correcta', $result);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    public function existeCliente(Request $request)
+    {
+        $numDoc = $request->input('numDoc');
+
+        $validator = Validator::make($request->all(), [
+            'numDoc' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = '';
+
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_CLI.CLI_AGREGA_VALIDA_CLI_NATURAL(
+                cNumDocIdent_in => :cNumDocIdent_in);end;');
+            oci_bind_by_name($stid, ':result', $result, 5);
+            oci_bind_by_name($stid, ':cNumDocIdent_in', $numDoc);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Procedimiento correcto', $result);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
 
 	function downloadComprobante(Request $request)
 	{
