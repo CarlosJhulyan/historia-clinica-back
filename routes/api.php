@@ -310,6 +310,12 @@ Route::post('/posventa/subirComprobante', 'App\Http\Controllers\PosVentaControll
 Route::post('/posventa/getCorrelativoMontoNeto', 'App\Http\Controllers\PosVentaController@getCorrelativoMontoNeto');
 Route::post('/posventa/cajVerificaProdVirtuales', 'App\Http\Controllers\PosVentaController@cajVerificaProdVirtuales');
 Route::get('/posventa/downloadComprobante', 'App\Http\Controllers\PosVentaController@downloadComprobante');
+Route::post('/posventa/cajVerificaPedido', 'App\Http\Controllers\PosVentaController@cajVerificaPedido');
+Route::post('/posventa/cajListaCabeceraPedido', 'App\Http\Controllers\PosVentaController@cajListaCabeceraPedido');
+Route::post('/posventa/cajListaDetallePedido', 'App\Http\Controllers\PosVentaController@cajListaDetallePedido');
+Route::post('/posventa/cajListaCajaUsuario', 'App\Http\Controllers\PosVentaController@cajListaCajaUsuario');
+Route::post('/posventa/cajAgregarCabNotaCredito', 'App\Http\Controllers\PosVentaController@cajAgregarCabNotaCredito');
+Route::post('/posventa/cajAgregarDetNotaCredito', 'App\Http\Controllers\PosVentaController@cajAgregarDetNotaCredito');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');
@@ -347,4 +353,3 @@ Route::post('/posventa/getnumOrdenVta', 'App\Http\Controllers\PosVentaController
 Route::post('/sync/firestore', 'App\Http\Controllers\FirestoreController@syncFirestore');
 Route::post('/sync/patient', 'App\Http\Controllers\FirestoreController@syncPatient');
 Route::post('/sync/doctor', 'App\Http\Controllers\FirestoreController@syncDoctor');
-
