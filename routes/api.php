@@ -138,6 +138,13 @@ Route::get('/admin/getTipoColegios', 'App\Http\Controllers\AdminController@getTi
 Route::get('/admin/getEspecialidadesMedico', 'App\Http\Controllers\AdminController@getEspecialidadesMedico');
 Route::post('/admin/updateStatusMedico', 'App\Http\Controllers\AdminController@updateStatusMedico');
 
+// ADMIN ASIGNACION
+Route::get('/admin/getConsultorioMedico', 'App\Http\Controllers\AdminController@getConsultorioMedico');
+Route::post('/admin/getBusMedico', 'App\Http\Controllers\AdminController@getBusMedico');
+Route::post('/admin/deleteAsignacion', 'App\Http\Controllers\AdminController@deleteAsignacion');
+Route::get('/admin/searchAsignaMedicos', 'App\Http\Controllers\AdminController@searchAsignaMedicos');
+Route::post('/admin/createAsignaMedicos', 'App\Http\Controllers\AdminController@createAsignaMedicos');
+
 // REPORTES
 Route::post('/reportes/getReporte1', 'App\Http\Controllers\ReportesController@getReporte1');
 Route::post('/reportes/getReporte2', 'App\Http\Controllers\ReportesController@getReporte2');
