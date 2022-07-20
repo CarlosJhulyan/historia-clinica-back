@@ -323,6 +323,10 @@ Route::post('/posventa/cajListaDetallePedido', 'App\Http\Controllers\PosVentaCon
 Route::post('/posventa/cajListaCajaUsuario', 'App\Http\Controllers\PosVentaController@cajListaCajaUsuario');
 Route::post('/posventa/cajAgregarCabNotaCredito', 'App\Http\Controllers\PosVentaController@cajAgregarCabNotaCredito');
 Route::post('/posventa/cajAgregarDetNotaCredito', 'App\Http\Controllers\PosVentaController@cajAgregarDetNotaCredito');
+Route::post('/posventa/cajListaDetalleNotaCredito', 'App\Http\Controllers\PosVentaController@cajListaDetalleNotaCredito');
+Route::post('/posventa/getNumNC', 'App\Http\Controllers\PosVentaController@getNumNC');
+Route::post('/posventa/fCurLstCompPago', 'App\Http\Controllers\PosVentaController@fCurLstCompPago');
+Route::post('/posventa/fImpCompElectWS', 'App\Http\Controllers\PosVentaController@fImpCompElectWS');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');

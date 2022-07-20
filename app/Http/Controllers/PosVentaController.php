@@ -1722,7 +1722,7 @@ class PosVentaController extends Controller
 		$cCodCiaReserva = $request->input('cCodCiaReserva');
 		$cCodLocalReserva = $request->input('cCodLocalReserva');
 		$cCodPedidoReserva = $request->input('cCodPedidoReserva');
-        $cIsWeb = $request->input('cIsWeb');
+		$cIsWeb = $request->input('cIsWeb');
 
 		$validartor = Validator::make($request->all(), [
 			// 'cCodGrupoCia_in' => 'required',
@@ -1888,7 +1888,7 @@ class PosVentaController extends Controller
 			oci_bind_by_name($stid, ":cCodCiaReserva_in", $cCodCiaReserva);
 			oci_bind_by_name($stid, ":cCodLocalReserva_in", $cCodLocalReserva);
 			oci_bind_by_name($stid, ":cCodPedidoReserva_in", $cCodPedidoReserva);
-            oci_bind_by_name($stid, ":cIsWeb", $cIsWeb);
+			oci_bind_by_name($stid, ":cIsWeb", $cIsWeb);
 			oci_execute($stid);
 			$result = '';
 			oci_close($conn);
@@ -4433,8 +4433,6 @@ class PosVentaController extends Controller
 		}
 	}
 
-	// ------------------------------
-
 
 	function cajListaDetalleNotaCredito(Request $request)
 	{
@@ -4486,13 +4484,13 @@ class PosVentaController extends Controller
 						array_push(
 							$lista,
 							[
-								'0' => $datos[0],
-								'1' => $datos[1],
-								'2' => $datos[2],
-								'3' => $datos[3],
-								'4' => $datos[4],
-								'5' => $datos[5],
-								'6' => $datos[6],
+								'CODIGO' => $datos[0],
+								'DESCRIPCION' => $datos[1],
+								'UNIDAD' => $datos[2],
+								'ECOGRAFIA' => $datos[3],
+								'CANTIDAD' => $datos[4],
+								'PRECIO' => $datos[5],
+								'DEVOLUCION' => $datos[6],
 							]
 						);
 					}
@@ -4506,8 +4504,6 @@ class PosVentaController extends Controller
 			return CustomResponse::failure($th->getMessage());
 		}
 	}
-
-
 
 	function cajListaCajaUsuario(Request $request)
 	{
@@ -4549,13 +4545,10 @@ class PosVentaController extends Controller
 						array_push(
 							$lista,
 							[
-								'0' => $datos[0],
-								'1' => $datos[1],
-								'2' => $datos[2],
-								'3' => $datos[3],
-								'4' => $datos[4],
-								'5' => $datos[5],
-								'6' => $datos[6],
+								'CODIGO' => $datos[0],
+								'USUARIO' => $datos[1],
+								'CAJA' => $datos[2],
+								'TURNO' => $datos[3],
 							]
 						);
 					}
@@ -4605,7 +4598,7 @@ class PosVentaController extends Controller
 			nTipoCam_in=> :nTipoCam_in,
 			vIdUsu_in=> :vIdUsu_in,
 			nNumCajaPago_in=> :nNumCajaPago_in,
-			cMotivoAnulacion_in=> :cMotivoAnulacion_in); END;");
+			cMotivoAnulacion=> :cMotivoAnulacion); END;");
 
 			oci_bind_by_name($stmt, ":cCodGrupoCia_in", $cCodGrupoCia);
 			oci_bind_by_name($stmt, ":cCodLocal_in", $cCodLocal);
@@ -4613,7 +4606,7 @@ class PosVentaController extends Controller
 			oci_bind_by_name($stmt, ":nTipoCam_in", $nTipoCam);
 			oci_bind_by_name($stmt, ":vIdUsu_in", $vIdUsu);
 			oci_bind_by_name($stmt, ":nNumCajaPago_in", $nNumCajaPago);
-			oci_bind_by_name($stmt, ":cMotivoAnulacion_in", $cMotivoAnulacion);
+			oci_bind_by_name($stmt, ":cMotivoAnulacion", $cMotivoAnulacion);
 			oci_bind_by_name($stmt, ":result", $result, 100);
 			oci_execute($stmt);
 
@@ -4624,7 +4617,6 @@ class PosVentaController extends Controller
 			return CustomResponse::failure($th->getMessage());
 		}
 	}
-
 
 	function cajAgregarDetNotaCredito(Request $request)
 	{
@@ -4689,6 +4681,178 @@ class PosVentaController extends Controller
 			return CustomResponse::failure($th->getMessage());
 		}
 	}
+
+
+	function getNumNC(Request $request)
+	{
+		$cCodGrupoCia = $request->input('cCodGrupoCia');
+		$cCodLocal = $request->input('cCodLocal');
+		$cNumPedVta = $request->input('cNumPedVta');
+
+		$validator = Validator::make($request->all(), [
+			'cCodGrupoCia' => 'required',
+			'cCodLocal' => 'required',
+			'cNumPedVta' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure($validator->errors()->first());
+		}
+
+		try {
+			$conn =  OracleDB::getConnection();
+			$result = '';
+
+			$stmt = ociparse($conn, "BEGIN :result := PTOVENTA_CAJ_ANUL.GET_NUM_NC(
+				cCodGrupoCia_in=> :cCodGrupoCia_in,
+				cCodLocal_in=> :cCodLocal_in,
+				cNumPedVta_in=> :cNumPedVta_in); END;");
+
+			oci_bind_by_name($stmt, ":result", $result, 100);
+			oci_bind_by_name($stmt, ":cCodGrupoCia_in", $cCodGrupoCia);
+			oci_bind_by_name($stmt, ":cCodLocal_in", $cCodLocal);
+			oci_bind_by_name($stmt, ":cNumPedVta_in", $cNumPedVta);
+			oci_execute($stmt);
+
+			oci_close($conn);
+
+			return CustomResponse::success('Dato Obtenido', $result);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
+
+	function fCurLstCompPago(Request $request)
+	{
+		$cCodGrupoCia = $request->input('cCodGrupoCia');
+		$cCodLocal = $request->input('cCodLocal');
+		$cNumPed = $request->input('cNumPed');
+		$cSecCompPago = $request->input('cSecCompPago');
+
+		$validator = Validator::make($request->all(), [
+			'cCodGrupoCia' => 'required',
+			'cCodLocal' => 'required',
+			'cNumPed' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure($validator->errors()->first());
+		}
+
+		try {
+			$conn =  OracleDB::getConnection();
+			$cursor = oci_new_cursor($conn);
+
+			$stmt = ociparse($conn, "BEGIN :result := PTOVENTA_CAJ.F_CUR_LST_COMP_PAGO(
+				cCodGrupoCia_in=> :cCodGrupoCia_in,
+				cCodLocal_in=> :cCodLocal_in,
+				cNumPed_in=> :cNumPed_in,
+				cSecCompPago_in=> :cSecCompPago_in); END;");
+
+			oci_bind_by_name($stmt, ":result", $cursor, -1, OCI_B_CURSOR);
+			oci_bind_by_name($stmt, ":cCodGrupoCia_in", $cCodGrupoCia);
+			oci_bind_by_name($stmt, ":cCodLocal_in", $cCodLocal);
+			oci_bind_by_name($stmt, ":cNumPed_in", $cNumPed);
+			oci_bind_by_name($stmt, ":cSecCompPago_in", $cSecCompPago);
+			oci_execute($stmt);
+			oci_execute($cursor);
+
+			$lista = [];
+
+			if ($stmt) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					foreach ($row as $key => $value) {
+						$datos = explode('Ã', $value);
+
+						array_push(
+							$lista,
+							[
+								'0' => $datos[0],
+								'1' => $datos[1],
+								'2' => $datos[2],
+								'3' => $datos[3],
+								'4' => $datos[4],
+								'5' => $datos[5],
+								'6' => $datos[6],
+								'7' => $datos[7],
+								'8' => $datos[8],
+							]
+						);
+					}
+				}
+			}
+
+			oci_close($conn);
+
+			return CustomResponse::success('Datos Obtenidos', $lista);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
+	// ------------------------------
+
+
+	function fImpCompElectWS(Request $request)
+	{
+
+		$cCodGrupoCia = $request->input('cCodGrupoCia');
+		$cCodLocal = $request->input('cCodLocal');
+		$cNumPedVta = $request->input('cNumPedVta');
+		$cSecCompPago = $request->input('cSecCompPago');
+		$vVersion = $request->input('vVersion');
+		$vReimpresion = $request->input('vReimpresion');
+		$valorAhorro = $request->input('valorAhorro');
+		$cDocTarjetaPtos = $request->input('cDocTarjetaPtos');
+
+		$validator = Validator::make($request->all(), [
+			'cCodGrupoCia' => 'required',
+			'cCodLocal' => 'required',
+			'cNumPedVta' => 'required',
+			'cSecCompPago' => 'required',
+			'vVersion' => 'required',
+			'vReimpresion' => 'required',
+			'valorAhorro' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure($validator->errors()->first());
+		}
+
+		try {
+			$conn =  OracleDB::getConnection();
+			$result = '';
+
+			$stmt = ociparse($conn, "BEGIN :result := HHC_IMP_ELECTRONICO.IMP_COMP_ELECT_WS(
+				vCodGrupoCia_in=> :cCodGrupoCia_in,
+				vCodLocal_in=> :cCodLocal_in,
+				vNumPedVta_in=> :cNumPedVta_in,
+				vSecCompPago_in=> :cSecCompPago_in,
+				vVersion_in=> :vVersion_in,
+				vReimpresion=> :vReimpresion,
+				valorAhorro_in=> :valorAhorro_in,
+				cDocTarjetaPtos_in=> :cDocTarjetaPtos_in); END;");
+
+			oci_bind_by_name($stmt, ":result", $result, 100);
+			oci_bind_by_name($stmt, ":cCodGrupoCia_in", $cCodGrupoCia);
+			oci_bind_by_name($stmt, ":cCodLocal_in", $cCodLocal);
+			oci_bind_by_name($stmt, ":cNumPedVta_in", $cNumPedVta);
+			oci_bind_by_name($stmt, ":cSecCompPago_in", $cSecCompPago);
+			oci_bind_by_name($stmt, ":vVersion_in", $vVersion);
+			oci_bind_by_name($stmt, ":vReimpresion", $vReimpresion);
+			oci_bind_by_name($stmt, ":valorAhorro_in", $valorAhorro);
+			oci_bind_by_name($stmt, ":cDocTarjetaPtos_in", $cDocTarjetaPtos);
+
+			oci_execute($stmt);
+			oci_close($conn);
+
+			return CustomResponse::success('Datos Obtenidos', $result);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
 
 	function validaCambioPrecio(Request  $request)
 	{
