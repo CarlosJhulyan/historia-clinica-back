@@ -1722,6 +1722,7 @@ class PosVentaController extends Controller
 		$cCodCiaReserva = $request->input('cCodCiaReserva');
 		$cCodLocalReserva = $request->input('cCodLocalReserva');
 		$cCodPedidoReserva = $request->input('cCodPedidoReserva');
+        $cIsWeb = $request->input('cIsWeb');
 
 		$validartor = Validator::make($request->all(), [
 			// 'cCodGrupoCia_in' => 'required',
@@ -1833,7 +1834,8 @@ class PosVentaController extends Controller
                 cIndReserva => :cIndReserva,
                 cCodCiaReserva_in => :cCodCiaReserva_in,
                 cCodLocalReserva_in => :cCodLocalReserva_in,
-                cCodPedidoReserva_in => :cCodPedidoReserva_in);end;');
+                cCodPedidoReserva_in => :cCodPedidoReserva_in,
+                cIsWeb => :cIsWeb);end;');
 
 
 			oci_bind_by_name($stid, ":cCodGrupoCia_in", $cCodGrupoCia_in);
@@ -1886,6 +1888,7 @@ class PosVentaController extends Controller
 			oci_bind_by_name($stid, ":cCodCiaReserva_in", $cCodCiaReserva);
 			oci_bind_by_name($stid, ":cCodLocalReserva_in", $cCodLocalReserva);
 			oci_bind_by_name($stid, ":cCodPedidoReserva_in", $cCodPedidoReserva);
+            oci_bind_by_name($stid, ":cIsWeb", $cIsWeb);
 			oci_execute($stid);
 			$result = '';
 			oci_close($conn);

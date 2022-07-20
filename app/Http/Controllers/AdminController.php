@@ -574,4 +574,202 @@ class AdminController extends Controller
             return CustomResponse::failure($th->getMessage());
         }
     }
+
+    public function getConsultorioMedico()
+    {
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := HHC_PTOVENTA_MEDICO.HHC_GET_CONSULTORIOS; end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'value' => $datos[0],
+                                'descripcion' => $datos[1]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success('Datos encontrados.', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    public function getBusMedico(Request $request)
+    {
+
+        $cId_in = $request->input('id');
+
+        $validator = Validator::make($request->all(), [
+            'id' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := HHC_PTOVENTA_MEDICO.HHC_GET_BUS(
+                cConsultorio => :cId_in); end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ':cId_in', $cId_in);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'value' => $datos[0],
+                                'descripcion' => $datos[1]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            return CustomResponse::success('Datos encontrados.', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+
+    function deleteAsignacion(Request $request) {
+        $cNumCMP_in = $request->input('cmp');
+
+        $validator = Validator::make($request->all(), [
+            'cmp' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, 'begin HHC_PTOVENTA_MEDICO.HHC_DELETE_ASIGNA(
+                cNumCMP_in => :cNumCMP_in);end;');
+            oci_bind_by_name($stid, ':cNumCMP_in', $cNumCMP_in);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Asignacion de médico borrada');
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+
+    public function searchAsignaMedicos()
+    {
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := HHC_PTOVENTA_MEDICO.HHC_TODOS_ASIGNA_MEDICO;end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'CMP' => $datos[0],
+                                'COD_MEDICO' => $datos[1],
+                                'NOMBRES' => $datos[2],
+                                'APELLIDOS' => $datos[3],
+                                'ID_CONSULTORIO' => $datos[4],
+                                'CONSULTORIO' => $datos[5],
+                                'ID_BUS' => $datos[6],
+                                'BUS' => $datos[7],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            if (count($lista) <= 0) return  CustomResponse::failure('No existen coincidencias');
+            return CustomResponse::success('Datos encontrados.', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    function createAsignaMedicos(Request $request) {
+        $cNumCMP_in = $request->input('cmp');
+        $codmedico = $request->input('codmedico');
+        $idconsultorio = $request->input('idconsultorio');
+        $idbus = $request->input('idbus');
+        $bus = $request->input('bus');
+
+        $validator = Validator::make($request->all(), [
+            'cmp' => 'required',
+            'codmedico' => 'required',
+            'idconsultorio' => 'required',
+            'idbus' => 'required',
+            'bus' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, 'begin HHC_PTOVENTA_MEDICO.HHC_ASIGNA_MEDICO(cNumCMP_in => :cNumCMP_in,
+            cCodMedico => :cCodMedico,
+            idConsultorio => :idConsultorio,
+            id_bus => :id_bus,
+            cBus => :cBus);end;');
+            oci_bind_by_name($stid, ':cNumCMP_in', $cNumCMP_in);
+            oci_bind_by_name($stid, ':cCodMedico', $codmedico);
+            oci_bind_by_name($stid, ':idConsultorio', $idconsultorio);
+            oci_bind_by_name($stid, ':id_bus', $idbus);
+            oci_bind_by_name($stid, ':cBus', $bus);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Asignacion creada satisfactoriamente');
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
 }
