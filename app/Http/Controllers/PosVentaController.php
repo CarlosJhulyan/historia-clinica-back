@@ -1407,9 +1407,9 @@ class PosVentaController extends Controller
 			'pTipoDocIdent' => 'required',
 			'pDni' => 'required',
 			'pDirCliente' => 'required',
-			//			'vRazonSocial' => 'required',
-			'vTelefono' => 'required',
-			//			'vCorreo' => 'required',
+			// 'vRazonSocial' => 'required',
+			// 'vTelefono' => 'required',
+			// 'vCorreo' => 'required',
 			'idUsuarioLogueado' => 'required',
 		]);
 
