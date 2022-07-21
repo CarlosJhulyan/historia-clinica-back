@@ -265,6 +265,7 @@ Route::post('/posventa/updateNumera', 'App\Http\Controllers\PosVentaController@u
 Route::post('/posventa/getTurnoActualCaja', 'App\Http\Controllers\PosVentaController@obtenerTurnoActualCaja');
 Route::post('/posventa/getFechaApertura', 'App\Http\Controllers\PosVentaController@obtenerFechaApertura');
 Route::post('/posventa/setRegistraMovimientoAper', 'App\Http\Controllers\PosVentaController@setRegistraMovimientoApertura');
+Route::post('/posventa/getUltimoPedidoDiario', 'App\Http\Controllers\PosVentaController@obtieneUltimoPedidoDiario');
 
 // Productos
 Route::post('/posventa/getProductos', 'App\Http\Controllers\PosVentaController@obtenerListaProductos');

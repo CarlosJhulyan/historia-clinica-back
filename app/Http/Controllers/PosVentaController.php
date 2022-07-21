@@ -781,6 +781,42 @@ class PosVentaController extends Controller
 		}
 	}
 
+    function obtieneUltimoPedidoDiario(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $secUsu = $request->input('secUsu');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'secUsu' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = '';
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_VTA.VTA_OBTIENE_ULTIMO_PED_DIARIO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cSecUsuLocal_in => :cSecUsuLocal_in);end;');
+            oci_bind_by_name($stid, ':result', $result, 4);
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':cSecUsuLocal_in', $secUsu);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Ultimo pedido diario', $result);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
 	function obtenerIndSolIdUsu(Request $request)
 	{
 		$codGrupoCia = $request->input('codGrupoCia');
