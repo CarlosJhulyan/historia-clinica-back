@@ -3336,8 +3336,6 @@ class PosVentaController extends Controller
 		}
 	}
 
-
-
 	function impCompElectWS(Request $request)
 	{
 		$vCodGrupoCia_in = $request->input('codGrupoCia');
@@ -3992,6 +3990,216 @@ class PosVentaController extends Controller
 		}
 	}
 
+	function impDetalleNota(Request $request)
+	{
+		$vCodGrupoCia_in = $request->input('codGrupoCia');
+		$vCodLocal_in = $request->input('codLocal');
+		$vNumPedVta_in = $request->input('numPedVta');
+
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'numPedVta' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
+
+		try {
+
+			$conn = OracleDB::getConnection();
+
+			$cursor = oci_new_cursor($conn);
+
+			$stid = oci_parse($conn, 'begin PTOVENTA_JASPER_ELECTRONICO.SP_DATA_DOCUMENTO_DET_NT(
+								cCodGrupoCia_in => :cCodGrupoCia_in,
+								cCodLocal_in => :cCodLocal_in,
+								cNumPedVta_in => :cNumPedVta_in,
+							  datosDetalleItem => :datosDetalleItem);end;');
+			oci_bind_by_name($stid, ':cCodGrupoCia_in', $vCodGrupoCia_in);
+			oci_bind_by_name($stid, ':cCodLocal_in', $vCodLocal_in);
+			oci_bind_by_name($stid, ':cNumPedVta_in', $vNumPedVta_in);
+			oci_bind_by_name($stid, ':datosDetalleItem', $cursor, -1, OCI_B_CURSOR);
+			oci_execute($stid);
+			oci_execute($cursor);
+
+			$lista = [];
+
+			if ($stid) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					$item = [];
+					foreach ($row as $key => $value) {
+						array_push($item, $value);
+					}
+					array_push($lista, $item);
+				}
+			}
+
+			oci_close($conn);
+
+			return CustomResponse::success('Detalles', $lista);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
+	function generaReporteNotaCredito(Request $request)
+	{
+		// $input = __DIR__ . '/reportes/documentElectronicNT.jrxml';
+
+		// $jasper = new PHPJasper;
+		// $x = $jasper->compile($input)->output();
+
+		// return CustomResponse::success('abc', $x);
+
+		$vCodGrupoCia_in = $request->input('codGrupoCia');
+		$vCodLocal_in = $request->input('codLocal');
+		$vNumPedVta_in = $request->input('numPedVta');
+
+		$validator = Validator::make($request->all(), [
+			'codGrupoCia' => 'required',
+			'codLocal' => 'required',
+			'numPedVta' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
+
+		try {
+			$conn = OracleDB::getConnection();
+			$cursor = oci_new_cursor($conn);
+
+			$stid = oci_parse($conn, 'begin PTOVENTA_JASPER_ELECTRONICO.SP_DATA_DOCUMENTO_CAB_NT(
+								cCodGrupoCia_in => :cCodGrupoCia_in,
+								cCodLocal_in => :cCodLocal_in,
+								cNumPedVta_in => :cNumPedVta_in,
+							  datosCabecera => :datosCabecera);end;');
+			oci_bind_by_name($stid, ':cCodGrupoCia_in', $vCodGrupoCia_in);
+			oci_bind_by_name($stid, ':cCodLocal_in', $vCodLocal_in);
+			oci_bind_by_name($stid, ':cNumPedVta_in', $vNumPedVta_in);
+			oci_bind_by_name($stid, ':datosCabecera', $cursor, -1, OCI_B_CURSOR);
+			oci_execute($stid);
+			oci_execute($cursor);
+
+			$lista = [];
+
+			if ($stid) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					foreach ($row as $key => $value) {
+						array_push($lista, $value);
+					}
+				}
+			}
+
+			oci_close($conn);
+
+			/**
+			 * 
+			 */
+			$conn = OracleDB::getConnection();
+			$cursor = oci_new_cursor($conn);
+
+			$stid = oci_parse($conn, 'begin :cursor := HHC_IMP_ELECTRONICO.OBTIENE_DATA_EMPRESA (
+				cCOD_CIA=> :cCOD_CIA,
+				cCOD_LOCAL=> :cCOD_LOCAL); end;');
+			oci_bind_by_name($stid, ':cCOD_CIA', $vCodGrupoCia_in);
+			oci_bind_by_name($stid, ':cCOD_LOCAL', $vCodLocal_in);
+			oci_bind_by_name($stid, ':cursor', $cursor, -1, OCI_B_CURSOR);
+
+			oci_execute($stid);
+			oci_execute($cursor);
+
+			$empresa = [];
+
+			if ($stid) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					foreach ($row as $key => $value) {
+						$datos = explode('Ã', $value);
+						$empresa = [
+							'RAZON_SOCIAL' => $datos[0],
+							'DIRECCION' => $datos[1],
+							'UBIGEO' => $datos[2],
+							'TELEFONO' => $datos[3],
+							'FAX' => $datos[4],
+							'WEB' => $datos[5],
+							'CORREO' => $datos[6],
+							'RUC' => $datos[7],
+							'PORTALFE' => $datos[8],
+						];
+					}
+				}
+			}
+
+			oci_close($conn);
+
+			/**
+			 *
+			 */
+
+			$RUC_EMISOR = $empresa['RUC'];
+
+			$data = $RUC_EMISOR . '|' . $lista[0] . '|' . str_replace('-', '|', $lista[2]) . '|' . $lista[14] . '|' . $lista[15] . '|' . $lista[8] . '|' . $lista[5] . '|' . $lista[6];
+
+			$url = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . $data;
+
+			Storage::put('qr.png', file_get_contents($url));
+
+			$fechaDocumento = $lista[8];
+			$fechaDocumento = str_replace('-', '', $fechaDocumento);
+			$HHmmssFechaActual = date('His');
+			$nameDir = $RUC_EMISOR . '_' . $lista[2] . '_' . $fechaDocumento  . '_' . $HHmmssFechaActual;
+			$input = __DIR__ . '\\reportes\\documentElectronicNT.jasper';
+			$output = public_path() . '\\documentos\\notas\\' . $nameDir;
+			$imagen = __DIR__ . '\\reportes\\IconBiensalud.jpg';
+
+			$options = [
+				'format' => ['pdf'],
+				'params' => [
+					'RUTA_IMAGEN' => $imagen,
+					'RAZON_SOCIAL_EMISOR' => $empresa['RAZON_SOCIAL'],
+					'DIRECCION_EMISOR' => $empresa['DIRECCION'],
+					'DEP_PROV_DIST_EMISOR' => $empresa['UBIGEO'],
+					'TELEFONO_EMISOR' => $empresa['TELEFONO'],
+					'FAX_EMISOR' => $empresa['FAX'],
+					'WEB_EMISOR' => $empresa['WEB'],
+					'CORREO_EMISOR' => $empresa['CORREO'],
+					'RUC_EMISOR' => $RUC_EMISOR,
+					'TITULO_DOCUMENTO' => $lista[1],
+					'NUMERO_DOCUMENTO' => $lista[2],
+					'RAZON_SOCIAL_CLIENTE' => $lista[3],
+					'DIRECCION_CLIENTE' => $lista[4],
+					'RUC_CLIENTE' => $lista[6],
+					'MONEDA_PAGO_DOCUMENTO' => $lista[7],
+					'FECHA_EMISION_DOCUMENTO' => $lista[8],
+					'CONDICION_PAGO_DOCUMENTO' => $lista[9],
+					'DOC_REFERENCIA' => $lista[10],
+					'SUSTENTO_EMISION'	=> $lista[12],
+					'FECHA_DOC_REFERENCIA' => $lista[11],
+					'SUBTOTAL' => $lista[13],
+					'MONTO_IGV' => $lista[14],
+					'MONTO_TOTAL' => $lista[15],
+					'MONTO_TOTAL_LETRAS' => $lista[17],
+					'PORTALFE' => $empresa['PORTALFE'],
+					'CODEQR' => storage_path('app/qr.png'),
+				]
+			];
+
+			$jasper = new PHPJasper;
+
+			$jasper->process(
+				$input,
+				$output,
+				$options
+			)->execute();
+
+			return CustomResponse::success('PDF GENERADO', $nameDir . '.pdf');
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
 
 	function generarReporte(Request $request)
 	{
@@ -4049,10 +4257,51 @@ class PosVentaController extends Controller
 			oci_close($conn);
 
 			/**
+			 * 
+			 */
+
+			$conn = OracleDB::getConnection();
+			$cursor = oci_new_cursor($conn);
+
+			$stid = oci_parse($conn, 'begin :cursor := HHC_IMP_ELECTRONICO.OBTIENE_DATA_EMPRESA (
+				cCOD_CIA=> :cCOD_CIA,
+				cCOD_LOCAL=> :cCOD_LOCAL); end;');
+			oci_bind_by_name($stid, ':cCOD_CIA', $vCodGrupoCia_in);
+			oci_bind_by_name($stid, ':cCOD_LOCAL', $vCodLocal_in);
+			oci_bind_by_name($stid, ':cursor', $cursor, -1, OCI_B_CURSOR);
+
+			oci_execute($stid);
+			oci_execute($cursor);
+
+			$empresa = [];
+
+			if ($stid) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					foreach ($row as $key => $value) {
+						$datos = explode('Ã', $value);
+						$empresa = [
+							'RAZON_SOCIAL' => $datos[0],
+							'DIRECCION' => $datos[1],
+							'UBIGEO' => $datos[2],
+							'TELEFONO' => $datos[3],
+							'FAX' => $datos[4],
+							'WEB' => $datos[5],
+							'CORREO' => $datos[6],
+							'RUC' => $datos[7],
+							'PORTALFE' => $datos[8],
+						];
+					}
+				}
+			}
+
+			oci_close($conn);
+
+
+			/**
 			 *
 			 */
 
-			$RUC_EMISOR = 20555875828;
+			$RUC_EMISOR = $empresa['RUC'];
 
 			$data = $RUC_EMISOR . '|' . $lista[0] . '|' . str_replace('-', '|', $lista[2]) . '|' . $lista[14] . '|' . $lista[15] . '|' . $lista[8] . '|' . $lista[5] . '|' . $lista[6];
 
@@ -4072,13 +4321,13 @@ class PosVentaController extends Controller
 				'format' => ['pdf'],
 				'params' => [
 					'RUTA_IMAGEN' => $imagen,
-					'RAZON_SOCIAL_EMISOR' => 'CONSORCIO SALUD LIMA SUR',
-					'DIRECCION_EMISOR' => 'PR GRAL MIGUEL IGLESIAS NRO. 997',
-					'DEP_PROV_DIST_EMISOR' => 'LIMA - LIMA - SAN JUAN DE MIRAFLORES',
-					'TELEFONO_EMISOR' => 7178060,
-					'FAX_EMISOR' => '-',
-					'WEB_EMISOR' => '-',
-					'CORREO_EMISOR' => 'consorciohumanidadlimasur@gmail.com',
+					'RAZON_SOCIAL_EMISOR' => $empresa['RAZON_SOCIAL'],
+					'DIRECCION_EMISOR' => $empresa['DIRECCION'],
+					'DEP_PROV_DIST_EMISOR' => $empresa['UBIGEO'],
+					'TELEFONO_EMISOR' => $empresa['TELEFONO'],
+					'FAX_EMISOR' => $empresa['FAX'],
+					'WEB_EMISOR' => $empresa['WEB'],
+					'CORREO_EMISOR' => $empresa['CORREO'],
 					'RUC_EMISOR' => $RUC_EMISOR,
 					'TITULO_DOCUMENTO' => $lista[1],
 					'NUMERO_DOCUMENTO' => $lista[2],
@@ -4095,7 +4344,7 @@ class PosVentaController extends Controller
 					'MONTO_IGV' => $lista[14],
 					'MONTO_TOTAL' => $lista[15],
 					'MONTO_TOTAL_LETRAS' => $lista[17],
-					'PORTALFE' => 'http://www.factelectronica.consorciosaludlimasur.com',
+					'PORTALFE' => $empresa['PORTALFE'],
 					'CODEQR' => storage_path('app/qr.png'),
 				]
 			];
@@ -4130,6 +4379,28 @@ class PosVentaController extends Controller
 		try {
 			// $imagenFirma = $codMedi . '.' . $request->imagen->extension();
 			$request->pdf->move(public_path('documentos/'), $nombreComprobante);
+			return CustomResponse::success('COMPROBANTE SUBIDO');
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
+	}
+
+	function subirComprobanteNota(Request $request)
+	{
+		$nombreComprobante = $request->input('nombreComprobante');
+
+		$validator = Validator::make($request->all(), [
+			'nombreComprobante' => 'required',
+			'pdf' => 'required|mimes:pdf',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure($validator->errors()->first());
+		}
+
+		try {
+			// $imagenFirma = $codMedi . '.' . $request->imagen->extension();
+			$request->pdf->move(public_path('documentos/notas'), $nombreComprobante);
 			return CustomResponse::success('COMPROBANTE SUBIDO');
 		} catch (\Throwable $th) {
 			return CustomResponse::failure($th->getMessage());
@@ -4794,64 +5065,6 @@ class PosVentaController extends Controller
 	// ------------------------------
 
 
-	function fImpCompElectWS(Request $request)
-	{
-
-		$cCodGrupoCia = $request->input('cCodGrupoCia');
-		$cCodLocal = $request->input('cCodLocal');
-		$cNumPedVta = $request->input('cNumPedVta');
-		$cSecCompPago = $request->input('cSecCompPago');
-		$vVersion = $request->input('vVersion');
-		$vReimpresion = $request->input('vReimpresion');
-		$valorAhorro = $request->input('valorAhorro');
-		$cDocTarjetaPtos = $request->input('cDocTarjetaPtos');
-
-		$validator = Validator::make($request->all(), [
-			'cCodGrupoCia' => 'required',
-			'cCodLocal' => 'required',
-			'cNumPedVta' => 'required',
-			'cSecCompPago' => 'required',
-			'vVersion' => 'required',
-			'vReimpresion' => 'required',
-			'valorAhorro' => 'required',
-		]);
-
-		if ($validator->fails()) {
-			return CustomResponse::failure($validator->errors()->first());
-		}
-
-		try {
-			$conn =  OracleDB::getConnection();
-			$result = '';
-
-			$stmt = ociparse($conn, "BEGIN :result := HHC_IMP_ELECTRONICO.IMP_COMP_ELECT_WS(
-				vCodGrupoCia_in=> :cCodGrupoCia_in,
-				vCodLocal_in=> :cCodLocal_in,
-				vNumPedVta_in=> :cNumPedVta_in,
-				vSecCompPago_in=> :cSecCompPago_in,
-				vVersion_in=> :vVersion_in,
-				vReimpresion=> :vReimpresion,
-				valorAhorro_in=> :valorAhorro_in,
-				cDocTarjetaPtos_in=> :cDocTarjetaPtos_in); END;");
-
-			oci_bind_by_name($stmt, ":result", $result, 100);
-			oci_bind_by_name($stmt, ":cCodGrupoCia_in", $cCodGrupoCia);
-			oci_bind_by_name($stmt, ":cCodLocal_in", $cCodLocal);
-			oci_bind_by_name($stmt, ":cNumPedVta_in", $cNumPedVta);
-			oci_bind_by_name($stmt, ":cSecCompPago_in", $cSecCompPago);
-			oci_bind_by_name($stmt, ":vVersion_in", $vVersion);
-			oci_bind_by_name($stmt, ":vReimpresion", $vReimpresion);
-			oci_bind_by_name($stmt, ":valorAhorro_in", $valorAhorro);
-			oci_bind_by_name($stmt, ":cDocTarjetaPtos_in", $cDocTarjetaPtos);
-
-			oci_execute($stmt);
-			oci_close($conn);
-
-			return CustomResponse::success('Datos Obtenidos', $result);
-		} catch (\Throwable $th) {
-			return CustomResponse::failure($th->getMessage());
-		}
-	}
 
 
 	function validaCambioPrecio(Request  $request)
@@ -4925,5 +5138,69 @@ class PosVentaController extends Controller
 		$nombreArchivo = $request->input('nombreArchivo');
 		$file = public_path('documentos/' . $nombreArchivo);
 		return response()->download($file);
+	}
+
+	function downloadComprobanteNota(Request $request)
+	{
+		$nombreArchivo = $request->input('nombreArchivo');
+		$file = public_path('documentos/notas/' . $nombreArchivo);
+		return response()->download($file);
+	}
+
+	function getDataEmpresa(Request $request)
+	{
+		$codCia = $request->input('codCia');
+		$codLocal = $request->input('codLocal');
+
+		$validator = Validator::make($request->all(), [
+			'codCia' => 'required',
+			'codLocal' => 'required',
+		]);
+
+		if ($validator->fails()) {
+			return CustomResponse::failure('Datos faltantes');
+		}
+
+		try {
+			$conn = OracleDB::getConnection();
+			$cursor = oci_new_cursor($conn);
+
+			$stid = oci_parse($conn, 'begin :cursor := HHC_IMP_ELECTRONICO.OBTIENE_DATA_EMPRESA (
+				cCOD_CIA=> :cCOD_CIA,
+				cCOD_LOCAL=> :cCOD_LOCAL); end;');
+			oci_bind_by_name($stid, ':cCOD_CIA', $codCia);
+			oci_bind_by_name($stid, ':cCOD_LOCAL', $codLocal);
+			oci_bind_by_name($stid, ':cursor', $cursor, -1, OCI_B_CURSOR);
+
+			oci_execute($stid);
+			oci_execute($cursor);
+
+			$lista = [];
+
+			if ($stid) {
+				while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+					foreach ($row as $key => $value) {
+						$datos = explode('Ã', $value);
+						$lista = [
+							'RAZON_SOCIAL' => $datos[0],
+							'DIRECCION' => $datos[1],
+							'UBIGEO' => $datos[2],
+							'TELEFONO' => $datos[3],
+							'FAX' => $datos[4],
+							'WEB' => $datos[5],
+							'CORREO' => $datos[6],
+							'RUC' => $datos[7],
+							'PORTALFE' => $datos[8],
+						];
+					}
+				}
+			}
+
+			oci_close($conn);
+
+			return CustomResponse::success('Datos Obtenidos', $lista);
+		} catch (\Throwable $th) {
+			return CustomResponse::failure($th->getMessage());
+		}
 	}
 }

@@ -326,7 +326,11 @@ Route::post('/posventa/cajAgregarDetNotaCredito', 'App\Http\Controllers\PosVenta
 Route::post('/posventa/cajListaDetalleNotaCredito', 'App\Http\Controllers\PosVentaController@cajListaDetalleNotaCredito');
 Route::post('/posventa/getNumNC', 'App\Http\Controllers\PosVentaController@getNumNC');
 Route::post('/posventa/fCurLstCompPago', 'App\Http\Controllers\PosVentaController@fCurLstCompPago');
-Route::post('/posventa/fImpCompElectWS', 'App\Http\Controllers\PosVentaController@fImpCompElectWS');
+Route::post('/posventa/generaReporteNotaCredito', 'App\Http\Controllers\PosVentaController@generaReporteNotaCredito');
+Route::post('/posventa/subirComprobanteNota', 'App\Http\Controllers\PosVentaController@subirComprobanteNota');
+Route::get('/posventa/downloadComprobanteNota', 'App\Http\Controllers\PosVentaController@downloadComprobanteNota');
+Route::post('/posventa/impDetalleNota', 'App\Http\Controllers\PosVentaController@impDetalleNota');
+Route::post('/posventa/getDataEmpresa', 'App\Http\Controllers\PosVentaController@getDataEmpresa');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');
