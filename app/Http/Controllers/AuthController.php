@@ -470,4 +470,5 @@ class AuthController extends Controller
 			]);
 			return CustomResponse::success('Usuario agregado correctamente');
 		}
+	}
 }
