@@ -320,7 +320,7 @@ class AuthController extends Controller
             try {
                 $result = null;
                 $pdo = DB::getPdo();
-                $stmt = $pdo->prepare("BEGIN :result := farma_security.verifica_usuario_login(ccodgrupocia_in=>:grupo,ccodlocal_in=>:local,ccodusu_in=>:usuario,cclaveusu_in=>:clave); END;");
+                $stmt = $pdo->prepare("BEGIN :result := farma_security.VERIFICA_USUARIO_LOGIN_V2(ccodgrupocia_in=>:grupo,ccodlocal_in=>:local,ccodusu_in=>:usuario,cclaveusu_in=>:clave); END;");
                 $stmt->bindParam(':grupo', $nroGrupo, \PDO::PARAM_STR);
                 $stmt->bindParam(':local', $nroLocal, \PDO::PARAM_STR);
                 $stmt->bindParam(':usuario', $nroUsuario, \PDO::PARAM_STR);
@@ -357,6 +357,10 @@ class AuthController extends Controller
                             break;
                         case '05':
                             $resultado = 'Usuario No Existe';
+                            $success = false;
+                            break;
+                        case '06':
+                            $resultado = 'Usuario no tiene Caja relacionada';
                             $success = false;
                             break;
                         case '98':

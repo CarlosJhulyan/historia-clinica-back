@@ -772,4 +772,269 @@ class AdminController extends Controller
             return CustomResponse::failure($th->getMessage());
         }
     }
+
+    public function getUsuariosActivosInactivos(Request $request)
+    {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $codEstado = $request->input('codEstado');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'codEstado' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_ADMIN_USU.USU_LISTA_USUARIOS_LOCAL(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cEstadoActivo_in => :cEstadoActivo_in);end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':cEstadoActivo_in', $codEstado);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'SEC_USU_LOCAL' => $datos[0],
+                                'APE_PAT' => $datos[1],
+                                'APE_MAT' => $datos[2],
+                                'NOMBRE' => $datos[3],
+                                'USUARIO' => $datos[4],
+                                'ESTADO' => $datos[5],
+                                'DIRECCION' => $datos[6],
+                                'TELEFONO' => $datos[7],
+                                'FEC_NAC' => $datos[8],
+                                'COD_TRAB' => $datos[11],
+                                'DNI' => $datos[12],
+                                'COD_TRAB_RRHH' => $datos[13],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            if (count($lista) <= 0) return  CustomResponse::failure('No existen coincidencias');
+            return CustomResponse::success('Datos encontrados.', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
+
+    function createUsuario(Request $request) {
+        $cCodGrupoCia_in = $request->input('codGrupoCia');
+        $cCodCia_in = $request->input('codCia');
+        $cCodLocal_in = $request->input('codLocal');
+        $cCodTrab_in = $request->input('codTrab');
+        $cNomUsu_in = $request->input('nomUsu');
+        $cApePat_in = $request->input('apePat');
+        $cApeMat_in = $request->input('apeMat');
+        $cLoginUsu_in = $request->input('loginUsu');
+        $cClaveUsu_in = $request->input('claveUsu');
+        $cTelefUsu_in = $request->input('telefUsu');
+        $cDireccUsu_in = $request->input('direccUsu');
+        $cFecNac_in = $request->input('fecNac');
+        $cCodUsu_in = $request->input('codUsu');
+        $cDni_in = $request->input('dni');
+        $cCodTrabRRHH = $request->input('codTrabRH');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+//            'codCia' => 'required',
+            'codLocal' => 'required',
+//            'codTrab' => 'required',
+            'nomUsu' => 'required',
+            'apePat' => 'required',
+            'apeMat' => 'required',
+            'loginUsu' => 'required',
+            'claveUsu' => 'required',
+//            'telefUsu' => 'required',
+//            'direccUsu' => 'required',
+            'fecNac' => 'required',
+            'codUsu' => 'required',
+            'dni' => 'required',
+//            'codTrabRH' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, 'begin PTOVENTA_ADMIN_USU.USU_INGRESA_USUARIO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodCia_in => :cCodCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cCodTrab_in => :cCodTrab_in,
+                cNomUsu_in => :cNomUsu_in,
+                cApePat_in => :cApePat_in,
+                cApeMat_in => :cApeMat_in,
+                cLoginUsu_in => :cLoginUsu_in,
+                cClaveUsu_in => :cClaveUsu_in,
+                cTelefUsu_in => :cTelefUsu_in,
+                cDireccUsu_in => :cDireccUsu_in,
+                cFecNac_in => :cFecNac_in,
+                cCodUsu_in => :cCodUsu_in,
+                cDni_in => :cDni_in,
+                cCodTrabRRHH => :cCodTrabRRHH);end;');
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $cCodGrupoCia_in);
+            oci_bind_by_name($stid, ':cCodCia_in', $cCodCia_in);
+            oci_bind_by_name($stid, ':cCodLocal_in', $cCodLocal_in);
+            oci_bind_by_name($stid, ':cCodTrab_in', $cCodTrab_in);
+            oci_bind_by_name($stid, ':cNomUsu_in', $cNomUsu_in);
+            oci_bind_by_name($stid, ':cApePat_in', $cApePat_in);
+            oci_bind_by_name($stid, ':cApeMat_in', $cApeMat_in);
+            oci_bind_by_name($stid, ':cLoginUsu_in', $cLoginUsu_in);
+            oci_bind_by_name($stid, ':cClaveUsu_in', $cClaveUsu_in);
+            oci_bind_by_name($stid, ':cTelefUsu_in', $cTelefUsu_in);
+            oci_bind_by_name($stid, ':cDireccUsu_in', $cDireccUsu_in);
+            oci_bind_by_name($stid, ':cFecNac_in', $cFecNac_in);
+            oci_bind_by_name($stid, ':cCodUsu_in', $cCodUsu_in);
+            oci_bind_by_name($stid, ':cDni_in', $cDni_in);
+            oci_bind_by_name($stid, ':cCodTrabRRHH', $cCodTrabRRHH);
+            oci_execute($stid);
+
+            return CustomResponse::success('Usuario registrado correctamente');
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            if (str_contains($th->getMessage(), '20014')) return CustomResponse::failure('El Login especificado ya existe');
+            return CustomResponse::failure();
+        }
+    }
+
+    function updateUsuario(Request $request) {
+        $cCodGrupoCia_in = $request->input('codGrupoCia');
+        $cCodLocal_in = $request->input('codLocal');
+        $cSecUsuLocal_in = $request->input('codSecUsu');
+        $cCodTrab_in = $request->input('codTrab');
+        $cNomUsu_in = $request->input('nomUsu');
+        $cApePat_in = $request->input('apePat');
+        $cApeMat_in = $request->input('apeMat');
+        $cLoginUsu_in = $request->input('loginUsu');
+        $cClaveUsu_in = $request->input('claveUsu');
+        $cTelefUsu_in = $request->input('telefUsu');
+        $cDireccUsu_in = $request->input('direccUsu');
+        $cFecNac_in = $request->input('fecNac');
+        $cCodUsu_in = $request->input('codUsu');
+        $cDni_in = $request->input('dni');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codSecUsu' => 'required',
+            'codLocal' => 'required',
+//            'codTrab' => 'required',
+            'nomUsu' => 'required',
+            'apePat' => 'required',
+            'apeMat' => 'required',
+            'loginUsu' => 'required',
+            'claveUsu' => 'required',
+//            'telefUsu' => 'required',
+//            'direccUsu' => 'required',
+            'fecNac' => 'required',
+            'codUsu' => 'required',
+            'dni' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, 'begin PTOVENTA_ADMIN_USU.USU_MODIFICA_USUARIO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cSecUsuLocal_in => :cSecUsuLocal_in,
+                cCodTrab_in => :cCodTrab_in,
+                cNomUsu_in => :cNomUsu_in,
+                cApePat_in => :cApePat_in,
+                cApeMat_in => :cApeMat_in,
+                cLoginUsu_in => :cLoginUsu_in,
+                cClaveUsu_in => :cClaveUsu_in,
+                cTelefUsu_in => :cTelefUsu_in,
+                cDireccUsu_in => :cDireccUsu_in,
+                cFecNac_in => :cFecNac_in,
+                cCodUsu_in => :cCodUsu_in,
+                cDni_in => :cDni_in);end;');
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $cCodGrupoCia_in);
+            oci_bind_by_name($stid, ':cCodLocal_in', $cCodLocal_in);
+            oci_bind_by_name($stid, ':cSecUsuLocal_in', $cSecUsuLocal_in);
+            oci_bind_by_name($stid, ':cCodTrab_in', $cCodTrab_in);
+            oci_bind_by_name($stid, ':cNomUsu_in', $cNomUsu_in);
+            oci_bind_by_name($stid, ':cApePat_in', $cApePat_in);
+            oci_bind_by_name($stid, ':cApeMat_in', $cApeMat_in);
+            oci_bind_by_name($stid, ':cLoginUsu_in', $cLoginUsu_in);
+            oci_bind_by_name($stid, ':cClaveUsu_in', $cClaveUsu_in);
+            oci_bind_by_name($stid, ':cTelefUsu_in', $cTelefUsu_in);
+            oci_bind_by_name($stid, ':cDireccUsu_in', $cDireccUsu_in);
+            oci_bind_by_name($stid, ':cFecNac_in', $cFecNac_in);
+            oci_bind_by_name($stid, ':cCodUsu_in', $cCodUsu_in);
+            oci_bind_by_name($stid, ':cDni_in', $cDni_in);
+            oci_execute($stid);
+
+            return CustomResponse::success('Usuario actualizado correctamente');
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            return CustomResponse::failure();
+        }
+    }
+
+    function changeEstadoUsuario(Request $request) {
+        $cCodGrupoCia_in = $request->input('codGrupoCia');
+        $cCodLocal_in = $request->input('codLocal');
+        $cSecUsuLocal_in = $request->input('secUsu');
+        $cCodUsu_in = $request->input('codUsu');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'secUsu' => 'required',
+            'codUsu' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $stid = oci_parse($conn, 'begin PTOVENTA_ADMIN_USU.USU_CAMBIA_ESTADO_USU(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cSecUsuLocal_in => :cSecUsuLocal_in,
+                cCodUsu_in => :cCodUsu_in);end;');
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $cCodGrupoCia_in);
+            oci_bind_by_name($stid, ':cCodLocal_in', $cCodLocal_in);
+            oci_bind_by_name($stid, ':cSecUsuLocal_in', $cSecUsuLocal_in);
+            oci_bind_by_name($stid, ':cCodUsu_in', $cCodUsu_in);
+            oci_execute($stid);
+
+            return CustomResponse::success('Estado de usuario actualizado correctamente');
+        } catch (\Throwable $th) {
+            error_log($th->getMessage());
+            if (str_contains($th->getMessage(), '20015')) return CustomResponse::failure('No se puede inactivar a un usuario que este asignado a una caja.');
+            return CustomResponse::failure();
+        }
+    }
 }
