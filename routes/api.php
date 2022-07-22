@@ -154,6 +154,10 @@ Route::post('/admin/deleteAsignacion', 'App\Http\Controllers\AdminController@del
 Route::get('/admin/searchAsignaMedicos', 'App\Http\Controllers\AdminController@searchAsignaMedicos');
 Route::post('/admin/createAsignaMedicos', 'App\Http\Controllers\AdminController@createAsignaMedicos');
 
+// ADMIN ASIGNACION MEDICO
+Route::post('/admin/getListaCajas', 'App\Http\Controllers\AdminController@getListaCajas');
+
+
 // REPORTES
 Route::post('/reportes/getReporte1', 'App\Http\Controllers\ReportesController@getReporte1');
 Route::post('/reportes/getReporte2', 'App\Http\Controllers\ReportesController@getReporte2');
