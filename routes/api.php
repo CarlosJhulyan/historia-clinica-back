@@ -337,6 +337,7 @@ Route::get('/posventa/downloadComprobanteNota', 'App\Http\Controllers\PosVentaCo
 Route::post('/posventa/impDetalleNota', 'App\Http\Controllers\PosVentaController@impDetalleNota');
 Route::post('/posventa/getDataEmpresa', 'App\Http\Controllers\PosVentaController@getDataEmpresa');
 Route::post('/authController/updateUsuarioActivo', 'App\Http\Controllers\AuthController@updateUsuarioActivo');
+Route::post('/authController/cerrarSesionActivo', 'App\Http\Controllers\AuthController@cerrarSesionActivo');
 
 // JULYAN
 Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaController@ObtenerIndNuevoCobro');

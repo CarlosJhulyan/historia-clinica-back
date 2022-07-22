@@ -81,7 +81,7 @@ class AuthController extends Controller
 					return response()->json(
 						[
 							'success' => false,
-							'message' => 'Usuario ya tiene una sesion Activa',
+							'message' => 'El usuario ya tiene una sesion Activa',
 						]
 					);
 				}
@@ -208,14 +208,14 @@ class AuthController extends Controller
 
 		try {
 
-			$aaaa = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [$usuario]);
+			$aaaa = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [strtoupper($usuario)]);
 
 			if (count($aaaa) > 0) {
 				if ($aaaa[0]->estado === "1") {
 					return response()->json(
 						[
 							'success' => false,
-							'message' => 'Usuario ya tiene una sesion Activa',
+							'message' => 'El usuario ya tiene una sesion Activa',
 						]
 					);
 				}
@@ -353,14 +353,14 @@ class AuthController extends Controller
 		} else {
 
 
-			$aaaa = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [$nroUsuario]);
+			$aaaa = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [strtoupper($nroUsuario)]);
 
 			if (count($aaaa) > 0) {
 				if ($aaaa[0]->estado === "1") {
 					return response()->json(
 						[
 							'success' => false,
-							'message' => 'Usuario ya tiene una sesion Activa',
+							'message' => 'El usuario ya tiene una sesion Activa',
 						]
 					);
 				}
@@ -467,6 +467,38 @@ class AuthController extends Controller
 				$userId,
 				new DateTime(),
 				1
+			]);
+			return CustomResponse::success('Usuario agregado correctamente');
+		}
+	}
+
+	function cerrarSesionActivo(Request $request)
+	{
+		$userId = $request->input('userId');
+
+		$validator = Validator::make($request->all(), [
+			'userId' => 'required'
+		]);
+
+		if (!$validator) {
+			return response()->json(
+				[
+					'success' => false,
+					'message' => 'Faltan datos'
+				]
+			);
+		}
+
+		$data = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [$userId]);
+
+		if (count($data) > 0) {
+			$data = DB::update('UPDATE HCW_USUARIO_ACTIVO SET ESTADO = 0, ULTIMA_CONEXION = ? WHERE USER_ID = ?', [new DateTime(), $userId]);
+			return CustomResponse::success('Usuario desactivado correctamente');
+		} else {
+			DB::insert('INSERT INTO HCW_USUARIO_ACTIVO (USER_ID,ULTIMA_CONEXION,ESTADO) VALUES(?,?,?)', [
+				$userId,
+				new DateTime(),
+				0
 			]);
 			return CustomResponse::success('Usuario agregado correctamente');
 		}
