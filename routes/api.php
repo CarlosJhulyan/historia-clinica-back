@@ -349,9 +349,11 @@ Route::post('/posventa/getIndNuevoCobro', 'App\Http\Controllers\PosVentaControll
 Route::post('/posventa/getNumeracion', 'App\Http\Controllers\PosVentaController@obtenerNumeracion');
 Route::post('/posventa/getFechaModNumeraPed', 'App\Http\Controllers\PosVentaController@obtenerFechaModNumeraPed');
 
-// CABECERA
+// GENERAR
 Route::post('/posventa/grabarPedidoCabecera', 'App\Http\Controllers\PosVentaController@grabarPedidoCabecera');
+Route::post('/posventa/grabarReservaPedidoCabecera', 'App\Http\Controllers\PosVentaController@grabarReservaPedidoCabecera');
 Route::post('/posventa/grabarPedidoDetalle', 'App\Http\Controllers\PosVentaController@grabarPedidoDetalle');
+Route::post('/posventa/grabarReservaPedidoDetalle', 'App\Http\Controllers\PosVentaController@grabarReservaPedidoDetalle');
 Route::post('/posventa/inicializaNumeracionSinCommit', 'App\Http\Controllers\PosVentaController@inicializaNumeracionSinCommit');
 
 Route::post('/posventa/getFormasPagoSinConvenio', 'App\Http\Controllers\PosVentaController@obtieneFormasPagoSinConvenio');

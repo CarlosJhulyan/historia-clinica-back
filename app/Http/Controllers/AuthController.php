@@ -6,6 +6,7 @@ use App\Core\CustomResponse;
 use App\Models\Rol;
 use App\Models\Roles;
 use App\Models\UsuarioNivel;
+use App\Oracle\OracleDB;
 use DateTime;
 use GrahamCampbell\ResultType\Result;
 use Illuminate\Http\Request;
@@ -210,16 +211,16 @@ class AuthController extends Controller
 
 			$aaaa = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [strtoupper($usuario)]);
 
-//			if (count($aaaa) > 0) {
-//				if ($aaaa[0]->estado === "1") {
-//					return response()->json(
-//						[
-//							'success' => false,
-//							'message' => 'El usuario ya tiene una sesion Activa',
-//						]
-//					);
-//				}
-//			}
+			if (count($aaaa) > 0) {
+				if ($aaaa[0]->estado === "1") {
+					return response()->json(
+						[
+							'success' => false,
+							'message' => 'El usuario ya tiene una sesion Activa',
+						]
+					);
+				}
+			}
 
 			$data = DB::table('HWC_ADM_HC_SEC')
 				->where([
@@ -355,16 +356,16 @@ class AuthController extends Controller
 
 			$aaaa = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [strtoupper($nroUsuario)]);
 
-//			if (count($aaaa) > 0) {
-//				if ($aaaa[0]->estado === "1") {
-//					return response()->json(
-//						[
-//							'success' => false,
-//							'message' => 'El usuario ya tiene una sesion Activa',
-//						]
-//					);
-//				}
-//			}
+			if (count($aaaa) > 0) {
+				if ($aaaa[0]->estado === "1") {
+					return response()->json(
+						[
+							'success' => false,
+							'message' => 'El usuario ya tiene una sesion Activa',
+						]
+					);
+				}
+			}
 
 
 
@@ -389,6 +390,42 @@ class AuthController extends Controller
 							['clave_usu', '=', $nroClave]
 						])
 						->first();
+
+                    if ($modelo) {
+                        $codGrupoCia = '001';
+                        $codLocal = '001';
+                        $secUsu = $modelo->sec_usu_local;
+
+                        $conn = OracleDB::getConnection();
+                        $cursor = oci_new_cursor($conn);
+
+                        $stid = oci_parse($conn, 'begin :result := PTOVENTA_ADMIN_USU.USU_LISTA_ROLES_USUARIO(
+                                cCodGrupoCia_in => :cCodGrupoCia_in,
+                                cCodLocal_in => :cCodLocal_in,
+                                cSecUsuLocal_in => :cSecUsuLocal_in);end;');
+                        oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+                        oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+                        oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+                        oci_bind_by_name($stid, ':cSecUsuLocal_in', $secUsu);
+                        oci_execute($stid);
+                        oci_execute($cursor);
+                        $lista = [];
+
+                        if ($stid) {
+                            while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                                foreach ($row as $key => $value) {
+                                    $datos = explode('Ã', $value);
+                                    array_push($lista,$datos[0]);
+                                }
+                            }
+                        }
+                        oci_free_statement($stid);
+                        oci_free_statement($cursor);
+                        oci_close($conn);
+
+                        $modelo->roles = $lista;
+                    }
+
 					switch ($result) {
 						case '01':
 							$resultado = 'Usuario OK';
