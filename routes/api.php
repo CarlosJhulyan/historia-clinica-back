@@ -137,6 +137,10 @@ Route::post('/admin/createMedico', 'App\Http\Controllers\AdminController@createM
 Route::get('/admin/getTipoColegios', 'App\Http\Controllers\AdminController@getTipoColegios');
 Route::get('/admin/getEspecialidadesMedico', 'App\Http\Controllers\AdminController@getEspecialidadesMedico');
 Route::post('/admin/updateStatusMedico', 'App\Http\Controllers\AdminController@updateStatusMedico');
+Route::post('/admin/getUsuariosActivosInactivos', 'App\Http\Controllers\AdminController@getUsuariosActivosInactivos');
+Route::post('/admin/createUsuario', 'App\Http\Controllers\AdminController@createUsuario');
+Route::post('/admin/updateUsuario', 'App\Http\Controllers\AdminController@updateUsuario');
+Route::post('/admin/changeEstadoUsuario', 'App\Http\Controllers\AdminController@changeEstadoUsuario');
 
 // ADMIN ASIGNACION
 Route::get('/admin/getConsultorioMedico', 'App\Http\Controllers\AdminController@getConsultorioMedico');
