@@ -6,6 +6,7 @@ use App\Core\CustomResponse;
 use App\Models\Rol;
 use App\Models\Roles;
 use App\Models\UsuarioNivel;
+use DateTime;
 use GrahamCampbell\ResultType\Result;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +72,22 @@ class AuthController extends Controller
 				]
 			);
 		} else {
+
+
+			$data = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [$nroCMP]);
+
+			if (count($data) > 0) {
+				if ($data[0]->estado === "1") {
+					return response()->json(
+						[
+							'success' => false,
+							'message' => 'Usuario ya tiene una sesion Activa',
+						]
+					);
+				}
+			}
+
+
 			try {
 				$result = null;
 				$pdo = DB::getPdo();
@@ -82,7 +99,7 @@ class AuthController extends Controller
 				if ($result) {
 					$medico = DB::select('select * from MAE_MEDICO WHERE COD_MEDICO=?', [$result]);
 					$data1 = DB::select("select * from cc_medico_x_bus where num_cmp = ?", [$nroCMP]);
-                    if (!$data1) return CustomResponse::failure('No tiene asignado un consultorio');
+					if (!$data1) return CustomResponse::failure('No tiene asignado un consultorio');
 					$data2 = DB::select("select * from cc_consultorio where ID_CONSULTORIO =?", [$data1[0]->id_consultorio]);
 					$abb = str_pad($result, 10, "0", STR_PAD_LEFT);
 					$modulosUsuario = Rol::query()->where(['COD_MEDICO' => $abb])->get();
@@ -116,10 +133,10 @@ class AuthController extends Controller
 					return $errorResponse;
 				}
 			} catch (\Throwable $e) {
-                if (str_contains($e->getMessage(), 'ORA-20510')) return CustomResponse::failure('NO SE ENCONTRO NUMERO DE CMP');
-                if (str_contains($e->getMessage(), 'ORA-20511')) return CustomResponse::failure('SE HA ENCONTRADO MAS DE UN REGISTRO CON EL MISMO CMP');
-                if (str_contains($e->getMessage(), 'ORA-20514')) return CustomResponse::failure('CLAVE NO COINCIDE');
-                error_log($e);
+				if (str_contains($e->getMessage(), 'ORA-20510')) return CustomResponse::failure('NO SE ENCONTRO NUMERO DE CMP');
+				if (str_contains($e->getMessage(), 'ORA-20511')) return CustomResponse::failure('SE HA ENCONTRADO MAS DE UN REGISTRO CON EL MISMO CMP');
+				if (str_contains($e->getMessage(), 'ORA-20514')) return CustomResponse::failure('CLAVE NO COINCIDE');
+				error_log($e);
 				return CustomResponse::failure($e->getMessage());
 			}
 		}
@@ -175,7 +192,8 @@ class AuthController extends Controller
 		}
 	}
 
-	public function loginAdministrador(Request $request) {
+	public function loginAdministrador(Request $request)
+	{
 		$usuario = $request->input('usuario');
 		$clave = $request->input('clave');
 
@@ -189,6 +207,20 @@ class AuthController extends Controller
 		}
 
 		try {
+
+			$aaaa = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [$usuario]);
+
+			if (count($aaaa) > 0) {
+				if ($aaaa[0]->estado === "1") {
+					return response()->json(
+						[
+							'success' => false,
+							'message' => 'Usuario ya tiene una sesion Activa',
+						]
+					);
+				}
+			}
+
 			$data = DB::table('HWC_ADM_HC_SEC')
 				->where([
 					['login_usu', '=', strtoupper($usuario)],
@@ -207,181 +239,230 @@ class AuthController extends Controller
 	}
 
 
-    public function loginUsuLocal(Request $request) {
-        $nroGrupo = "001";
-        $nroLocal = "001";
-        $nroUsuario = $request->input('usuario');
-        $nroClave = $request->input('clave');
-        $validator = Validator::make($request->all(), [
-            'usuario' => 'required',
-            'clave' => 'required'
-        ]);
+	public function loginUsuLocal(Request $request)
+	{
+		$nroGrupo = "001";
+		$nroLocal = "001";
+		$nroUsuario = $request->input('usuario');
+		$nroClave = $request->input('clave');
+		$validator = Validator::make($request->all(), [
+			'usuario' => 'required',
+			'clave' => 'required'
+		]);
 
 
-        if ($validator->fails()) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Faltan datos'
-                ]
-            );
-        } else {
-            try {
-                $result = null;
-                $pdo = DB::getPdo();
-                $stmt = $pdo->prepare("BEGIN :result := farma_security.verifica_usuario_login(ccodgrupocia_in=>:grupo,ccodlocal_in=>:local,ccodusu_in=>:usuario,cclaveusu_in=>:clave); END;");
-                $stmt->bindParam(':grupo', $nroGrupo, \PDO::PARAM_STR);
-                $stmt->bindParam(':local', $nroLocal, \PDO::PARAM_STR);
-                $stmt->bindParam(':usuario', $nroUsuario, \PDO::PARAM_STR);
-                $stmt->bindParam(':clave', $nroClave, \PDO::PARAM_STR);
+		if ($validator->fails()) {
+			return response()->json(
+				[
+					'success' => false,
+					'message' => 'Faltan datos'
+				]
+			);
+		} else {
+			try {
+				$result = null;
+				$pdo = DB::getPdo();
+				$stmt = $pdo->prepare("BEGIN :result := farma_security.verifica_usuario_login(ccodgrupocia_in=>:grupo,ccodlocal_in=>:local,ccodusu_in=>:usuario,cclaveusu_in=>:clave); END;");
+				$stmt->bindParam(':grupo', $nroGrupo, \PDO::PARAM_STR);
+				$stmt->bindParam(':local', $nroLocal, \PDO::PARAM_STR);
+				$stmt->bindParam(':usuario', $nroUsuario, \PDO::PARAM_STR);
+				$stmt->bindParam(':clave', $nroClave, \PDO::PARAM_STR);
 
-                $stmt->bindParam(':result', $result, \PDO::PARAM_INT | \PDO::PARAM_INPUT_OUTPUT);
-                $stmt->execute();
-                if ($result) {
-                    $nivel = [];
-                    $resultado = 'Volver a intentar';
-                    $success = false;
-                    $modelo = UsuarioNivel::where(["LOGIN_USU" => $nroUsuario, "ESTADO" => '1'])
-                        ->with(['nivel'])
-                        ->get();
-                    if ($modelo) {
-                        foreach ($modelo as $item) {
-                            //$aux[0] = $item['nivel']['descripcion'];
-                            //$aux[1] = $item['nivel']['modulo'];
-                            array_push($nivel, $item['nivel']['modulo']);
-                        }
-                    }
-                    switch ($result) {
-                        case '01':
-                            $resultado = 'Usuario OK';
-                            $success = true;
-                            break;
-                        case '02':
-                            $resultado = 'Usuario Inactivo en el Local';
-                            $success = false;
-                            break;
-                        case '03':
-                            $resultado = 'Usuario no registrado en el Local';
-                            $success = false;
-                            break;
-                        case '04':
-                            $resultado = 'Clave Errada';
-                            $success = false;
-                            break;
-                        case '05':
-                            $resultado = 'Usuario No Existe';
-                            $success = false;
-                            break;
-                        case '98':
-                            $resultado = 'Version de aplicacion no valida';
-                            $success = false;
-                            break;
-                    }
-                    return response()->json(
-                        [
-                            'success' => $success,
-                            'message' => $resultado,
-                            'modulos' => $nivel
-                        ]
-                    );
-                } else {
-                    return response()->json(
-                        [
-                            'success' => false,
-                            'message' => 'Usuario o clave incorrecta',
-                        ]
-                    );
-                }
-            } catch (\Throwable $e) {
-                return CustomResponse::failure($e->getMessage());
-            }
-        }
-    }
+				$stmt->bindParam(':result', $result, \PDO::PARAM_INT | \PDO::PARAM_INPUT_OUTPUT);
+				$stmt->execute();
+				if ($result) {
+					$nivel = [];
+					$resultado = 'Volver a intentar';
+					$success = false;
+					$modelo = UsuarioNivel::where(["LOGIN_USU" => $nroUsuario, "ESTADO" => '1'])
+						->with(['nivel'])
+						->get();
+					if ($modelo) {
+						foreach ($modelo as $item) {
+							//$aux[0] = $item['nivel']['descripcion'];
+							//$aux[1] = $item['nivel']['modulo'];
+							array_push($nivel, $item['nivel']['modulo']);
+						}
+					}
+					switch ($result) {
+						case '01':
+							$resultado = 'Usuario OK';
+							$success = true;
+							break;
+						case '02':
+							$resultado = 'Usuario Inactivo en el Local';
+							$success = false;
+							break;
+						case '03':
+							$resultado = 'Usuario no registrado en el Local';
+							$success = false;
+							break;
+						case '04':
+							$resultado = 'Clave Errada';
+							$success = false;
+							break;
+						case '05':
+							$resultado = 'Usuario No Existe';
+							$success = false;
+							break;
+						case '98':
+							$resultado = 'Version de aplicacion no valida';
+							$success = false;
+							break;
+					}
+					return response()->json(
+						[
+							'success' => $success,
+							'message' => $resultado,
+							'modulos' => $nivel
+						]
+					);
+				} else {
+					return response()->json(
+						[
+							'success' => false,
+							'message' => 'Usuario o clave incorrecta',
+						]
+					);
+				}
+			} catch (\Throwable $e) {
+				return CustomResponse::failure($e->getMessage());
+			}
+		}
+	}
 
-    public function loginPersonal(Request $request) {
-        $nroGrupo = "001";
-        $nroLocal = "001";
-        $nroUsuario = $request->input('usuario');
-        $nroClave = $request->input('clave');
-        $validator = Validator::make($request->all(), [
-            'usuario' => 'required',
-            'clave' => 'required'
-        ]);
+	public function loginPersonal(Request $request)
+	{
+		$nroGrupo = "001";
+		$nroLocal = "001";
+		$nroUsuario = $request->input('usuario');
+		$nroClave = $request->input('clave');
+		$validator = Validator::make($request->all(), [
+			'usuario' => 'required',
+			'clave' => 'required'
+		]);
 
 
-        if ($validator->fails()) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Faltan datos'
-                ]
-            );
-        } else {
-            try {
-                $result = null;
-                $pdo = DB::getPdo();
-                $stmt = $pdo->prepare("BEGIN :result := farma_security.verifica_usuario_login(ccodgrupocia_in=>:grupo,ccodlocal_in=>:local,ccodusu_in=>:usuario,cclaveusu_in=>:clave); END;");
-                $stmt->bindParam(':grupo', $nroGrupo, \PDO::PARAM_STR);
-                $stmt->bindParam(':local', $nroLocal, \PDO::PARAM_STR);
-                $stmt->bindParam(':usuario', $nroUsuario, \PDO::PARAM_STR);
-                $stmt->bindParam(':clave', $nroClave, \PDO::PARAM_STR);
+		if ($validator->fails()) {
+			return response()->json(
+				[
+					'success' => false,
+					'message' => 'Faltan datos'
+				]
+			);
+		} else {
 
-                $stmt->bindParam(':result', $result, \PDO::PARAM_INT | \PDO::PARAM_INPUT_OUTPUT);
-                $stmt->execute();
-                if ($result) {
-                    $nivel = [];
-                    $resultado = 'Volver a intentar';
-                    $success = false;
-                    $modelo = DB::table('PBL_USU_LOCAL')
-                        ->where([
-                            ['login_usu', '=', strtoupper($nroUsuario)],
-                            ['clave_usu', '=', $nroClave]
-                        ])
-                        ->first();
-                    switch ($result) {
-                        case '01':
-                            $resultado = 'Usuario OK';
-                            $success = true;
-                            break;
-                        case '02':
-                            $resultado = 'Usuario Inactivo en el Local';
-                            $success = false;
-                            break;
-                        case '03':
-                            $resultado = 'Usuario no registrado en el Local';
-                            $success = false;
-                            break;
-                        case '04':
-                            $resultado = 'Clave Errada';
-                            $success = false;
-                            break;
-                        case '05':
-                            $resultado = 'Usuario No Existe';
-                            $success = false;
-                            break;
-                        case '98':
-                            $resultado = 'Version de aplicacion no valida';
-                            $success = false;
-                            break;
-                    }
-                    return response()->json(
-                        [
-                            'success' => $success,
-                            'message' => $resultado,
-                            'data' => $modelo
-                        ]
-                    );
-                } else {
-                    return response()->json(
-                        [
-                            'success' => false,
-                            'message' => 'Usuario o clave incorrecta',
-                        ]
-                    );
-                }
-            } catch (\Throwable $e) {
-                return CustomResponse::failure($e->getMessage());
-            }
-        }
-    }
+			$data = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [$nroUsuario]);
+
+			if (count($data) > 0) {
+				if ($data[0]->estado === "1") {
+					return response()->json(
+						[
+							'success' => false,
+							'message' => 'Usuario ya tiene una sesion Activa',
+						]
+					);
+				}
+			}
+
+
+			try {
+				$result = null;
+				$pdo = DB::getPdo();
+				$stmt = $pdo->prepare("BEGIN :result := farma_security.verifica_usuario_login(ccodgrupocia_in=>:grupo,ccodlocal_in=>:local,ccodusu_in=>:usuario,cclaveusu_in=>:clave); END;");
+				$stmt->bindParam(':grupo', $nroGrupo, \PDO::PARAM_STR);
+				$stmt->bindParam(':local', $nroLocal, \PDO::PARAM_STR);
+				$stmt->bindParam(':usuario', $nroUsuario, \PDO::PARAM_STR);
+				$stmt->bindParam(':clave', $nroClave, \PDO::PARAM_STR);
+
+				$stmt->bindParam(':result', $result, \PDO::PARAM_INT | \PDO::PARAM_INPUT_OUTPUT);
+				$stmt->execute();
+				if ($result) {
+					$nivel = [];
+					$resultado = 'Volver a intentar';
+					$success = false;
+					$modelo = DB::table('PBL_USU_LOCAL')
+						->where([
+							['login_usu', '=', strtoupper($nroUsuario)],
+							['clave_usu', '=', $nroClave]
+						])
+						->first();
+					switch ($result) {
+						case '01':
+							$resultado = 'Usuario OK';
+							$success = true;
+							break;
+						case '02':
+							$resultado = 'Usuario Inactivo en el Local';
+							$success = false;
+							break;
+						case '03':
+							$resultado = 'Usuario no registrado en el Local';
+							$success = false;
+							break;
+						case '04':
+							$resultado = 'Clave Errada';
+							$success = false;
+							break;
+						case '05':
+							$resultado = 'Usuario No Existe';
+							$success = false;
+							break;
+						case '98':
+							$resultado = 'Version de aplicacion no valida';
+							$success = false;
+							break;
+					}
+					return response()->json(
+						[
+							'success' => $success,
+							'message' => $resultado,
+							'data' => $modelo
+						]
+					);
+				} else {
+					return response()->json(
+						[
+							'success' => false,
+							'message' => 'Usuario o clave incorrecta',
+						]
+					);
+				}
+			} catch (\Throwable $e) {
+				return CustomResponse::failure($e->getMessage());
+			}
+		}
+	}
+
+	function updateUsuarioActivo(Request $request)
+	{
+		$userId = $request->input('userId');
+
+		$validator = Validator::make($request->all(), [
+			'userId' => 'required'
+		]);
+
+		if (!$validator) {
+			return response()->json(
+				[
+					'success' => false,
+					'message' => 'Faltan datos'
+				]
+			);
+		}
+
+		$data = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [$userId]);
+
+		if (count($data) > 0) {
+			$data = DB::update('UPDATE HCW_USUARIO_ACTIVO SET ESTADO = 1, ULTIMA_CONEXION = ? WHERE USER_ID = ?', [new DateTime(), $userId]);
+			return CustomResponse::success('Usuario activado correctamente');
+		} else {
+			DB::insert('INSERT INTO HCW_USUARIO_ACTIVO (USER_ID,ULTIMA_CONEXION,ESTADO) VALUES(?,?,?)', [
+				$userId,
+				new DateTime(),
+				1
+			]);
+			return CustomResponse::success('Usuario agregado correctamente');
+		}
+	}
 }
