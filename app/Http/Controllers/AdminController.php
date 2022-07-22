@@ -782,7 +782,7 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'codGrupoCia' => 'required',
             'codLocal' => 'required',
-            'codEstado' => 'required',
+//            'codEstado' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -1034,6 +1034,178 @@ class AdminController extends Controller
         } catch (\Throwable $th) {
             error_log($th->getMessage());
             if (str_contains($th->getMessage(), '20015')) return CustomResponse::failure('No se puede inactivar a un usuario que este asignado a una caja.');
+            return CustomResponse::failure();
+        }
+    }
+
+    public function getRolesUsuario(Request $request)
+    {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $secUsu = $request->input('secUsu');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'secUsu' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_ADMIN_USU.USU_LISTA_ROLES_USUARIO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cSecUsuLocal_in => :cSecUsuLocal_in);end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':cSecUsuLocal_in', $secUsu);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'COD_ROL' => $datos[0],
+                                'DESC_ROL' => $datos[1],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            if (count($lista) <= 0) return  CustomResponse::failure('Sin Roles asignados');
+            return CustomResponse::success('Roles encontrados.', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure();
+        }
+    }
+
+    public function getTodosRolesUsuario()
+    {
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_ADMIN_USU.USU_LISTA_ROLES;end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'COD_ROL' => $datos[0],
+                                'DESC_ROL' => $datos[1],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            if (count($lista) <= 0) return  CustomResponse::failure('Sin Roles asignados');
+            return CustomResponse::success('Roles encontrados.', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure();
+        }
+    }
+
+    function limpiaRolesUsuario(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $secUsu = $request->input('secUsu');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'secUsu' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+
+            $stid = oci_parse($conn, 'begin PTOVENTA_ADMIN_USU.USU_LIMPIA_ROLES_USUARIO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cSecUsuLocal_in => :cSecUsuLocal_in);end;');
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':cSecUsuLocal_in', $secUsu);
+            oci_execute($stid);
+
+            return CustomResponse::success('Se limpio con exito los roles de usuario');
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
+    function establecerRolUsuario(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $secUsu = $request->input('secUsu');
+        $codRol = $request->input('codRol');
+        $usuCrea = $request->input('usuCrea');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'secUsu' => 'required',
+            'codRol' => 'required',
+            'usuCrea' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+
+            $stid = oci_parse($conn, 'begin PTOVENTA_ADMIN_USU.USU_AGREGA_ROL_USUARIO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cSecUsuLocal_in => :cSecUsuLocal_in,
+                cCodRol_in => :cCodRol_in,
+                cUsuCreaRol_in => :cUsuCreaRol_in);end;');
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':cSecUsuLocal_in', $secUsu);
+            oci_bind_by_name($stid, ':cCodRol_in', $codRol);
+            oci_bind_by_name($stid, ':cUsuCreaRol_in', $usuCrea);
+            oci_execute($stid);
+
+            return CustomResponse::success('Se asigno el rol al usuario');
+        } catch (\Throwable $th) {
+            error_log($th);
             return CustomResponse::failure();
         }
     }

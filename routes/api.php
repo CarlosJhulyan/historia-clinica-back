@@ -142,7 +142,12 @@ Route::post('/admin/createUsuario', 'App\Http\Controllers\AdminController@create
 Route::post('/admin/updateUsuario', 'App\Http\Controllers\AdminController@updateUsuario');
 Route::post('/admin/changeEstadoUsuario', 'App\Http\Controllers\AdminController@changeEstadoUsuario');
 
-// ADMIN ASIGNACION
+Route::post('/admin/getRolesUsuario', 'App\Http\Controllers\AdminController@getRolesUsuario');
+Route::get('/admin/getTodosRolesUsuario', 'App\Http\Controllers\AdminController@getTodosRolesUsuario');
+Route::post('/admin/cleanRolesUsuario', 'App\Http\Controllers\AdminController@limpiaRolesUsuario');
+Route::post('/admin/setRolUsuario', 'App\Http\Controllers\AdminController@establecerRolUsuario');
+
+// ADMIN ASIGNACION MEDICO
 Route::get('/admin/getConsultorioMedico', 'App\Http\Controllers\AdminController@getConsultorioMedico');
 Route::post('/admin/getBusMedico', 'App\Http\Controllers\AdminController@getBusMedico');
 Route::post('/admin/deleteAsignacion', 'App\Http\Controllers\AdminController@deleteAsignacion');
