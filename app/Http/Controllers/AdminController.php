@@ -1209,4 +1209,60 @@ class AdminController extends Controller
             return CustomResponse::failure();
         }
     }
+
+    public function getListaCajas(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+    
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_ADMIN_CAJA.CAJ_LISTA_CAJAS(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in);end;');
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'COD_CAJA' => $datos[0],
+                                'DESC_CAJA' => $datos[1],
+                                'EST_CAJA' => $datos[2],
+                                'USU_CAJA' => $datos[3],
+                                'SEC_CAJA' => $datos[4],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            if (count($lista) <= 0) return  CustomResponse::failure('No hay cajas');
+            return CustomResponse::success('Cajas encontradas.', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure();
+        }
+    }
 }
