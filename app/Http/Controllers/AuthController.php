@@ -211,16 +211,16 @@ class AuthController extends Controller
 
 			$aaaa = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [strtoupper($usuario)]);
 
-			if (count($aaaa) > 0) {
-				if ($aaaa[0]->estado === "1") {
-					return response()->json(
-						[
-							'success' => false,
-							'message' => 'El usuario ya tiene una sesion Activa',
-						]
-					);
-				}
-			}
+//			if (count($aaaa) > 0) {
+//				if ($aaaa[0]->estado === "1") {
+//					return response()->json(
+//						[
+//							'success' => false,
+//							'message' => 'El usuario ya tiene una sesion Activa',
+//						]
+//					);
+//				}
+//			}
 
 			$data = DB::table('HWC_ADM_HC_SEC')
 				->where([
@@ -356,16 +356,16 @@ class AuthController extends Controller
 
 			$aaaa = DB::select('SELECT * FROM HCW_USUARIO_ACTIVO WHERE USER_ID = ?', [strtoupper($nroUsuario)]);
 
-			if (count($aaaa) > 0) {
-				if ($aaaa[0]->estado === "1") {
-					return response()->json(
-						[
-							'success' => false,
-							'message' => 'El usuario ya tiene una sesion Activa',
-						]
-					);
-				}
-			}
+//			if (count($aaaa) > 0) {
+//				if ($aaaa[0]->estado === "1") {
+//					return response()->json(
+//						[
+//							'success' => false,
+//							'message' => 'El usuario ya tiene una sesion Activa',
+//						]
+//					);
+//				}
+//			}
 
 
 

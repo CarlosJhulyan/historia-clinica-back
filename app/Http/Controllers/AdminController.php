@@ -1213,7 +1213,7 @@ class AdminController extends Controller
     public function getListaCajas(Request $request) {
         $codGrupoCia = $request->input('codGrupoCia');
         $codLocal = $request->input('codLocal');
-    
+
         $validator = Validator::make($request->all(), [
             'codGrupoCia' => 'required',
             'codLocal' => 'required',
@@ -1261,6 +1261,96 @@ class AdminController extends Controller
 
             if (count($lista) <= 0) return  CustomResponse::failure('No hay cajas');
             return CustomResponse::success('Cajas encontradas.', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure();
+        }
+    }
+
+    function cambiaEstadoCajas(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $numCaja = $request->input('numCaja');
+        $codUsu = $request->input('codUsu');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'numCaja' => 'required',
+            'codUsu' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+
+            $stid = oci_parse($conn, 'begin PTOVENTA_ADMIN_CAJA.CAJ_CAMBIAESTADO_CAJA(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                nNumCajaPago_in => :nNumCajaPago_in,
+                cCodUsu_in => :cCodUsu_in);end;');
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':nNumCajaPago_in', $numCaja);
+            oci_bind_by_name($stid, ':cCodUsu_in', $codUsu);
+            oci_execute($stid);
+
+            return CustomResponse::success('Se modifico estado de Caja');
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
+    public function getUsuariosLocal(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_ADMIN_CAJA.CAJ_LISTA_USUARIOS_LOCAL(cCodGrupoCia_in => :cCodGrupoCia_in,
+            cCodLocal_in => :cCodLocal_in);end;');
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_execute($stid);
+            oci_execute($cursor);
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[0],
+                                'COD_USU' => $datos[0],
+                                'DESC_USU' => $datos[1]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_free_statement($stid);
+            oci_free_statement($cursor);
+            oci_close($conn);
+
+            if (count($lista) <= 0) return  CustomResponse::failure('No hay Usuarios');
+            return CustomResponse::success('Usuarios encontradas.', $lista);
         } catch (\Throwable $th) {
             return CustomResponse::failure();
         }

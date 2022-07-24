@@ -5546,4 +5546,354 @@ class PosVentaController extends Controller
 			return CustomResponse::failure($th->getMessage());
 		}
 	}
+
+    function getDatosReservaPaciente(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $codCia = $request->input('codCia');
+        $numAtenMedica = $request->input('numPedido');
+        $numRucCia = $request->input('numRucCia');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'numPedido' => 'required',
+//            'numRucCia' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = '';
+            $stid = oci_parse($conn, 'begin :result := HHC_RESERVA.F_VAR_DATOS_PACIENTE(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodCia_in => :cCodCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumAtenMedica_in => :cNumAtenMedica_in,
+                cNumRucCia_in => :cNumRucCia_in);end;');
+            oci_bind_by_name($stid, ':result', $result, 400);
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodCia_in', $codCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':cNumAtenMedica_in', $numAtenMedica);
+            oci_bind_by_name($stid, ':cNumRucCia_in', $numRucCia);
+            oci_execute($stid);
+            oci_close($conn);
+
+            if (!$result) return CustomResponse::failure('Este número de pedido no existe');
+
+            $datos = explode('@', $result);
+            $data = [
+                'COD_PACIENTE' => $datos[0],
+                'DESC_TIPO_DOC' => $datos[1],
+                'DOCUMENTO' => $datos[2],
+                'NOM_CLI' => $datos[3],
+                'APE_PAT_CLI' => $datos[4],
+                'APE_MAT_CLI' => $datos[5],
+                'EDAD' => $datos[6],
+                'FEC_PEDIDO_VTA' => $datos[7],
+                'NUM_PEDIDO_VTA' => $datos[10],
+                'VAL_NETO_PEDIDO' => $datos[11],
+                'FEC_COTIZA_FIN' => $datos[12],
+                'ESTADO' => $datos[13],
+            ];
+
+            return CustomResponse::success('Datos de Reserva de paciente', $data);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
+    function getDatosReservaMedico(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $codCia = $request->input('codCia');
+        $numAtenMedica = $request->input('numPedido');
+        $numRucCia = $request->input('numRucCia');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'numPedido' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = '';
+            $stid = oci_parse($conn, 'begin :result := HHC_RESERVA.F_VAR_DATOS_MEDICO(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodCia_in => :cCodCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumAtenMedica_in => :cNumAtenMedica_in,
+                cNumRucCia_in => :cNumRucCia_in);end;');
+            oci_bind_by_name($stid, ':result', $result, 400);
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodCia_in', $codCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':cNumAtenMedica_in', $numAtenMedica);
+            oci_bind_by_name($stid, ':cNumRucCia_in', $numRucCia);
+            oci_execute($stid);
+            oci_close($conn);
+
+            $datos = explode('@', $result);
+
+            $data = [
+                'CMP' => $datos[0],
+                'NOMBRE' => $datos[2],
+                'APELLIDO' => $datos[3]
+            ];
+
+            return CustomResponse::success('Datos de Reserva de médico', $data);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
+    function getListaDetalles(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $numPedido = $request->input('numPedido');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'numPedido' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := HHC_RESERVA.F_DATOS_HC_DETALLE(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cNumAtencion_in => :cNumAtencion_in);end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':cNumAtencion_in', $numPedido);
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                            $lista,
+                            [
+                                'key' => $datos[1],
+                                'ESPECIALIDAD' => $datos[0],
+                                'CODIGO' => $datos[1],
+                                'DESCRIPCION' => $datos[2],
+                                'UNIDAD' => $datos[3],
+                                'CANTIDAD' => $datos[4],
+                                'PRECIO_UNI' => $datos[5],
+                                'TOTAL' => $datos[6],
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_close($conn);
+
+            if (count($lista) <= 0) return CustomResponse::failure('No se registra detalles de pedido');
+
+            return CustomResponse::success('Lista de detalles de reserva', $lista);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
+    function validoReservaPedido(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $numPedido = $request->input('numPedido');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'numPedido' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $result = '';
+
+            $stid = oci_parse($conn, 'begin :result := HHC_RESERVA.f_valido_reserva(
+                vCodGrupoCia_in => :vCodGrupoCia_in,
+                vCodLocal_in => :vCodLocal_in,
+                vNumPedVta_in => :vNumPedVta_in);end;');
+            oci_bind_by_name($stid, ':result', $result, 2);
+            oci_bind_by_name($stid, ':vCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':vCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':vNumPedVta_in', $numPedido);
+            oci_execute($stid);
+            oci_close($conn);
+
+            return CustomResponse::success('Validación de pedido reservado', $result);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
+    function getListaDatosReserva(Request $request) {
+        $codGrupoCia = $request->input('codGrupoCia');
+        $codLocal = $request->input('codLocal');
+        $fechaInicio = $request->input('fechaInicio');
+        $fechaFin = $request->input('fechaFin');
+        $documento = $request->input('documento');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'fechaInicio' => 'required',
+            'fechaFin' => 'required',
+            'documento' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_VTA_LISTA.REPORTE_DET_RESERVA(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cFechaInicio => :cFechaInicio,
+                cFechaFin => :cFechaFin,
+                cDocumento_in => :cDocumento_in);end;');
+            oci_bind_by_name($stid, ':result', $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocal);
+            oci_bind_by_name($stid, ':cFechaInicio', $fechaInicio);
+            oci_bind_by_name($stid, ':cFechaFin', $fechaFin);
+            oci_bind_by_name($stid, ':cDocumento_in', $documento);
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        array_push(
+                        $lista,
+                            [
+                                'key' => $datos[0],
+                                'NUM_PEDIDO_VTA' => $datos[0],
+                                'FECHA_PEDIDO_VTA' => $datos[1],
+                                'NOM_CLI' => $datos[2],
+                                'RUC' => $datos[3],
+                                'DNI' => $datos[4],
+                                'VAL_NETO' => $datos[5]
+                            ]
+                        );
+                    }
+                }
+            }
+            oci_close($conn);
+
+            return CustomResponse::success('Lista de reservas', $lista);
+        } catch (\Throwable $th) {
+            error_log($th);
+            return CustomResponse::failure();
+        }
+    }
+
+    function getDatosReserva(Request $request) {
+        $codGrupoCia = $request->input('codCia');
+        $codLocal = $request->input('codLocalIn');
+        $numPedido = $request->input('codLocal');
+        $codCia = $request->input('codGrupoCia');
+        $codLocalIn = $request->input('codLocal');
+
+        $validator = Validator::make($request->all(), [
+            'codGrupoCia' => 'required',
+            'codLocal' => 'required',
+            'numPedido' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return CustomResponse::failure('Datos faltantes');
+        }
+
+        try {
+            $conn = OracleDB::getConnection();
+            $cursor = oci_new_cursor($conn);
+
+            $stid = oci_parse($conn, 'begin :result := PTOVENTA_VTA_LISTA.GET_DATOS_RESERVA(
+                cCodGrupoCia_in => :cCodGrupoCia_in,
+                cCodLocal_in => :cCodLocal_in,
+                cCodCia => :cCodCia,
+                cCodLocal => :cCodLocal,
+                cNumPed => :cNumPed);end;');
+            oci_bind_by_name($stid, ':cursor', $cursor, -1, OCI_B_CURSOR);
+            oci_bind_by_name($stid, ':cCodGrupoCia_in', $codGrupoCia);
+            oci_bind_by_name($stid, ':cCodLocal_in', $codLocalIn);
+            oci_bind_by_name($stid, ':cCodCia', $codCia);
+            oci_bind_by_name($stid, ':cCodLocal', $codLocal);
+            oci_bind_by_name($stid, ':cNumPed', $numPedido);
+
+            oci_execute($stid);
+            oci_execute($cursor);
+
+            $lista = [];
+
+            if ($stid) {
+                while (($row = oci_fetch_array($cursor, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+                    foreach ($row as $key => $value) {
+                        $datos = explode('Ã', $value);
+                        $lista = [
+                            'NUM_CMP' => $datos[0],
+                            'DATOS_COMPLETOS' => $datos[1],
+                            'COD_PACIENTE' => $datos[2],
+                            'NUM_DOCUMENTO' => $datos[3],
+                            'NOM_CLI' => $datos[4],
+                            'APE_PAT_CLI' => $datos[5],
+                            'APE_MAT_CLI' => $datos[6],
+                            'FEC_NAC_CLI' => $datos[7],
+                            'SEXO_CLI' => $datos[8],
+                            'N' => $datos[9],
+                            'NOM_CLI_COMPL' => $datos[12],
+                            'CELL_CLI' => $datos[13],
+                            'CORREO_CLI' => $datos[14],
+                            'DIR_CLI' => $datos[15],
+                            'COD_TIP_DOC' => $datos[16],
+                            '' => $datos[17],
+                        ];
+                    }
+                }
+            }
+
+            oci_close($conn);
+
+            return CustomResponse::success('Datos Obtenidos', $lista);
+        } catch (\Throwable $th) {
+            return CustomResponse::failure($th->getMessage());
+        }
+    }
 }

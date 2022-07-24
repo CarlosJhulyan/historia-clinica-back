@@ -154,9 +154,9 @@ Route::post('/admin/deleteAsignacion', 'App\Http\Controllers\AdminController@del
 Route::get('/admin/searchAsignaMedicos', 'App\Http\Controllers\AdminController@searchAsignaMedicos');
 Route::post('/admin/createAsignaMedicos', 'App\Http\Controllers\AdminController@createAsignaMedicos');
 
-// ADMIN ASIGNACION MEDICO
 Route::post('/admin/getListaCajas', 'App\Http\Controllers\AdminController@getListaCajas');
-
+Route::post('/admin/getUsuariosLocal', 'App\Http\Controllers\AdminController@getUsuariosLocal');
+Route::post('/admin/cambiaEstadoCajas', 'App\Http\Controllers\AdminController@cambiaEstadoCajas');
 
 // REPORTES
 Route::post('/reportes/getReporte1', 'App\Http\Controllers\ReportesController@getReporte1');
@@ -380,7 +380,12 @@ Route::post('/posventa/obtenerInfoPedido', 'App\Http\Controllers\PosVentaControl
 Route::get('/posventa/getTiposMoneda', 'App\Http\Controllers\PosVentaController@getTiposDeMoneda');
 Route::post('/posventa/getMetodosPagoImprimir', 'App\Http\Controllers\PosVentaController@getMetodosPagoImprimir');
 Route::post('/posventa/getnumOrdenVta', 'App\Http\Controllers\PosVentaController@getnumOrdenVta');
-
+Route::post('/posventa/getDatosReservaPaciente', 'App\Http\Controllers\PosVentaController@getDatosReservaPaciente');
+Route::post('/posventa/getDatosReservaMedico', 'App\Http\Controllers\PosVentaController@getDatosReservaMedico');
+Route::post('/posventa/getListaDatosReserva', 'App\Http\Controllers\PosVentaController@getListaDatosReserva');
+Route::post('/posventa/getListaDetalles', 'App\Http\Controllers\PosVentaController@getListaDetalles');
+Route::post('/posventa/validoReservaPedido', 'App\Http\Controllers\PosVentaController@validoReservaPedido');
+Route::post('/posventa/getDatosReserva', 'App\Http\Controllers\PosVentaController@getDatosReserva');
 
 // Firestore Telemedicina Jisla
 Route::post('/sync/firestore', 'App\Http\Controllers\FirestoreController@syncFirestore');
